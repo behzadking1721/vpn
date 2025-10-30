@@ -147,6 +147,19 @@
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-title button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
         }
         
         .server-list {
@@ -182,6 +195,14 @@
             opacity: 0.7;
             display: flex;
             justify-content: space-between;
+        }
+        
+        .server-usage {
+            font-size: 11px;
+            margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+            color: #2ed573;
         }
         
         .actions {
@@ -253,14 +274,17 @@
             </div>
             
             <div class="sidebar">
-                <h2 class="section-title">Servers</h2>
+                <h2 class="section-title">
+                    Servers
+                    <button id="refreshButton">Refresh</button>
+                </h2>
                 <div class="server-list" id="serverList">
                     <!-- Servers will be populated by JavaScript -->
                 </div>
                 
                 <div class="actions">
                     <button class="action-button" id="addServerButton">Add Server</button>
-                    <button class="action-button" id="refreshButton">Refresh</button>
+                    <button class="action-button" id="resetDataButton">Reset Data</button>
                 </div>
             </div>
         </div>
@@ -280,15 +304,18 @@
         const uploadStat = document.getElementById('uploadStat');
         const refreshButton = document.getElementById('refreshButton');
         const addServerButton = document.getElementById('addServerButton');
+        const resetDataButton = document.getElementById('resetDataButton');
         
         let connected = false;
         let currentServerId = null;
         let dataUsageInterval = null;
+        let serverDataUsage = {}; // Cache for server data usage
         
         // Load servers when page loads
         window.addEventListener('DOMContentLoaded', () => {
             loadServers();
             updateStatus();
+            loadDataUsage();
         });
         
         connectButton.addEventListener('click', async () => {
@@ -359,11 +386,42 @@
         
         refreshButton.addEventListener('click', () => {
             loadServers();
+            loadDataUsage();
         });
         
         addServerButton.addEventListener('click', () => {
             // In a real implementation, this would open a dialog to add a server
             alert('Add server functionality would be implemented here');
+        });
+        
+        resetDataButton.addEventListener('click', async () => {
+            if (!currentServerId) {
+                alert('Please select a server first');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to reset data usage for this server?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/data-usage/${currentServerId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to reset data usage');
+                }
+                
+                // Refresh data usage display
+                loadDataUsage();
+                updateServerListDisplay();
+                
+                alert('Data usage reset successfully');
+            } catch (error) {
+                console.error('Error resetting data usage:', error);
+                alert('Failed to reset data usage');
+            }
         });
         
         // Load servers from API
@@ -379,6 +437,21 @@
             } catch (error) {
                 console.error('Error loading servers:', error);
                 serverList.innerHTML = '<div class="server-item">Failed to load servers</div>';
+            }
+        }
+        
+        // Load data usage from API
+        async function loadDataUsage() {
+            try {
+                const response = await fetch('/api/data-usage');
+                if (!response.ok) {
+                    throw new Error('Failed to load data usage');
+                }
+                
+                serverDataUsage = await response.json();
+            } catch (error) {
+                console.error('Error loading data usage:', error);
+                serverDataUsage = {};
             }
         }
         
@@ -398,12 +471,21 @@
                     serverItem.classList.add('active');
                 }
                 
+                // Get data usage for this server
+                let usageText = '';
+                if (serverDataUsage[server.id]) {
+                    const usage = serverDataUsage[server.id];
+                    const total = usage.total_sent + usage.total_received;
+                    usageText = `Used: ${formatBytes(total)}`;
+                }
+                
                 serverItem.innerHTML = `
                     <div class="server-name">${server.name}</div>
                     <div class="server-details">
                         <span>${server.host}:${server.port}</span>
                         <span>${server.protocol}</span>
                     </div>
+                    <div class="server-usage">${usageText}</div>
                 `;
                 
                 serverItem.addEventListener('click', () => {
@@ -425,6 +507,13 @@
                 
                 serverList.appendChild(serverItem);
             });
+        }
+        
+        // Update server list display with usage data
+        function updateServerListDisplay() {
+            // This would refresh the server list display with updated usage data
+            // In a more complex implementation, you might update individual items
+            loadServers();
         }
         
         // Start updating data usage

@@ -12,18 +12,21 @@ type APIServer struct {
 	serverManager *managers.ServerManager
 	connManager   *managers.ConnectionManager
 	configManager *managers.ConfigManager
+	dataManager   *managers.DataManager
 	router        *mux.Router
 }
 
 func NewAPIServer(
 	serverMgr *managers.ServerManager,
 	connMgr *managers.ConnectionManager,
-	configMgr *managers.ConfigManager) *APIServer {
+	configMgr *managers.ConfigManager,
+	dataMgr *managers.DataManager) *APIServer {
 	
 	api := &APIServer{
 		serverManager: serverMgr,
 		connManager:   connMgr,
 		configManager: configMgr,
+		dataManager:   dataMgr,
 		router:        mux.NewRouter(),
 	}
 	
@@ -44,6 +47,11 @@ func (a *APIServer) setupRoutes() {
 	a.router.HandleFunc("/api/disconnect", a.disconnect).Methods("POST")
 	a.router.HandleFunc("/api/status", a.getStatus).Methods("GET")
 	a.router.HandleFunc("/api/stats", a.getStats).Methods("GET")
+	
+	// Data usage endpoints
+	a.router.HandleFunc("/api/data-usage", a.getAllDataUsage).Methods("GET")
+	a.router.HandleFunc("/api/data-usage/{id}", a.getServerDataUsage).Methods("GET")
+	a.router.HandleFunc("/api/data-usage/{id}", a.resetServerDataUsage).Methods("DELETE")
 	
 	// Configuration endpoints
 	a.router.HandleFunc("/api/config", a.getConfig).Methods("GET")
@@ -118,7 +126,7 @@ func (a *APIServer) deleteServer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	serverID := vars["id"]
 	
-	if err := a.serverManager.RemoveServer(serverID); err != nil {
+	if err := a.serverManager.DeleteServer(serverID); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -145,7 +153,7 @@ func (a *APIServer) connect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	if err := a.connManager.Connect(server); err != nil {
+	if err := a.connManager.Connect(*server); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -177,6 +185,41 @@ func (a *APIServer) getStats(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(info)
 }
 
+// Data usage handlers
+func (a *APIServer) getAllDataUsage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	data := a.dataManager.GetAllData()
+	json.NewEncoder(w).Encode(data)
+}
+
+func (a *APIServer) getServerDataUsage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	vars := mux.Vars(r)
+	serverID := vars["id"]
+	
+	data, err := a.dataManager.GetServerData(serverID)
+	if err != nil {
+		http.Error(w, "Data not found", http.StatusNotFound)
+		return
+	}
+	
+	json.NewEncoder(w).Encode(data)
+}
+
+func (a *APIServer) resetServerDataUsage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	vars := mux.Vars(r)
+	serverID := vars["id"]
+	
+	if err := a.dataManager.ResetServerData(serverID); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "reset"})
+}
+
 // Configuration handlers
 func (a *APIServer) getConfig(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -200,7 +243,7 @@ func (a *APIServer) updateConfig(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(config)
 }
 
-// Start the API server
+// Start starts the API server
 func (a *APIServer) Start(addr string) error {
 	return http.ListenAndServe(addr, a.router)
 }

@@ -51,9 +51,12 @@ func showHelp() {
 func startAPIServer() {
 	fmt.Println("Starting VPN Client API Server...")
 	
+	// Initialize data manager
+	dataManager := managers.NewDataManager("./data/usage.json")
+	
 	// Initialize managers
 	serverManager := managers.NewServerManager()
-	connectionManager := managers.NewConnectionManager()
+	connectionManager := managers.NewConnectionManager(dataManager)
 	subscriptionManager := managers.NewSubscriptionManager(serverManager)
 	configManager := managers.NewConfigManager("./config/app.json")
 
@@ -88,7 +91,7 @@ func startAPIServer() {
 	serverManager.AddServer(server2)
 
 	// Create and start API server
-	apiServer := api.NewAPIServer(serverManager, connectionManager, configManager)
+	apiServer := api.NewAPIServer(serverManager, connectionManager, configManager, dataManager)
 	fmt.Println("API Server listening on http://localhost:8080")
 	log.Fatal(apiServer.Start(":8080"))
 }
@@ -96,11 +99,15 @@ func startAPIServer() {
 func startCLI() {
 	fmt.Println("Starting VPN Client CLI...")
 	
+	// Initialize data manager
+	dataManager := managers.NewDataManager("./data/usage.json")
+	
 	// Initialize managers
 	serverManager := managers.NewServerManager()
-	connectionManager := managers.NewConnectionManager()
+	connectionManager := managers.NewConnectionManager(dataManager)
+	subscriptionManager := managers.NewSubscriptionManager(serverManager)
 	configManager := managers.NewConfigManager("./config/app.json")
-
+	
 	// Add sample servers for testing
 	server1 := core.Server{
 		ID:         utils.GenerateID(),
@@ -130,8 +137,8 @@ func startCLI() {
 
 	serverManager.AddServer(server1)
 	serverManager.AddServer(server2)
-
+	
 	// Create and start CLI
-	cliInterface := cli.NewCLI(serverManager, connectionManager, configManager)
-	cliInterface.Run()
+	cli := cli.NewCLI(serverManager, connectionManager, subscriptionManager, configManager, dataManager)
+	cli.Start()
 }
