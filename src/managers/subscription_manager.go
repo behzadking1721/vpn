@@ -4,6 +4,8 @@ import (
 	"c:/Users/behza/OneDrive/Documents/vpn/src/core"
 	"c:/Users/behza/OneDrive/Documents/vpn/src/utils"
 	"errors"
+	"io"
+	"net/http"
 	"sync"
 	"time"
 )
@@ -75,39 +77,34 @@ func (sm *SubscriptionManager) RemoveSubscription(subID string) error {
 
 // parseSubscription parses a subscription URL and returns servers
 func (sm *SubscriptionManager) parseSubscription(url string) ([]core.Server, error) {
-	// This is where you would implement the actual subscription parsing logic
-	// depending on the format (e.g., base64 encoded vmess URLs, SIP008 JSON, etc.)
+	// Create HTTP client with timeout
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
 	
-	// For now, we'll return an empty slice and simulate parsing
-	// In a real implementation, you would:
-	// 1. Fetch the content from the URL
-	// 2. Decode/parse the content based on the subscription format
-	// 3. Convert to our Server format
+	// Make HTTP request to fetch subscription content
+	resp, err := client.Get(url)
+	if err != nil {
+		return nil, errors.New("failed to fetch subscription: " + err.Error())
+	}
+	defer resp.Body.Close()
 	
-	// Simulate some servers for demonstration
-	servers := []core.Server{
-		{
-			ID:       utils.GenerateID(),
-			Name:     "Sample Server 1",
-			Host:     "server1.example.com",
-			Port:     443,
-			Protocol: core.ProtocolVMess,
-			Encryption: "auto",
-			TLS:      true,
-			Remark:   "Sample server for demonstration",
-			Enabled:  true,
-		},
-		{
-			ID:       utils.GenerateID(),
-			Name:     "Sample Server 2",
-			Host:     "server2.example.com",
-			Port:     80,
-			Protocol: core.ProtocolShadowsocks,
-			Method:   "aes-256-gcm",
-			Password: "sample-password",
-			Remark:   "Shadowsocks server",
-			Enabled:  true,
-		},
+	// Check response status
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("subscription fetch failed with status: " + resp.Status)
+	}
+	
+	// Read response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.New("failed to read subscription content: " + err.Error())
+	}
+	
+	// Use existing subscription parser to parse the content
+	parser := NewSubscriptionParser()
+	servers, err := parser.ParseSubscriptionLink(string(body))
+	if err != nil {
+		return nil, errors.New("failed to parse subscription content: " + err.Error())
 	}
 	
 	return servers, nil
