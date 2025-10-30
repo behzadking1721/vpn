@@ -1,3 +1,4 @@
+
 # Cross-Platform VPN Client
 
 A multi-platform VPN application with a simple and user-friendly interface similar to Hiddify, supporting various protocols and subscription links.
@@ -29,14 +30,17 @@ A multi-platform VPN application with a simple and user-friendly interface simil
 Before you can build and run this project, you need to install the following dependencies:
 
 ### Go (Golang)
+
 - **Windows**: Download from [golang.org](https://golang.org/dl/)
 - **macOS**: `brew install go` or download from [golang.org](https://golang.org/dl/)
 - **Linux**: `sudo apt install golang` (Ubuntu/Debian) or equivalent for your distribution
 
 ### Flutter (for mobile UI - future implementation)
+
 - Download from [flutter.dev](https://flutter.dev/docs/get-started/install)
 
 ### Node.js and npm (for desktop UI with Electron - future implementation)
+
 - Download from [nodejs.org](https://nodejs.org/)
 
 ## Technical Architecture
@@ -61,6 +65,7 @@ The application is built using a modular approach with shared core logic and pla
 ## Current Status
 
 ✅ **Phase 1: Core Functionality Completed**
+
 - Basic architecture with modular design
 - Data models and interfaces
 - Server management system
@@ -69,17 +74,120 @@ The application is built using a modular approach with shared core logic and pla
 - Configuration management
 - All protocol handlers with placeholder implementations
 
-## Next Steps
+## Installation
 
-### Phase 2: Enhanced Features (In Progress)
-- Implement real protocol handlers using open-source libraries
-- Complete subscription parsing functionality
-- Implement QR code scanning
-- Add data usage tracking
-- Implement IPv6 support toggle
-- Advanced settings and profile management
+### Windows
+
+Download the latest Windows installer from the [releases page](https://github.com/your-org/vpn-client/releases) and run it.
+
+Alternatively, you can download the portable ZIP archive, extract it, and run `vpn-client.exe`.
+
+### Linux
+
+#### Debian/Ubuntu (DEB package)
+
+Download the `.deb` package from the releases page and install it:
+
+```bash
+sudo dpkg -i vpn-client_*.deb
+```
+
+#### Other Linux distributions
+
+Download the appropriate tar.gz archive for your architecture from the releases page:
+
+```bash
+tar -xzf vpn-client-linux_amd64-*.tar.gz
+cd vpn-client-linux_amd64
+./vpn-client
+```
+
+### macOS
+
+Download the macOS ZIP archive from the releases page, extract it, and run the application.
+
+Note: You may need to allow the application in System Preferences > Security & Privacy.
+
+## Building from Source
+
+### Building Prerequisites
+
+- Go 1.21 or later
+- GCC (for CGO-enabled builds)
+- NSIS (for Windows installer creation, optional)
+- zip/tar (for packaging)
+
+### Building
+
+To build for all supported platforms:
+
+```bash
+chmod +x scripts/build-all.sh
+./scripts/build-all.sh
+```
+
+To build for a specific platform:
+
+```bash
+# Linux
+GOOS=linux GOARCH=amd64 go build -o bin/vpn-client ./src
+
+# Windows
+GOOS=windows GOARCH=amd64 go build -o bin/vpn-client.exe ./src
+
+# macOS
+GOOS=darwin GOARCH=amd64 go build -o bin/vpn-client ./src
+```
+
+### Packaging
+
+To create packages for distribution:
+
+```bash
+chmod +x scripts/package.sh
+./scripts/package.sh
+```
+
+## Deployment & Release Process
+
+This project follows a structured release process:
+
+1. **Versioning**: We use Semantic Versioning (SemVer) - vX.Y.Z
+2. **Build**: Cross-compile for all supported platforms
+3. **Package**: Create platform-specific packages (ZIP, tar.gz, DEB, etc.)
+4. **Release**: Create GitHub release with all packages
+
+### Creating a Release
+
+1. Ensure all changes are committed and pushed
+2. Update the version in relevant files:
+
+   ```bash
+   ./scripts/release.sh v1.0.0
+   ```
+
+3. Push the version tag:
+
+   ```bash
+   git push origin v1.0.0
+   ```
+
+4. The GitHub Actions workflow will automatically:
+   - Run tests
+   - Build for all platforms
+   - Create packages
+   - Create a GitHub release
+
+### Supported Platforms
+
+| Platform | Architectures       | Packaging              |
+|----------|---------------------|------------------------|
+| Windows  | amd64, 386, arm64   | Installer (NSIS), ZIP  |
+| Linux    | amd64, 386, arm64, arm | DEB, tar.gz, ZIP    |
+| macOS    | amd64, arm64        | ZIP                    |
 
 ### Phase 3: User Interface
+
 - Develop mobile UI with Flutter
 - Develop desktop UI with Electron/Tauri
 - Create UI components:
@@ -89,7 +197,6 @@ The application is built using a modular approach with shared core logic and pla
   - Statistics dashboard
 
 ## Project Structure
-
 ```
 vpn/
 ├── src/
@@ -125,17 +232,20 @@ vpn/
 ## Building the Project
 
 ### Using Make (recommended)
+
 ```bash
 make deps    # Install dependencies
 make build   # Build the application
 ```
 
 ### Windows
+
 ```cmd
 build.bat
 ```
 
 ### Linux/macOS
+
 ```bash
 chmod +x build.sh
 ./build.sh
@@ -146,6 +256,7 @@ chmod +x build.sh
 The application supports three modes of operation:
 
 ### Command-line interface (CLI) mode
+
 ```bash
 cd src
 go run main.go --cli
@@ -154,14 +265,16 @@ go run main.go --cli
 See [CLI Guide](docs/cli_guide.md) for detailed usage instructions.
 
 ### API server mode
+
 ```bash
 cd src
 go run main.go --api
 ```
 
-Then open your browser to http://localhost:8080 to access the web UI.
+Then open your browser to <http://localhost:8080> to access the web UI.
 
 ### Protocol testing mode
+
 ```bash
 go run test_protocols.go
 ```
@@ -169,6 +282,7 @@ go run test_protocols.go
 See [Protocol Testing Guide](docs/protocol_testing.md) for detailed testing instructions.
 
 ### Help
+
 ```bash
 cd src
 go run main.go --help
@@ -209,12 +323,14 @@ Currently implemented protocols:
 The project includes comprehensive tests for all components:
 
 ### Unit Tests
+
 ```bash
 cd src
 go test ./...
 ```
 
 ### Protocol Integration Tests
+
 ```bash
 go run test_protocols.go
 ```

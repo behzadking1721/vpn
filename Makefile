@@ -132,4 +132,41 @@ help:
 	@echo "  docs            - Generate documentation"
 	@echo "  help            - Show this help message"
 
+# Release-related targets
+
+# Version management
+VERSION ?= dev
+
+# Release target - prepares a new release
+.PHONY: release
+release:
+	@echo "Preparing release $(VERSION)"
+	./scripts/release.sh v$(VERSION)
+
+# Build target - builds for all platforms
+.PHONY: build-all
+build-all:
+	@echo "Building for all platforms"
+	./scripts/build-all.sh $(VERSION)
+
+# Package target - creates packages for all platforms
+.PHONY: package
+package:
+	@echo "Creating packages"
+	./scripts/package.sh $(VERSION)
+
+# Clean release artifacts
+.PHONY: clean-release
+clean-release:
+	rm -rf dist/ packages/ release/
+
+# Help target
+.PHONY: help-release
+help-release:
+	@echo "Release Management Commands:"
+	@echo "  make release VERSION=X.Y.Z    - Prepare a new release"
+	@echo "  make build-all VERSION=X.Y.Z  - Build for all platforms"
+	@echo "  make package VERSION=X.Y.Z    - Create packages"
+	@echo "  make clean-release            - Clean release artifacts"
+
 .PHONY: all build build-demo build-all build-windows build-linux build-macos run run-api run-cli run-demo clean deps test test-protocols test-managers docs help

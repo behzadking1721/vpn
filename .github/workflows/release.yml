@@ -1,0 +1,189 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.0)'
+        required: true
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Run tests
+        run: |
+          chmod +x run_tests.sh
+          ./run_tests.sh
+
+  build:
+    name: Build for ${{ matrix.os }}/${{ matrix.arch }}
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+          - os: ubuntu-latest
+            goos: linux
+            goarch: arm64
+          - os: ubuntu-latest
+            goos: linux
+            goarch: arm
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Install dependencies (Linux)
+        if: matrix.goos == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          VERSION=${{ github.event.inputs.version || github.ref_name }}
+          VERSION=${VERSION#v}  # Remove 'v' prefix
+          
+          OUTPUT_DIR="dist/${{ matrix.goos }}_${{ matrix.goarch }}"
+          mkdir -p "${OUTPUT_DIR}"
+          
+          BIN_NAME="vpn-client"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            BIN_NAME="${BIN_NAME}.exe"
+          fi
+          
+          go build -ldflags "-s -w -X main.version=${VERSION}" -o "${OUTPUT_DIR}/${BIN_NAME}" ./src
+          
+          # Copy UI files
+          if [ -d "ui/desktop" ]; then
+            cp -r ui/desktop "${OUTPUT_DIR}/ui"
+          fi
+          
+          # Create basic directories
+          mkdir -p "${OUTPUT_DIR}/config"
+          mkdir -p "${OUTPUT_DIR}/data"
+          mkdir -p "${OUTPUT_DIR}/logs"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: vpn-client-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/${{ matrix.goos }}_${{ matrix.goarch }}/
+
+  package:
+    name: Package Releases
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: dist
+
+      - name: Create package directory
+        run: mkdir -p packages
+
+      - name: Create ZIP archives
+        run: |
+          VERSION=${{ github.event.inputs.version || github.ref_name }}
+          VERSION=${VERSION#v}
+          
+          for platform_dir in dist/*; do
+            if [ -d "$platform_dir" ]; then
+              platform=$(basename "$platform_dir")
+              zip_name="vpn-client-${platform}-${VERSION}.zip"
+              
+              echo "Creating archive for ${platform}..."
+              cd dist
+              zip -r "../packages/${zip_name}" "${platform}" > /dev/null
+              cd ..
+              echo "Created ${zip_name}"
+            fi
+          done
+
+      - name: Create tar.gz archives for Unix-like systems
+        run: |
+          VERSION=${{ github.event.inputs.version || github.ref_name }}
+          VERSION=${VERSION#v}
+          
+          for platform_dir in dist/*; do
+            if [ -d "$platform_dir" ]; then
+              platform=$(basename "$platform_dir")
+              
+              # Skip Windows platforms for tar.gz
+              if [[ "$platform" != windows* ]]; then
+                tar_name="vpn-client-${platform}-${VERSION}.tar.gz"
+                
+                echo "Creating tarball for ${platform}..."
+                tar -czf "packages/${tar_name}" -C dist "${platform}" > /dev/null
+                echo "Created ${tar_name}"
+              fi
+            fi
+          done
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: vpn-client-packages
+          path: packages/
+
+  release:
+    name: Create GitHub Release
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download packages
+        uses: actions/download-artifact@v3
+        with:
+          name: vpn-client-packages
+          path: packages
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            packages/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
