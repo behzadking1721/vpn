@@ -3,6 +3,8 @@ package protocols
 import (
 	"c:/Users/behza/OneDrive/Documents/vpn/src/core"
 	"errors"
+	"sync"
+	"time"
 )
 
 // ProtocolHandler defines the interface for handling different VPN protocols
@@ -24,6 +26,9 @@ type ProtocolHandler interface {
 	
 	// GetConnectionDetails returns detailed connection information
 	GetConnectionDetails() (map[string]interface{}, error)
+	
+	// UpdateDataUsage updates the data usage statistics
+	UpdateDataUsage(sent, received int64)
 }
 
 // ProtocolFactory creates protocol handlers
@@ -60,8 +65,12 @@ func (pf *ProtocolFactory) CreateHandler(protocolType core.ProtocolType) (Protoc
 
 // BaseHandler provides a base implementation for protocol handlers
 type BaseHandler struct {
-	connected bool
-	protocol  core.ProtocolType
+	connected   bool
+	protocol    core.ProtocolType
+	dataSent    int64
+	dataReceived int64
+	mutex       sync.RWMutex
+	lastUpdate  time.Time
 }
 
 // IsConnected checks if the connection is active
@@ -76,8 +85,20 @@ func (bh *BaseHandler) GetProtocol() core.ProtocolType {
 
 // GetDataUsage returns the amount of data sent and received
 func (bh *BaseHandler) GetDataUsage() (sent, received int64, err error) {
-	// This would be implemented by each specific protocol handler
-	return 0, 0, errors.New("not implemented")
+	bh.mutex.RLock()
+	defer bh.mutex.RUnlock()
+	
+	return bh.dataSent, bh.dataReceived, nil
+}
+
+// UpdateDataUsage updates the data usage statistics
+func (bh *BaseHandler) UpdateDataUsage(sent, received int64) {
+	bh.mutex.Lock()
+	defer bh.mutex.Unlock()
+	
+	bh.dataSent += sent
+	bh.dataReceived += received
+	bh.lastUpdate = time.Now()
 }
 
 // GetConnectionDetails returns detailed connection information

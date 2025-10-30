@@ -89,6 +89,14 @@ type ConnectionInfo struct {
 	TunnelMode    TunnelMode       `json:"tunnel_mode,omitempty"`
 }
 
+// DataUsage represents data usage statistics
+type DataUsage struct {
+	ServerID     string    `json:"server_id"`
+	DataSent     int64     `json:"data_sent"`     // in bytes
+	DataReceived int64     `json:"data_received"` // in bytes
+	LastUpdate   time.Time `json:"last_update"`
+}
+
 // AppConfig holds application configuration
 type AppConfig struct {
 	AutoConnect         bool `json:"auto_connect"`

@@ -2,7 +2,9 @@ package protocols
 
 import (
 	"c:/Users/behza/OneDrive/Documents/vpn/src/core"
+	"errors"
 	"fmt"
+	"math/rand"
 	"time"
 )
 
@@ -44,64 +46,60 @@ func (vh *VMessHandler) Connect(server core.Server) error {
 	vh.BaseHandler.connected = true
 	fmt.Println("VMess connection established")
 	
+	// Start data usage simulation in a goroutine
+	go vh.simulateDataUsage()
+	
 	return nil
 }
 
 // Disconnect terminates the VMess connection
 func (vh *VMessHandler) Disconnect() error {
 	if !vh.BaseHandler.connected {
-		return fmt.Errorf("not connected to VMess server")
+		return errors.New("not connected")
 	}
 	
-	// In a real implementation, this would:
-	// 1. Close the V2Ray/XRay core connection
-	// 2. Clean up resources
-	
-	fmt.Printf("Disconnecting from VMess server: %s:%d\n", vh.server.Host, vh.server.Port)
-	
-	// Simulate disconnection process
+	// In a real implementation, this would terminate the actual connection
+	fmt.Println("Disconnecting from VMess server...")
 	time.Sleep(500 * time.Millisecond)
-	vh.BaseHandler.connected = false
-	vh.server = core.Server{} // Clear server info
 	
+	vh.BaseHandler.connected = false
 	fmt.Println("VMess connection terminated")
 	
 	return nil
 }
 
-// GetDataUsage returns the amount of data sent and received
-func (vh *VMessHandler) GetDataUsage() (sent, received int64, err error) {
-	if !vh.BaseHandler.connected {
-		return 0, 0, fmt.Errorf("not connected to VMess server")
-	}
-	
-	// In a real implementation, this would get actual data from the V2Ray/XRay core
-	// For now, we'll simulate data usage
-	sent = 1024 * 1024     // 1 MB
-	received = 5 * 1024 * 1024 // 5 MB
-	
-	return sent, received, nil
-}
-
 // GetConnectionDetails returns detailed connection information
 func (vh *VMessHandler) GetConnectionDetails() (map[string]interface{}, error) {
 	if !vh.BaseHandler.connected {
-		return nil, fmt.Errorf("not connected to VMess server")
+		return nil, errors.New("not connected")
 	}
 	
 	details := map[string]interface{}{
-		"protocol":   "VMess",
+		"protocol":   vh.BaseHandler.protocol,
 		"host":       vh.server.Host,
 		"port":       vh.server.Port,
 		"encryption": vh.server.Encryption,
 		"tls":        vh.server.TLS,
-		"connected":  vh.BaseHandler.connected,
 	}
 	
-	if vh.server.TLS {
+	if vh.server.SNI != "" {
 		details["sni"] = vh.server.SNI
-		details["fingerprint"] = vh.server.Fingerprint
 	}
 	
 	return details, nil
+}
+
+// simulateDataUsage simulates data usage for demonstration purposes
+func (vh *VMessHandler) simulateDataUsage() {
+	for vh.BaseHandler.connected {
+		// Simulate data transfer
+		sent := rand.Int63n(1024) + 512     // 0.5KB to 1.5KB
+		received := rand.Int63n(2048) + 1024 // 1KB to 3KB
+		
+		// Update data usage
+		vh.BaseHandler.UpdateDataUsage(sent, received)
+		
+		// Wait before next update
+		time.Sleep(1 * time.Second)
+	}
 }
