@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPN Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .user-actions button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+        
+        .connection-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .status-indicator {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: #ff4757;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .status-indicator.connected {
+            background: #2ed573;
+        }
+        
+        .connect-button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .connect-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .connect-button.connected {
+            background: #2ed573;
+        }
+        
+        .server-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        
+        .sidebar {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .server-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .server-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .server-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .server-item.active {
+            background: rgba(46, 213, 115, 0.2);
+            border: 1px solid rgba(46, 213, 115, 0.5);
+        }
+        
+        .server-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .server-details {
+            font-size: 12px;
+            opacity: 0.7;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .action-button {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">VPN Client</div>
+            <div class="user-actions">
+                <button>Settings</button>
+                <button>Profile</button>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div class="connection-panel">
+                <div class="status-indicator" id="statusIndicator">
+                    DISCONNECTED
+                </div>
+                <h1>Secure Connection</h1>
+                <p>Protect your privacy and browse securely</p>
+                
+                <button class="connect-button" id="connectButton">
+                    CONNECT
+                </button>
+                
+                <div class="server-info">
+                    <div class="server-name">No server selected</div>
+                    <div class="server-location">Select a server to connect</div>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-label">Download</div>
+                        <div class="stat-value" id="downloadStat">0 KB</div>
+                        <div class="stat-label">Total: 0 MB</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Upload</div>
+                        <div class="stat-value" id="uploadStat">0 KB</div>
+                        <div class="stat-label">Total: 0 MB</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <h2 class="section-title">Servers</h2>
+                <div class="server-list" id="serverList">
+                    <div class="server-item active">
+                        <div class="server-name">🇯🇵 Japan Server</div>
+                        <div class="server-details">
+                            <span>VMess</span>
+                            <span>22ms</span>
+                        </div>
+                    </div>
+                    <div class="server-item">
+                        <div class="server-name">🇺🇸 USA Server</div>
+                        <div class="server-details">
+                            <span>Shadowsocks</span>
+                            <span>45ms</span>
+                        </div>
+                    </div>
+                    <div class="server-item">
+                        <div class="server-name">🇸🇬 Singapore Server</div>
+                        <div class="server-details">
+                            <span>VLESS</span>
+                            <span>68ms</span>
+                        </div>
+                    </div>
+                    <div class="server-item">
+                        <div class="server-name">🇬🇧 UK Server</div>
+                        <div class="server-details">
+                            <span>Trojan</span>
+                            <span>112ms</span>
+                        </div>
+                    </div>
+                    <div class="server-item">
+                        <div class="server-name">🇩🇪 Germany Server</div>
+                        <div class="server-details">
+                            <span>Reality</span>
+                            <span>87ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button class="action-button">Add Server</button>
+                    <button class="action-button">Import</button>
+                </div>
+                
+                <h2 class="section-title" style="margin-top: 30px;">Quick Actions</h2>
+                <div class="actions">
+                    <button class="action-button">Fastest Server</button>
+                    <button class="action-button">Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple UI interaction logic
+        const connectButton = document.getElementById('connectButton');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const serverList = document.getElementById('serverList');
+        const downloadStat = document.getElementById('downloadStat');
+        const uploadStat = document.getElementById('uploadStat');
+        
+        let connected = false;
+        let dataUsage = { download: 0, upload: 0 };
+        
+        connectButton.addEventListener('click', () => {
+            connected = !connected;
+            
+            if (connected) {
+                connectButton.textContent = 'DISCONNECT';
+                connectButton.classList.add('connected');
+                statusIndicator.textContent = 'CONNECTED';
+                statusIndicator.classList.add('connected');
+                
+                // Start simulating data usage
+                simulateDataUsage();
+            } else {
+                connectButton.textContent = 'CONNECT';
+                connectButton.classList.remove('connected');
+                statusIndicator.textContent = 'DISCONNECTED';
+                statusIndicator.classList.remove('connected');
+                
+                // Reset data usage
+                dataUsage = { download: 0, upload: 0 };
+                downloadStat.textContent = '0 KB';
+                uploadStat.textContent = '0 KB';
+            }
+        });
+        
+        // Server selection
+        const serverItems = document.querySelectorAll('.server-item');
+        serverItems.forEach(item => {
+            item.addEventListener('click', () => {
+                serverItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                
+                const serverName = item.querySelector('.server-name').textContent;
+                document.querySelector('.server-info .server-name').textContent = serverName;
+                document.querySelector('.server-info .server-location').textContent = 'Ready to connect';
+            });
+        });
+        
+        // Simulate data usage
+        function simulateDataUsage() {
+            if (!connected) return;
+            
+            // Increment data usage
+            dataUsage.download += Math.floor(Math.random() * 100);
+            dataUsage.upload += Math.floor(Math.random() * 50);
+            
+            // Update UI
+            downloadStat.textContent = formatBytes(dataUsage.download * 1024);
+            uploadStat.textContent = formatBytes(dataUsage.upload * 1024);
+            
+            // Continue simulation
+            setTimeout(simulateDataUsage, 1000);
+        }
+        
+        // Format bytes for display
+        function formatBytes(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+        }
+    </script>
+</body>
+</html>

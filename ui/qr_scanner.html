@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اسکنر کد QR</title>
+    <style>
+        body {
+            font-family: Vazir, Tahoma, sans-serif;
+            direction: rtl;
+            text-align: right;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        
+        .scanner-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            background-color: #fafafa;
+        }
+        
+        .scanner-placeholder {
+            text-align: center;
+            color: #999;
+        }
+        
+        .scanner-placeholder img {
+            width: 100px;
+            height: 100px;
+            opacity: 0.5;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            background-color: #e9f7ef;
+            border: 1px solid #28a745;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .result-title {
+            font-weight: bold;
+            color: #155724;
+            margin-bottom: 10px;
+        }
+        
+        .result-content {
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .error .result-title {
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>اسکنر کد QR</h1>
+        
+        <div class="scanner-area">
+            <div class="scanner-placeholder">
+                <div>📷</div>
+                <p>دوربین برای اسکن کد QR</p>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="startScan">شروع اسکن</button>
+            <button id="uploadImage">بارگذاری تصویر</button>
+        </div>
+        
+        <div class="result" id="result">
+            <div class="result-title">نتیجه اسکن:</div>
+            <div class="result-content" id="resultContent"></div>
+        </div>
+        
+        <div class="result error" id="error">
+            <div class="result-title">خطا:</div>
+            <div class="result-content" id="errorContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // المان‌ها
+        const startScanBtn = document.getElementById('startScan');
+        const uploadImageBtn = document.getElementById('uploadImage');
+        const resultDiv = document.getElementById('result');
+        const resultContent = document.getElementById('resultContent');
+        const errorDiv = document.getElementById('error');
+        const errorContent = document.getElementById('errorContent');
+        
+        // رویدادهای دکمه‌ها
+        startScanBtn.addEventListener('click', startScan);
+        uploadImageBtn.addEventListener('click', uploadImage);
+        
+        // شروع اسکن
+        function startScan() {
+            hideResult();
+            hideError();
+            
+            // شبیه‌سازی اسکن دوربین
+            showResult("vmess://eyJ2IjogIjIiLCAicHMiOiAi5rWL6K+V5YWl5a2X56ym5LiyIiwgImFkZCI6ICJleGFtcGxlLmNvbSIsICJwb3J0IjogIjQ0MyIsICJpZCI6ICJ0ZXN0LXV1aWQiLCAiYWlkIjogIjAiLCAic2N5IjogImF1dG8iLCAibmV0IjogInRjcCIsICJ0eXBlIjogIm5vbmUiLCAiaG9zdCI6ICIiLCAicGF0aCI6ICIiLCAidGxzIjogInRscyJ9");
+        }
+        
+        // بارگذاری تصویر
+        function uploadImage() {
+            hideResult();
+            hideError();
+            
+            // ایجاد input برای انتخاب فایل
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            
+            input.onchange = e => {
+                const file = e.target.files[0];
+                if (file) {
+                    // شبیه‌سازی پردازش تصویر
+                    setTimeout(() => {
+                        showResult("ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpwYXNzd29yZA@example.com:8388#ShadowsocksServer");
+                    }, 1000);
+                }
+            };
+            
+            input.click();
+        }
+        
+        // نمایش نتیجه
+        function showResult(content) {
+            resultContent.textContent = content;
+            resultDiv.classList.add('show');
+        }
+        
+        // نمایش خطا
+        function showError(message) {
+            errorContent.textContent = message;
+            errorDiv.classList.add('show');
+        }
+        
+        // پنهان کردن نتیجه
+        function hideResult() {
+            resultDiv.classList.remove('show');
+        }
+        
+        // پنهان کردن خطا
+        function hideError() {
+            errorDiv.classList.remove('show');
+        }
+    </script>
+</body>
+</html>
