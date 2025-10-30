@@ -11,14 +11,60 @@ import (
 type ServerManager struct {
 	servers       []core.Server
 	subscriptions []core.Subscription
+	dataManager   *DataManager
 	mutex         sync.RWMutex
 }
 
 // NewServerManager creates a new server manager
 func NewServerManager() *ServerManager {
-	return &ServerManager{
+	// Create data manager with default file paths
+	dataManager := NewDataManager("./data/servers.json", "./data/subscriptions.json")
+	
+	// Create server manager
+	sm := &ServerManager{
 		servers:       make([]core.Server, 0),
 		subscriptions: make([]core.Subscription, 0),
+		dataManager:   dataManager,
+	}
+	
+	// Load existing data
+	sm.loadExistingData()
+	
+	return sm
+}
+
+// NewServerManagerWithDataManager creates a new server manager with a specific data manager
+func NewServerManagerWithDataManager(dataManager *DataManager) *ServerManager {
+	sm := &ServerManager{
+		servers:       make([]core.Server, 0),
+		subscriptions: make([]core.Subscription, 0),
+		dataManager:   dataManager,
+	}
+	
+	// Load existing data
+	sm.loadExistingData()
+	
+	return sm
+}
+
+// loadExistingData loads existing servers and subscriptions from files
+func (sm *ServerManager) loadExistingData() {
+	// Load servers
+	servers, err := sm.dataManager.LoadServers()
+	if err != nil {
+		// If there's an error, we continue with empty lists
+		// In a production environment, you might want to log this error
+	} else {
+		sm.servers = servers
+	}
+	
+	// Load subscriptions
+	subscriptions, err := sm.dataManager.LoadSubscriptions()
+	if err != nil {
+		// If there's an error, we continue with empty lists
+		// In a production environment, you might want to log this error
+	} else {
+		sm.subscriptions = subscriptions
 	}
 }
 
@@ -35,6 +81,10 @@ func (sm *ServerManager) AddServer(server core.Server) error {
 	}
 
 	sm.servers = append(sm.servers, server)
+	
+	// Save to file
+	sm.saveServers()
+	
 	return nil
 }
 
@@ -47,6 +97,10 @@ func (sm *ServerManager) RemoveServer(serverID string) error {
 		if server.ID == serverID {
 			// Remove the server
 			sm.servers = append(sm.servers[:i], sm.servers[i+1:]...)
+			
+			// Save to file
+			sm.saveServers()
+			
 			return nil
 		}
 	}
@@ -62,6 +116,10 @@ func (sm *ServerManager) UpdateServer(server core.Server) error {
 	for i, s := range sm.servers {
 		if s.ID == server.ID {
 			sm.servers[i] = server
+			
+			// Save to file
+			sm.saveServers()
+			
 			return nil
 		}
 	}
@@ -107,6 +165,10 @@ func (sm *ServerManager) AddSubscription(sub core.Subscription) error {
 	}
 
 	sm.subscriptions = append(sm.subscriptions, sub)
+	
+	// Save to file
+	sm.saveSubscriptions()
+	
 	return nil
 }
 
@@ -119,6 +181,10 @@ func (sm *ServerManager) RemoveSubscription(subID string) error {
 		if sub.ID == subID {
 			// Remove the subscription
 			sm.subscriptions = append(sm.subscriptions[:i], sm.subscriptions[i+1:]...)
+			
+			// Save to file
+			sm.saveSubscriptions()
+			
 			return nil
 		}
 	}
@@ -134,6 +200,10 @@ func (sm *ServerManager) UpdateSubscription(sub core.Subscription) error {
 	for i, s := range sm.subscriptions {
 		if s.ID == sub.ID {
 			sm.subscriptions[i] = sub
+			
+			// Save to file
+			sm.saveSubscriptions()
+			
 			return nil
 		}
 	}
@@ -166,50 +236,32 @@ func (sm *ServerManager) GetAllSubscriptions() []core.Subscription {
 	return subs
 }
 
-// FindFastestServer finds the server with the lowest ping
-func (sm *ServerManager) FindFastestServer() (core.Server, error) {
-	sm.mutex.RLock()
-	defer sm.mutex.RUnlock()
-
-	if len(sm.servers) == 0 {
-		return core.Server{}, errors.New("no servers available")
-	}
-
-	var fastestServer core.Server
-	lowestPing := -1
-
-	for _, server := range sm.servers {
-		// Only consider enabled servers
-		if !server.Enabled {
-			continue
+// saveServers saves servers to file
+func (sm *ServerManager) saveServers() {
+	// Make a copy of servers to avoid holding the lock during I/O
+	servers := make([]core.Server, len(sm.servers))
+	copy(servers, sm.servers)
+	
+	// Save in a separate goroutine to avoid blocking
+	go func() {
+		err := sm.dataManager.SaveServers(servers)
+		if err != nil {
+			// In a production environment, you might want to log this error
 		}
-
-		// If this is the first enabled server or has a lower ping
-		if lowestPing == -1 || (server.Ping < lowestPing && server.Ping > 0) {
-			fastestServer = server
-			lowestPing = server.Ping
-		}
-	}
-
-	if lowestPing == -1 {
-		return core.Server{}, errors.New("no enabled servers available")
-	}
-
-	return fastestServer, nil
+	}()
 }
 
-// UpdateServerPing updates the ping value for a server
-func (sm *ServerManager) UpdateServerPing(serverID string, ping int) error {
-	sm.mutex.Lock()
-	defer sm.mutex.Unlock()
-
-	for i, server := range sm.servers {
-		if server.ID == serverID {
-			sm.servers[i].Ping = ping
-			sm.servers[i].LastPing = time.Now()
-			return nil
+// saveSubscriptions saves subscriptions to file
+func (sm *ServerManager) saveSubscriptions() {
+	// Make a copy of subscriptions to avoid holding the lock during I/O
+	subs := make([]core.Subscription, len(sm.subscriptions))
+	copy(subs, sm.subscriptions)
+	
+	// Save in a separate goroutine to avoid blocking
+	go func() {
+		err := sm.dataManager.SaveSubscriptions(subs)
+		if err != nil {
+			// In a production environment, you might want to log this error
 		}
-	}
-
-	return errors.New("server not found")
+	}()
 }

@@ -102,7 +102,15 @@ func (bh *BaseHandler) UpdateDataUsage(sent, received int64) {
 }
 
 // GetConnectionDetails returns detailed connection information
+// This is a default implementation that can be overridden by specific handlers
 func (bh *BaseHandler) GetConnectionDetails() (map[string]interface{}, error) {
-	// This would be implemented by each specific protocol handler
-	return nil, errors.New("not implemented")
+	if !bh.connected {
+		return nil, errors.New("not connected")
+	}
+	
+	details := map[string]interface{}{
+		"protocol": bh.protocol,
+	}
+	
+	return details, nil
 }

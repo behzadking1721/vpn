@@ -11,15 +11,14 @@ import (
 
 // ConnectionManager handles VPN connection lifecycle
 type ConnectionManager struct {
-	status         core.ConnectionStatus
-	currentServer  *core.Server
-	connInfo       core.ConnectionInfo
-	mutex          sync.RWMutex
-	cancelFunc     context.CancelFunc
-	ctx            context.Context
-	listeners      []ConnectionListener
-	protocolHandler protocols.ProtocolHandler
-	dataManager    *DataManager
+	status       core.ConnectionStatus
+	currentServer *core.Server
+	connInfo     core.ConnectionInfo
+	mutex        sync.RWMutex
+	cancelFunc   context.CancelFunc
+	ctx          context.Context
+	listeners    []ConnectionListener
+	handler      protocols.ProtocolHandler // Handler for the current connection
 }
 
 // ConnectionListener interface for connection status updates
@@ -28,12 +27,11 @@ type ConnectionListener interface {
 }
 
 // NewConnectionManager creates a new connection manager
-func NewConnectionManager(dataManager *DataManager) *ConnectionManager {
+func NewConnectionManager() *ConnectionManager {
 	cm := &ConnectionManager{
-		status:      core.StatusDisconnected,
-		connInfo:    core.ConnectionInfo{Status: core.StatusDisconnected},
-		listeners:   make([]ConnectionListener, 0),
-		dataManager: dataManager,
+		status:    core.StatusDisconnected,
+		connInfo:  core.ConnectionInfo{Status: core.StatusDisconnected},
+		listeners: make([]ConnectionListener, 0),
 	}
 
 	return cm
@@ -103,25 +101,24 @@ func (cm *ConnectionManager) Connect(server core.Server) error {
 		cm.mutex.Lock()
 		cm.status = core.StatusError
 		cm.connInfo.Status = core.StatusError
-		cm.connInfo.Error = err.Error()
-		cm.mutex.Unlock()
+		cm.connInfo.Error = "Unsupported protocol: " + string(server.Protocol)
 		cm.notifyListeners()
+		cm.mutex.Unlock()
 		return err
 	}
 
-	cm.mutex.Lock()
-	cm.protocolHandler = handler
-	cm.mutex.Unlock()
+	// Store handler for later use
+	cm.handler = handler
 
-	// Connect using the protocol handler
+	// Try to connect using the protocol handler
 	err = handler.Connect(server)
 	if err != nil {
 		cm.mutex.Lock()
 		cm.status = core.StatusError
 		cm.connInfo.Status = core.StatusError
-		cm.connInfo.Error = err.Error()
-		cm.mutex.Unlock()
+		cm.connInfo.Error = "Connection failed: " + err.Error()
 		cm.notifyListeners()
+		cm.mutex.Unlock()
 		return err
 	}
 
@@ -133,13 +130,40 @@ func (cm *ConnectionManager) Connect(server core.Server) error {
 	cm.connInfo.RemoteIP = server.Host
 	cm.mutex.Unlock()
 
-	// Start data usage tracking
-	go cm.trackDataUsage()
+	// Start monitoring data usage
+	go cm.monitorDataUsage()
 
 	// Notify listeners
 	cm.notifyListeners()
 
 	return nil
+}
+
+// monitorDataUsage periodically updates data usage statistics
+func (cm *ConnectionManager) monitorDataUsage() {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			cm.mutex.RLock()
+			isConnected := cm.status == core.StatusConnected
+			handler := cm.handler
+			cm.mutex.RUnlock()
+
+			if !isConnected || handler == nil {
+				return
+			}
+
+			sent, received, err := handler.GetDataUsage()
+			if err == nil {
+				cm.UpdateDataUsage(sent, received)
+			}
+		case <-cm.ctx.Done():
+			return
+		}
+	}
 }
 
 // Disconnect disconnects from the current server
@@ -161,12 +185,9 @@ func (cm *ConnectionManager) Disconnect() error {
 	cm.mutex.Unlock()
 
 	// Disconnect using the protocol handler
-	if cm.protocolHandler != nil {
-		err := cm.protocolHandler.Disconnect()
-		if err != nil {
-			// Log error but continue with disconnection
-			// In a real implementation, you might want to handle this differently
-		}
+	if cm.handler != nil {
+		cm.handler.Disconnect()
+		cm.handler = nil
 	}
 
 	// Simulate disconnection delay
@@ -177,21 +198,7 @@ func (cm *ConnectionManager) Disconnect() error {
 	cm.status = core.StatusDisconnected
 	cm.connInfo.Status = core.StatusDisconnected
 	cm.connInfo.EndTime = time.Now()
-	
-	// Record final data usage
-	if cm.protocolHandler != nil && cm.currentServer != nil {
-		sent, received, err := cm.protocolHandler.GetDataUsage()
-		if err == nil {
-			cm.connInfo.DataSent = sent
-			cm.connInfo.DataReceived = received
-			
-			// Save to data manager
-			cm.dataManager.RecordDataUsage(cm.currentServer.ID, sent, received)
-		}
-	}
-	
 	cm.currentServer = nil
-	cm.protocolHandler = nil
 	cm.mutex.Unlock()
 
 	// Notify listeners
@@ -228,16 +235,6 @@ func (cm *ConnectionManager) GetConnectionInfo() core.ConnectionInfo {
 	
 	// Return a copy
 	info := cm.connInfo
-	
-	// If connected, get current data usage from protocol handler
-	if cm.status == core.StatusConnected && cm.protocolHandler != nil {
-		sent, received, err := cm.protocolHandler.GetDataUsage()
-		if err == nil {
-			info.DataSent = sent
-			info.DataReceived = received
-		}
-	}
-	
 	return info
 }
 
@@ -251,38 +248,4 @@ func (cm *ConnectionManager) UpdateDataUsage(sent, received int64) {
 	
 	// Notify listeners of data usage update
 	cm.notifyListeners()
-}
-
-// trackDataUsage tracks data usage periodically while connected
-func (cm *ConnectionManager) trackDataUsage() {
-	ticker := time.NewTicker(5 * time.Second)
-	defer ticker.Stop()
-	
-	for {
-		select {
-		case <-ticker.C:
-			cm.mutex.RLock()
-			isConnected := cm.status == core.StatusConnected
-			handler := cm.protocolHandler
-			server := cm.currentServer
-			cm.mutex.RUnlock()
-			
-			if !isConnected || handler == nil || server == nil {
-				return
-			}
-			
-			// Get current data usage
-			sent, received, err := handler.GetDataUsage()
-			if err == nil {
-				// Update connection info
-				cm.UpdateDataUsage(sent, received)
-				
-				// Save to data manager
-				cm.dataManager.RecordDataUsage(server.ID, sent, received)
-			}
-			
-		case <-cm.ctx.Done():
-			return
-		}
-	}
 }

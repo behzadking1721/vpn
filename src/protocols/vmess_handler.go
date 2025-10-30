@@ -2,7 +2,6 @@ package protocols
 
 import (
 	"c:/Users/behza/OneDrive/Documents/vpn/src/core"
-	"errors"
 	"fmt"
 	"math/rand"
 	"time"
@@ -12,11 +11,14 @@ import (
 type VMessHandler struct {
 	BaseHandler
 	server core.Server
+	stopCh chan struct{}
 }
 
 // NewVMessHandler creates a new VMess handler
 func NewVMessHandler() *VMessHandler {
-	handler := &VMessHandler{}
+	handler := &VMessHandler{
+		stopCh: make(chan struct{}),
+	}
 	handler.BaseHandler.protocol = core.ProtocolVMess
 	return handler
 }
@@ -55,8 +57,11 @@ func (vh *VMessHandler) Connect(server core.Server) error {
 // Disconnect terminates the VMess connection
 func (vh *VMessHandler) Disconnect() error {
 	if !vh.BaseHandler.connected {
-		return errors.New("not connected")
+		return fmt.Errorf("not connected")
 	}
+	
+	// Signal to stop the goroutine
+	close(vh.stopCh)
 	
 	// In a real implementation, this would terminate the actual connection
 	fmt.Println("Disconnecting from VMess server...")
@@ -91,15 +96,29 @@ func (vh *VMessHandler) GetConnectionDetails() (map[string]interface{}, error) {
 
 // simulateDataUsage simulates data usage for demonstration purposes
 func (vh *VMessHandler) simulateDataUsage() {
-	for vh.BaseHandler.connected {
-		// Simulate data transfer
-		sent := rand.Int63n(1024) + 512     // 0.5KB to 1.5KB
-		received := rand.Int63n(2048) + 1024 // 1KB to 3KB
-		
-		// Update data usage
-		vh.BaseHandler.UpdateDataUsage(sent, received)
-		
-		// Wait before next update
-		time.Sleep(1 * time.Second)
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+	
+	for {
+		select {
+		case <-vh.stopCh:
+			return
+		case <-ticker.C:
+			// Simulate data transfer
+			sent := rand.Int63n(1024) + 512     // 0.5KB to 1.5KB
+			received := rand.Int63n(2048) + 1024 // 1KB to 3KB
+			
+			// Update data usage
+			vh.BaseHandler.UpdateDataUsage(sent, received)
+		}
 	}
+}
+
+// GetDataUsage returns the amount of data sent and received
+func (vh *VMessHandler) GetDataUsage() (sent, received int64, err error) {
+	if !vh.BaseHandler.connected {
+		return 0, 0, fmt.Errorf("not connected")
+	}
+	
+	return vh.BaseHandler.GetDataUsage()
 }

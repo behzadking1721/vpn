@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:vpn_client/models/server.dart';
 import 'package:vpn_client/models/connection_status.dart';
 
@@ -6,6 +8,7 @@ import 'package:vpn_client/models/connection_status.dart';
 class ConnectionService {
   ConnectionStatus _currentStatus = ConnectionStatus(isConnected: false);
   Server? _currentServer;
+  final String _apiBaseUrl = 'http://localhost:8080/api'; // آدرس پایه API
   
   final StreamController<ConnectionStatus> _statusController = 
       StreamController<ConnectionStatus>.broadcast();
@@ -17,69 +20,90 @@ class ConnectionService {
 
   /// اتصال به یک سرور
   Future<bool> connectToServer(Server server) async {
-    // شبیه‌سازی فرآیند اتصال
-    // در یک اپلیکیشن واقعی، اینجا با استفاده از FFI یا Platform Channels
-    // با هسته اتصال (مانند sing-box یا xray-core) ارتباط برقرار می‌شود
-    
-    // شبیه‌سازی زمان اتصال
-    await Future.delayed(const Duration(seconds: 2));
-    
-    // به صورت تصادفی موفقیت یا شکست اتصال را تعیین می‌کنیم
-    final bool isConnected = DateTime.now().millisecond % 2 == 0;
-    
-    if (isConnected) {
-      _currentServer = server;
-      _currentStatus = ConnectionStatus(
-        isConnected: true,
-        serverId: server.id,
-        serverName: server.name,
-        protocol: server.protocol,
-        startTime: DateTime.now(),
-        dataSent: 0,
-        dataReceived: 0,
+    try {
+      // ارسال درخواست اتصال به API
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/connect'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'server_id': server.id}),
       );
-    } else {
+      
+      if (response.statusCode == 200) {
+        _currentServer = server;
+        _currentStatus = ConnectionStatus(
+          isConnected: true,
+          serverId: server.id,
+          serverName: server.name,
+          protocol: server.protocol,
+          startTime: DateTime.now(),
+          dataSent: 0,
+          dataReceived: 0,
+        );
+        
+        // ارسال وضعیت به stream
+        _statusController.add(_currentStatus);
+        return true;
+      } else {
+        // خطا در اتصال
+        _currentServer = null;
+        _currentStatus = ConnectionStatus(isConnected: false);
+        _statusController.add(_currentStatus);
+        return false;
+      }
+    } catch (e) {
+      // خطا در ارتباط با API
       _currentServer = null;
       _currentStatus = ConnectionStatus(isConnected: false);
+      _statusController.add(_currentStatus);
+      return false;
     }
-    
-    // ارسال وضعیت به stream
-    _statusController.add(_currentStatus);
-    
-    return isConnected;
   }
 
   /// قطع اتصال از سرور فعلی
   Future<bool> disconnect() async {
-    // شبیه‌سازی فرآیند قطع اتصال
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    _currentServer = null;
-    _currentStatus = ConnectionStatus(isConnected: false);
-    
-    // ارسال وضعیت به stream
-    _statusController.add(_currentStatus);
-    
-    return true;
+    try {
+      // ارسال درخواست قطع اتصال به API
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/disconnect'),
+        headers: {'Content-Type': 'application/json'},
+      );
+      
+      if (response.statusCode == 200) {
+        _currentServer = null;
+        _currentStatus = ConnectionStatus(isConnected: false);
+        
+        // ارسال وضعیت به stream
+        _statusController.add(_currentStatus);
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
   }
 
   /// دریافت آمار مصرف داده
   Future<Map<String, int>> getDataUsage() async {
-    // شبیه‌سازی آمار مصرف داده
-    if (_currentStatus.isConnected) {
-      // شبیه‌سازی افزایش داده
-      await Future.delayed(const Duration(milliseconds: 100));
+    try {
+      // دریافت آمار از API
+      final response = await http.get(
+        Uri.parse('$_apiBaseUrl/stats'),
+        headers: {'Content-Type': 'application/json'},
+      );
       
-      final int additionalSent = 1024 * (DateTime.now().millisecond % 100);
-      final int additionalReceived = 2048 * (DateTime.now().millisecond % 100);
-      
-      return {
-        'sent': _currentStatus.dataSent + additionalSent,
-        'received': _currentStatus.dataReceived + additionalReceived,
-      };
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'sent': data['data_sent'] as int? ?? 0,
+          'received': data['data_received'] as int? ?? 0,
+        };
+      } else {
+        return {'sent': 0, 'received': 0};
+      }
+    } catch (e) {
+      return {'sent': 0, 'received': 0};
     }
-    
-    return {'sent': 0, 'received': 0};
   }
 
   /// بروزرسانی آمار مصرف داده
@@ -92,6 +116,32 @@ class ConnectionService {
       );
       
       _statusController.add(_currentStatus);
+    }
+  }
+
+  /// دریافت وضعیت اتصال از API
+  Future<ConnectionStatus> getConnectionStatus() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_apiBaseUrl/status'),
+        headers: {'Content-Type': 'application/json'},
+      );
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final status = data['status'] as String;
+        
+        return ConnectionStatus(
+          isConnected: status == 'connected',
+          serverId: _currentServer?.id,
+          serverName: _currentServer?.name,
+          protocol: _currentServer?.protocol,
+        );
+      } else {
+        return ConnectionStatus(isConnected: false);
+      }
+    } catch (e) {
+      return ConnectionStatus(isConnected: false);
     }
   }
 
