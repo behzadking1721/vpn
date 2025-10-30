@@ -50,7 +50,7 @@
         
         .main-content {
             display: grid;
-            grid-template-columns: 1fr 350px;
+            grid-template-columns: 2fr 1fr;
             gap: 30px;
         }
         
@@ -58,46 +58,47 @@
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
             padding: 30px;
-            text-align: center;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .status-indicator {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: #ff4757;
-            margin: 0 auto 20px;
+        .status-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .status {
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: bold;
-            border: 5px solid rgba(255, 255, 255, 0.1);
+            font-size: 18px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff4757;
+            margin-right: 10px;
         }
         
         .status-indicator.connected {
             background: #2ed573;
         }
         
-        .connect-button {
-            background: #ff6b6b;
-            color: white;
+        #connectButton {
+            background: #ff4757;
             border: none;
-            padding: 15px 40px;
-            font-size: 18px;
+            color: white;
+            padding: 12px 30px;
             border-radius: 30px;
+            font-weight: bold;
             cursor: pointer;
-            margin: 20px 0;
             transition: all 0.3s ease;
         }
         
-        .connect-button:hover {
-            transform: scale(1.05);
-        }
-        
-        .connect-button.connected {
+        #connectButton.connected {
             background: #2ed573;
         }
         
@@ -199,10 +200,16 @@
             cursor: pointer;
         }
         
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            font-size: 14px;
+            opacity: 0.7;
         }
     </style>
 </head>
@@ -211,22 +218,20 @@
         <header>
             <div class="logo">VPN Client</div>
             <div class="user-actions">
-                <button>Settings</button>
-                <button>Profile</button>
+                <button id="settingsButton">Settings</button>
+                <button id="profileButton">Profile</button>
             </div>
         </header>
         
         <div class="main-content">
             <div class="connection-panel">
-                <div class="status-indicator" id="statusIndicator">
-                    DISCONNECTED
+                <div class="status-section">
+                    <div class="status">
+                        <div class="status-indicator" id="statusIndicator"></div>
+                        <span id="statusText">DISCONNECTED</span>
+                    </div>
+                    <button id="connectButton">CONNECT</button>
                 </div>
-                <h1>Secure Connection</h1>
-                <p>Protect your privacy and browse securely</p>
-                
-                <button class="connect-button" id="connectButton">
-                    CONNECT
-                </button>
                 
                 <div class="server-info">
                     <div class="server-name">No server selected</div>
@@ -235,14 +240,14 @@
                 
                 <div class="stats">
                     <div class="stat-card">
-                        <div class="stat-label">Download</div>
+                        <div class="stat-label">DOWNLOAD</div>
                         <div class="stat-value" id="downloadStat">0 KB</div>
-                        <div class="stat-label">Total: 0 MB</div>
+                        <div class="stat-detail">Total received</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Upload</div>
+                        <div class="stat-label">UPLOAD</div>
                         <div class="stat-value" id="uploadStat">0 KB</div>
-                        <div class="stat-label">Total: 0 MB</div>
+                        <div class="stat-detail">Total sent</div>
                     </div>
                 </div>
             </div>
@@ -250,123 +255,251 @@
             <div class="sidebar">
                 <h2 class="section-title">Servers</h2>
                 <div class="server-list" id="serverList">
-                    <div class="server-item active">
-                        <div class="server-name">🇯🇵 Japan Server</div>
-                        <div class="server-details">
-                            <span>VMess</span>
-                            <span>22ms</span>
-                        </div>
-                    </div>
-                    <div class="server-item">
-                        <div class="server-name">🇺🇸 USA Server</div>
-                        <div class="server-details">
-                            <span>Shadowsocks</span>
-                            <span>45ms</span>
-                        </div>
-                    </div>
-                    <div class="server-item">
-                        <div class="server-name">🇸🇬 Singapore Server</div>
-                        <div class="server-details">
-                            <span>VLESS</span>
-                            <span>68ms</span>
-                        </div>
-                    </div>
-                    <div class="server-item">
-                        <div class="server-name">🇬🇧 UK Server</div>
-                        <div class="server-details">
-                            <span>Trojan</span>
-                            <span>112ms</span>
-                        </div>
-                    </div>
-                    <div class="server-item">
-                        <div class="server-name">🇩🇪 Germany Server</div>
-                        <div class="server-details">
-                            <span>Reality</span>
-                            <span>87ms</span>
-                        </div>
-                    </div>
+                    <!-- Servers will be populated by JavaScript -->
                 </div>
                 
                 <div class="actions">
-                    <button class="action-button">Add Server</button>
-                    <button class="action-button">Import</button>
-                </div>
-                
-                <h2 class="section-title" style="margin-top: 30px;">Quick Actions</h2>
-                <div class="actions">
-                    <button class="action-button">Fastest Server</button>
-                    <button class="action-button">Settings</button>
+                    <button class="action-button" id="addServerButton">Add Server</button>
+                    <button class="action-button" id="refreshButton">Refresh</button>
                 </div>
             </div>
         </div>
+
+        <footer>
+            <p>VPN Client &copy; 2025 | Secure and Private Internet Access</p>
+        </footer>
     </div>
 
     <script>
         // Simple UI interaction logic
         const connectButton = document.getElementById('connectButton');
         const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
         const serverList = document.getElementById('serverList');
         const downloadStat = document.getElementById('downloadStat');
         const uploadStat = document.getElementById('uploadStat');
+        const refreshButton = document.getElementById('refreshButton');
+        const addServerButton = document.getElementById('addServerButton');
         
         let connected = false;
-        let dataUsage = { download: 0, upload: 0 };
+        let currentServerId = null;
+        let dataUsageInterval = null;
         
-        connectButton.addEventListener('click', () => {
+        // Load servers when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            loadServers();
+            updateStatus();
+        });
+        
+        connectButton.addEventListener('click', async () => {
+            if (!currentServerId) {
+                alert('Please select a server first');
+                return;
+            }
+            
             connected = !connected;
             
             if (connected) {
-                connectButton.textContent = 'DISCONNECT';
-                connectButton.classList.add('connected');
-                statusIndicator.textContent = 'CONNECTED';
-                statusIndicator.classList.add('connected');
-                
-                // Start simulating data usage
-                simulateDataUsage();
+                // Connect to server
+                try {
+                    const response = await fetch('/api/connect', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ server_id: currentServerId })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to connect');
+                    }
+                    
+                    connectButton.textContent = 'DISCONNECT';
+                    connectButton.classList.add('connected');
+                    statusIndicator.classList.add('connected');
+                    statusText.textContent = 'CONNECTED';
+                    
+                    // Start updating data usage
+                    startDataUsageUpdates();
+                } catch (error) {
+                    console.error('Connection error:', error);
+                    alert('Failed to connect to server');
+                    connected = false;
+                }
             } else {
-                connectButton.textContent = 'CONNECT';
-                connectButton.classList.remove('connected');
-                statusIndicator.textContent = 'DISCONNECTED';
-                statusIndicator.classList.remove('connected');
-                
-                // Reset data usage
-                dataUsage = { download: 0, upload: 0 };
-                downloadStat.textContent = '0 KB';
-                uploadStat.textContent = '0 KB';
+                // Disconnect from server
+                try {
+                    const response = await fetch('/api/disconnect', {
+                        method: 'POST'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to disconnect');
+                    }
+                    
+                    connectButton.textContent = 'CONNECT';
+                    connectButton.classList.remove('connected');
+                    statusIndicator.classList.remove('connected');
+                    statusText.textContent = 'DISCONNECTED';
+                    
+                    // Stop updating data usage
+                    stopDataUsageUpdates();
+                    
+                    // Reset data usage display
+                    downloadStat.textContent = '0 KB';
+                    uploadStat.textContent = '0 KB';
+                } catch (error) {
+                    console.error('Disconnection error:', error);
+                    alert('Failed to disconnect from server');
+                }
             }
+            
+            updateStatus();
         });
         
-        // Server selection
-        const serverItems = document.querySelectorAll('.server-item');
-        serverItems.forEach(item => {
-            item.addEventListener('click', () => {
-                serverItems.forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
+        refreshButton.addEventListener('click', () => {
+            loadServers();
+        });
+        
+        addServerButton.addEventListener('click', () => {
+            // In a real implementation, this would open a dialog to add a server
+            alert('Add server functionality would be implemented here');
+        });
+        
+        // Load servers from API
+        async function loadServers() {
+            try {
+                const response = await fetch('/api/servers');
+                if (!response.ok) {
+                    throw new Error('Failed to load servers');
+                }
                 
-                const serverName = item.querySelector('.server-name').textContent;
-                document.querySelector('.server-info .server-name').textContent = serverName;
-                document.querySelector('.server-info .server-location').textContent = 'Ready to connect';
-            });
-        });
+                const servers = await response.json();
+                updateServerList(servers);
+            } catch (error) {
+                console.error('Error loading servers:', error);
+                serverList.innerHTML = '<div class="server-item">Failed to load servers</div>';
+            }
+        }
         
-        // Simulate data usage
-        function simulateDataUsage() {
+        // Update server list in UI
+        function updateServerList(servers) {
+            serverList.innerHTML = '';
+            
+            if (servers.length === 0) {
+                serverList.innerHTML = '<div class="server-item">No servers available</div>';
+                return;
+            }
+            
+            servers.forEach(server => {
+                const serverItem = document.createElement('div');
+                serverItem.className = 'server-item';
+                if (server.id === currentServerId) {
+                    serverItem.classList.add('active');
+                }
+                
+                serverItem.innerHTML = `
+                    <div class="server-name">${server.name}</div>
+                    <div class="server-details">
+                        <span>${server.host}:${server.port}</span>
+                        <span>${server.protocol}</span>
+                    </div>
+                `;
+                
+                serverItem.addEventListener('click', () => {
+                    // Remove active class from all servers
+                    document.querySelectorAll('.server-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked server
+                    serverItem.classList.add('active');
+                    
+                    // Set current server
+                    currentServerId = server.id;
+                    
+                    // Update server info display
+                    document.querySelector('.server-info .server-name').textContent = server.name;
+                    document.querySelector('.server-info .server-location').textContent = `${server.host}:${server.port} (${server.protocol})`;
+                });
+                
+                serverList.appendChild(serverItem);
+            });
+        }
+        
+        // Start updating data usage
+        function startDataUsageUpdates() {
+            // Clear any existing interval
+            if (dataUsageInterval) {
+                clearInterval(dataUsageInterval);
+            }
+            
+            // Update data usage every second
+            dataUsageInterval = setInterval(updateDataUsage, 1000);
+            
+            // Initial update
+            updateDataUsage();
+        }
+        
+        // Stop updating data usage
+        function stopDataUsageUpdates() {
+            if (dataUsageInterval) {
+                clearInterval(dataUsageInterval);
+                dataUsageInterval = null;
+            }
+        }
+        
+        // Update data usage from API
+        async function updateDataUsage() {
             if (!connected) return;
             
-            // Increment data usage
-            dataUsage.download += Math.floor(Math.random() * 100);
-            dataUsage.upload += Math.floor(Math.random() * 50);
-            
-            // Update UI
-            downloadStat.textContent = formatBytes(dataUsage.download * 1024);
-            uploadStat.textContent = formatBytes(dataUsage.upload * 1024);
-            
-            // Continue simulation
-            setTimeout(simulateDataUsage, 1000);
+            try {
+                const response = await fetch('/api/stats');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch stats');
+                }
+                
+                const stats = await response.json();
+                
+                // Update UI with real data usage
+                downloadStat.textContent = formatBytes(stats.data_received);
+                uploadStat.textContent = formatBytes(stats.data_sent);
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+            }
+        }
+        
+        // Update connection status display
+        async function updateStatus() {
+            try {
+                const response = await fetch('/api/status');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch status');
+                }
+                
+                const status = await response.json();
+                
+                if (status.status === 'connected') {
+                    connected = true;
+                    connectButton.textContent = 'DISCONNECT';
+                    connectButton.classList.add('connected');
+                    statusIndicator.classList.add('connected');
+                    statusText.textContent = 'CONNECTED';
+                } else {
+                    connected = false;
+                    connectButton.textContent = 'CONNECT';
+                    connectButton.classList.remove('connected');
+                    statusIndicator.classList.remove('connected');
+                    statusText.textContent = 'DISCONNECTED';
+                }
+            } catch (error) {
+                console.error('Error fetching status:', error);
+            }
         }
         
         // Format bytes for display
         function formatBytes(bytes) {
+            if (bytes === undefined || bytes === null) return '0 B';
             if (bytes < 1024) return bytes + ' B';
             if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
             if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
