@@ -112,20 +112,13 @@ func (sm *SubscriptionManager) parseSubscription(url string) ([]core.Server, err
 
 // ImportFromQRCode imports servers from a QR code
 func (sm *SubscriptionManager) ImportFromQRCode(qrContent string) ([]core.Server, error) {
-	// This is where you would implement QR code parsing
-	// For now, we'll just simulate it
-	
-	server := core.Server{
-		ID:       utils.GenerateID(),
-		Name:     "QR Imported Server",
-		Host:     "qr-server.example.com",
-		Port:     443,
-		Protocol: core.ProtocolVMess,
-		Encryption: "auto",
-		TLS:      true,
-		Remark:   "Imported via QR code",
-		Enabled:  true,
+	// Use the existing subscription parser to parse QR code content
+	// The QR code should contain a subscription link or configuration
+	parser := NewSubscriptionParser()
+	servers, err := parser.ParseSubscriptionLink(qrContent)
+	if err != nil {
+		return nil, errors.New("failed to parse QR code content: " + err.Error())
 	}
 	
-	return []core.Server{server}, nil
+	return servers, nil
 }
