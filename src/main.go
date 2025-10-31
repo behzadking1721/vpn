@@ -82,7 +82,7 @@ func main() {
 	fmt.Println("VPN Client started")
 	fmt.Printf("Loaded %d server(s)\n", len(config.Servers))
 	fmt.Printf("Log level: %s\n", config.LogLevel)
-	
+
 	// TODO: Implement actual VPN connection logic here
 }
 

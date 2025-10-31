@@ -1,7 +1,7 @@
 package managers
 
 import (
-	"c:/Users/behza/OneDrive/Documents/vpn/src/core"
+	"vpn-client/src/core"
 	"encoding/json"
 	"os"
 	"path/filepath"

@@ -8,5 +8,25 @@
     "data_received": 2048,
     "total_sent": 10240,
     "total_received": 20480
+  },
+  {
+    "id": "test-data-1",
+    "timestamp": "2025-10-31T16:46:57.7318394+03:30",
+    "server_id": "server-1",
+    "server_name": "Test Server",
+    "data_sent": 1024,
+    "data_received": 2048,
+    "total_sent": 10240,
+    "total_received": 20480
+  },
+  {
+    "id": "test-data-1",
+    "timestamp": "2025-10-31T16:47:13.9774249+03:30",
+    "server_id": "server-1",
+    "server_name": "Test Server",
+    "data_sent": 1024,
+    "data_received": 2048,
+    "total_sent": 10240,
+    "total_received": 20480
   }
 ]

@@ -1,15 +1,15 @@
 package database
 
 import (
+	"c:/Users/behza/OneDrive/Documents/vpn/src/alert"
+	"c:/Users/behza/OneDrive/Documents/vpn/src/history"
+	"c:/Users/behza/OneDrive/Documents/vpn/src/settings"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
-	"c:/Users/behza/OneDrive/Documents/vpn/src/history"
-	"c:/Users/behza/OneDrive/Documents/vpn/src/alert"
-	"c:/Users/behza/OneDrive/Documents/vpn/src/settings"
 )
 
 // MigrationManager handles migration from JSON storage to SQLite database
@@ -146,12 +146,12 @@ func (m *MigrationManager) migrateSettingsData(settingsPath string) error {
 func (m *MigrationManager) migrateAlertData(alertPath string) error {
 	// This would depend on how alerts were previously stored
 	// For now, we'll assume alerts are handled by the alert manager
-	
+
 	// In a real implementation, you might need to:
 	// 1. Read alert data from JSON files
 	// 2. Convert to database records
 	// 3. Insert into the database
-	
+
 	return nil
 }
 

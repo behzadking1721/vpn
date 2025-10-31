@@ -1,6 +1,7 @@
 package monitoring
 
 import (
+	"c:/Users/behza/OneDrive/Documents/vpn/src/database"
 	"database/sql"
 	"fmt"
 	"net"
@@ -8,7 +9,6 @@ import (
 	"runtime"
 	"sync"
 	"time"
-	"c:/Users/behza/OneDrive/Documents/vpn/src/database"
 )
 
 // HealthCheckResult represents the result of a health check
@@ -53,11 +53,11 @@ func (dhc *DatabaseHealthChecker) Check() CheckResult {
 	if dhc.dbManager != nil {
 		// Get the underlying sql.DB
 		db := dhc.dbManager.DB
-		
+
 		// Ping the database
 		ctx, cancel := timeoutContext(5 * time.Second)
 		defer cancel()
-		
+
 		if err := db.PingContext(ctx); err != nil {
 			result.Status = "error"
 			result.Message = fmt.Sprintf("Database ping failed: %v", err)
@@ -185,7 +185,7 @@ func (hhc *HTTPHealthChecker) Check() CheckResult {
 		result.Message = fmt.Sprintf("HTTP request failed: %v", err)
 	} else {
 		resp.Body.Close()
-		
+
 		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 			result.Status = "ok"
 			result.Message = fmt.Sprintf("HTTP endpoint is accessible (status: %d)", resp.StatusCode)
@@ -220,7 +220,7 @@ func NewHealthManager() *HealthManager {
 func (hm *HealthManager) AddChecker(checker HealthChecker) {
 	hm.mutex.Lock()
 	defer hm.mutex.Unlock()
-	
+
 	hm.checkers = append(hm.checkers, checker)
 }
 
@@ -228,7 +228,7 @@ func (hm *HealthManager) AddChecker(checker HealthChecker) {
 func (hm *HealthManager) RemoveChecker(name string) {
 	hm.mutex.Lock()
 	defer hm.mutex.Unlock()
-	
+
 	for i, checker := range hm.checkers {
 		if checker.Name() == name {
 			hm.checkers = append(hm.checkers[:i], hm.checkers[i+1:]...)
@@ -243,19 +243,19 @@ func (hm *HealthManager) Check() *HealthCheckResult {
 	checkers := make([]HealthChecker, len(hm.checkers))
 	copy(checkers, hm.checkers)
 	hm.mutex.RUnlock()
-	
+
 	result := &HealthCheckResult{
 		Timestamp: time.Now(),
 		Checks:    make(map[string]CheckResult),
 	}
-	
+
 	// Perform all checks concurrently
 	var wg sync.WaitGroup
 	results := make(chan struct {
 		name   string
 		result CheckResult
 	}, len(checkers))
-	
+
 	for _, checker := range checkers {
 		wg.Add(1)
 		go func(c HealthChecker) {
@@ -266,13 +266,13 @@ func (hm *HealthManager) Check() *HealthCheckResult {
 			}{c.Name(), c.Check()}
 		}(checker)
 	}
-	
+
 	// Close the results channel when all goroutines are done
 	go func() {
 		wg.Wait()
 		close(results)
 	}()
-	
+
 	// Collect results
 	allHealthy := true
 	for res := range results {
@@ -281,14 +281,14 @@ func (hm *HealthManager) Check() *HealthCheckResult {
 			allHealthy = false
 		}
 	}
-	
+
 	// Set overall status
 	if allHealthy {
 		result.Status = "healthy"
 	} else {
 		result.Status = "unhealthy"
 	}
-	
+
 	return result
 }
 
@@ -296,13 +296,13 @@ func (hm *HealthManager) Check() *HealthCheckResult {
 func (hm *HealthManager) GetChecker(name string) HealthChecker {
 	hm.mutex.RLock()
 	defer hm.mutex.RUnlock()
-	
+
 	for _, checker := range hm.checkers {
 		if checker.Name() == name {
 			return checker
 		}
 	}
-	
+
 	return nil
 }
 
@@ -310,7 +310,7 @@ func (hm *HealthManager) GetChecker(name string) HealthChecker {
 func timeoutContext(timeout time.Duration) (cancel func()) {
 	// This is a simplified version. In a real implementation,
 	// you would use context.WithTimeout
-	
+
 	// For now, we just return a no-op cancel function
 	return func() {}
 }

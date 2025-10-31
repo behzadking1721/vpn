@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"c:/Users/behza/OneDrive/Documents/vpn/src/utils"
-	
+
 	"github.com/blang/semver/v4"
 	update "github.com/inconshreveable/go-update"
 )

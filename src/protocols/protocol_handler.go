@@ -26,13 +26,13 @@ type ServerConfig struct {
 type ProtocolHandler interface {
 	// Connect establishes a connection to the VPN server
 	Connect(config *ServerConfig) error
-	
+
 	// Disconnect terminates the VPN connection
 	Disconnect() error
-	
+
 	// IsConnected returns true if the VPN is currently connected
 	IsConnected() bool
-	
+
 	// GetStats returns connection statistics
 	GetStats() *ConnectionStats
 }
@@ -71,7 +71,7 @@ func Initialize() {
 	RegisterProtocol("vless", func() ProtocolHandler {
 		return &VLESSHandler{}
 	})
-	
+
 	// Add other protocols here as they are implemented
 	// RegisterProtocol("vmess", func() ProtocolHandler { return NewVMessHandler() })
 	// RegisterProtocol("trojan", func() ProtocolHandler { return NewTrojanHandler() })

@@ -6,7 +6,7 @@ import (
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
-	
+
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
 )
@@ -28,25 +28,25 @@ func (rqs *RealQRScanner) ScanQRCode(img image.Image) (string, error) {
 	if !rqs.IsAvailable() {
 		return "", fmt.Errorf("دوربین در دسترس نیست")
 	}
-	
+
 	// در پیاده‌سازی واقعی، اینجا تصویر از دوربین دریافت می‌شود
 	// برای نسخه آزمایشی، یک تصویر نمونه استفاده می‌کنیم
-	
+
 	// تبدیل تصویر به binary bitmap
 	bmp, err := gozxing.NewBinaryBitmapFromImage(img)
 	if err != nil {
 		return "", fmt.Errorf("خطا در تبدیل تصویر: %v", err)
 	}
-	
+
 	// ایجاد reader برای QR code
 	qrReader := qrcode.NewQRCodeReader()
-	
+
 	// اسکن تصویر
 	result, err := qrReader.Decode(bmp, nil)
 	if err != nil {
 		return "", fmt.Errorf("خطا در اسکن کد QR: %v", err)
 	}
-	
+
 	return result.GetText(), nil
 }
 
@@ -64,7 +64,7 @@ func (rqs *RealQRScanner) DecodeQRFromBytes(imageData []byte) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("خطا در بارگذاری تصویر: %v", err)
 	}
-	
+
 	// اسکن کد QR
 	return rqs.ScanQRCode(img)
 }

@@ -4,7 +4,7 @@ package utils
 type QRScannerInterface interface {
 	// ScanQRCode اسکن کد QR و بازگشت محتوای آن
 	ScanQRCode() (string, error)
-	
+
 	// IsAvailable بررسی در دسترس بودن اسکنر
 	IsAvailable() bool
 }

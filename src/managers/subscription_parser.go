@@ -21,7 +21,7 @@ func NewSubscriptionParser() *SubscriptionParser {
 func (sp *SubscriptionParser) ParseSubscriptionLink(subLink string) ([]core.Server, error) {
 	// حذف پیشوند اگر وجود دارد
 	link := strings.TrimSpace(subLink)
-	
+
 	// پشتیبانی از فرمت‌های مختلف
 	if strings.HasPrefix(link, "vmess://") {
 		return sp.parseVMessLink(link)
@@ -39,20 +39,20 @@ func (sp *SubscriptionParser) ParseSubscriptionLink(subLink string) ([]core.Serv
 func (sp *SubscriptionParser) parseVMessLink(link string) ([]core.Server, error) {
 	// حذف پیشوند
 	base64Str := strings.TrimPrefix(link, "vmess://")
-	
+
 	// رمزگشایی Base64
 	jsonStr, err := base64.StdEncoding.DecodeString(base64Str)
 	if err != nil {
 		return nil, fmt.Errorf("خطا در رمزگشایی لینک VMess: %v", err)
 	}
-	
+
 	// تجزیه JSON
 	var vmessConfig map[string]interface{}
 	err = json.Unmarshal(jsonStr, &vmessConfig)
 	if err != nil {
 		return nil, fmt.Errorf("خطا در تجزیه JSON VMess: %v", err)
 	}
-	
+
 	// ایجاد سرور از پیکربندی
 	server := core.Server{
 		ID:         utils.GenerateID(),
@@ -65,15 +65,15 @@ func (sp *SubscriptionParser) parseVMessLink(link string) ([]core.Server, error)
 		TLS:        getStringValue(vmessConfig, "tls", "") == "tls",
 		SNI:        getStringValue(vmessConfig, "sni", ""),
 	}
-	
+
 	// تنظیم نام سرور اگر خالی باشد
 	if server.Name == "" {
 		server.Name = fmt.Sprintf("VMess %s:%d", server.Host, server.Port)
 	}
-	
+
 	// فعال کردن سرور به طور پیش‌فرض
 	server.Enabled = true
-	
+
 	return []core.Server{server}, nil
 }
 
@@ -81,10 +81,10 @@ func (sp *SubscriptionParser) parseVMessLink(link string) ([]core.Server, error)
 func (sp *SubscriptionParser) parseShadowsocksLink(link string) ([]core.Server, error) {
 	// حذف پیشوند
 	base64Part := strings.TrimPrefix(link, "ss://")
-	
+
 	// تقسیم به قسمت‌های اطلاعات و سرور
 	parts := strings.Split(base64Part, "#")
-	
+
 	// رمزگشایی قسمت اطلاعات
 	decodedInfo, err := base64.StdEncoding.DecodeString(parts[0])
 	if err != nil {
@@ -94,37 +94,37 @@ func (sp *SubscriptionParser) parseShadowsocksLink(link string) ([]core.Server, 
 			return nil, fmt.Errorf("خطا در رمزگشایی لینک Shadowsocks: %v", err)
 		}
 	}
-	
+
 	// تجزیه اطلاعات
 	infoStr := string(decodedInfo)
 	atIndex := strings.Index(infoStr, "@")
 	if atIndex == -1 {
 		return nil, fmt.Errorf("فرمت لینک Shadowsocks نامعتبر است")
 	}
-	
+
 	authInfo := infoStr[:atIndex]
 	hostInfo := infoStr[atIndex+1:]
-	
+
 	// تجزیه اطلاعات احراز هویت
 	colonIndex := strings.Index(authInfo, ":")
 	if colonIndex == -1 {
 		return nil, fmt.Errorf("فرمت اطلاعات احراز هویت Shadowsocks نامعتبر است")
 	}
-	
+
 	method := authInfo[:colonIndex]
 	password := authInfo[colonIndex+1:]
-	
+
 	// تجزیه اطلاعات سرور
 	hostParts := strings.Split(hostInfo, ":")
 	if len(hostParts) != 2 {
 		return nil, fmt.Errorf("فرمت آدرس سرور Shadowsocks نامعتبر است")
 	}
-	
+
 	host := hostParts[0]
 	var port int
 	// تبدیل پورت به عدد صحیح
 	fmt.Sscanf(hostParts[1], "%d", &port)
-	
+
 	// استخراج نام سرور از هش‌تگ
 	serverName := "Shadowsocks Server"
 	if len(parts) > 1 {
@@ -135,7 +135,7 @@ func (sp *SubscriptionParser) parseShadowsocksLink(link string) ([]core.Server, 
 			serverName = parts[1]
 		}
 	}
-	
+
 	server := core.Server{
 		ID:       utils.GenerateID(),
 		Name:     serverName,
@@ -146,7 +146,7 @@ func (sp *SubscriptionParser) parseShadowsocksLink(link string) ([]core.Server, 
 		Password: password,
 		Enabled:  true,
 	}
-	
+
 	return []core.Server{server}, nil
 }
 
@@ -154,35 +154,35 @@ func (sp *SubscriptionParser) parseShadowsocksLink(link string) ([]core.Server, 
 func (sp *SubscriptionParser) parseTrojanLink(link string) ([]core.Server, error) {
 	// حذف پیشوند
 	linkContent := strings.TrimPrefix(link, "trojan://")
-	
+
 	// پیدا کردن اسلش برای جدا کردن پارامترها
 	slashIndex := strings.Index(linkContent, "/")
 	if slashIndex == -1 {
 		slashIndex = len(linkContent)
 	}
-	
+
 	// استخراج اطلاعات اصلی
 	mainPart := linkContent[:slashIndex]
-	
+
 	// پیدا کردن @ برای جدا کردن رمز عبور و سرور
 	atIndex := strings.Index(mainPart, "@")
 	if atIndex == -1 {
 		return nil, fmt.Errorf("فرمت لینک Trojan نامعتبر است")
 	}
-	
+
 	password := mainPart[:atIndex]
 	serverInfo := mainPart[atIndex+1:]
-	
+
 	// تجزیه اطلاعات سرور
 	colonIndex := strings.LastIndex(serverInfo, ":")
 	if colonIndex == -1 {
 		return nil, fmt.Errorf("فرمت آدرس سرور Trojan نامعتبر است")
 	}
-	
+
 	host := serverInfo[:colonIndex]
 	var port int
 	fmt.Sscanf(serverInfo[colonIndex+1:], "%d", &port)
-	
+
 	// استخراج نام سرور از پارامترها
 	serverName := "Trojan Server"
 	if slashIndex < len(linkContent) {
@@ -197,7 +197,7 @@ func (sp *SubscriptionParser) parseTrojanLink(link string) ([]core.Server, error
 			}
 		}
 	}
-	
+
 	server := core.Server{
 		ID:       utils.GenerateID(),
 		Name:     serverName,
@@ -207,7 +207,7 @@ func (sp *SubscriptionParser) parseTrojanLink(link string) ([]core.Server, error
 		Password: password,
 		Enabled:  true,
 	}
-	
+
 	return []core.Server{server}, nil
 }
 
@@ -218,29 +218,29 @@ func (sp *SubscriptionParser) parseBase64Subscription(base64Content string) ([]c
 	if err != nil {
 		return nil, fmt.Errorf("خطا در رمزگشایی محتوای اشتراک: %v", err)
 	}
-	
+
 	// تقسیم به خطوط
 	links := strings.Split(string(decodedContent), "\n")
-	
+
 	var servers []core.Server
-	
+
 	// پردازش هر لینک
 	for _, link := range links {
 		link = strings.TrimSpace(link)
 		if link == "" {
 			continue
 		}
-		
+
 		// تجزیه لینک
 		linkServers, err := sp.ParseSubscriptionLink(link)
 		if err != nil {
 			// ادامه دادن با لینک‌های بعدی در صورت خطا
 			continue
 		}
-		
+
 		servers = append(servers, linkServers...)
 	}
-	
+
 	return servers, nil
 }
 

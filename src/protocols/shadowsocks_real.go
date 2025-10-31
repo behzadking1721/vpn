@@ -9,11 +9,11 @@ import (
 // RealShadowsocksHandler 实现真实的Shadowsocks协议处理器
 type RealShadowsocksHandler struct {
 	BaseHandler
-	server     core.Server
-	connected  bool
-	startTime  time.Time
-	dataSent   int64
-	dataRecv   int64
+	server    core.Server
+	connected bool
+	startTime time.Time
+	dataSent  int64
+	dataRecv  int64
 }
 
 // NewRealShadowsocksHandler 创建一个新的Shadowsocks处理器
@@ -29,30 +29,30 @@ func (ssh *RealShadowsocksHandler) Connect(server core.Server) error {
 	// 1. 解析Shadowsocks配置
 	// 2. 初始化Shadowsocks客户端库
 	// 3. 建立到服务器的连接
-	
+
 	// 存储服务器信息
 	ssh.server = server
 	ssh.startTime = time.Now()
-	
+
 	fmt.Printf("Connecting to Shadowsocks server: %s:%d\n", server.Host, server.Port)
 	fmt.Printf("Method: %s, Password: %s\n", server.Method, server.Password)
-	
+
 	// 模拟连接过程
 	time.Sleep(1 * time.Second)
-	
+
 	// 检查必要参数
 	if server.Method == "" {
 		return fmt.Errorf("missing encryption method")
 	}
-	
+
 	if server.Password == "" {
 		return fmt.Errorf("missing password")
 	}
-	
+
 	// 标记为已连接
 	ssh.connected = true
 	fmt.Println("Shadowsocks connection established")
-	
+
 	return nil
 }
 
@@ -61,20 +61,20 @@ func (ssh *RealShadowsocksHandler) Disconnect() error {
 	if !ssh.connected {
 		return fmt.Errorf("not connected to Shadowsocks server")
 	}
-	
+
 	// 在真实实现中，这里会:
 	// 1. 关闭Shadowsocks客户端连接
 	// 2. 清理资源
-	
+
 	fmt.Printf("Disconnecting from Shadowsocks server: %s:%d\n", ssh.server.Host, ssh.server.Port)
-	
+
 	// 模拟断开连接过程
 	time.Sleep(500 * time.Millisecond)
 	ssh.connected = false
 	ssh.server = core.Server{} // 清除服务器信息
-	
+
 	fmt.Println("Shadowsocks connection terminated")
-	
+
 	return nil
 }
 
@@ -83,12 +83,12 @@ func (ssh *RealShadowsocksHandler) GetDataUsage() (sent, received int64, err err
 	if !ssh.connected {
 		return 0, 0, fmt.Errorf("not connected to Shadowsocks server")
 	}
-	
+
 	// 在真实实现中，这里会从Shadowsocks库获取实际数据
 	// 目前我们模拟一些数据使用情况
 	ssh.dataSent += 1024 * int64(time.Since(ssh.startTime).Seconds())
 	ssh.dataRecv += 2048 * int64(time.Since(ssh.startTime).Seconds())
-	
+
 	return ssh.dataSent, ssh.dataRecv, nil
 }
 
@@ -97,7 +97,7 @@ func (ssh *RealShadowsocksHandler) GetConnectionDetails() (map[string]interface{
 	if !ssh.connected {
 		return nil, fmt.Errorf("not connected to Shadowsocks server")
 	}
-	
+
 	details := map[string]interface{}{
 		"protocol":   "Shadowsocks",
 		"host":       ssh.server.Host,
@@ -106,7 +106,7 @@ func (ssh *RealShadowsocksHandler) GetConnectionDetails() (map[string]interface{
 		"connected":  ssh.connected,
 		"start_time": ssh.startTime,
 	}
-	
+
 	return details, nil
 }
 

@@ -1,7 +1,7 @@
 package managers
 
 import (
-	"c:/Users/behza/OneDrive/Documents/vpn/src/core"
+	"vpn-client/src/core"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -21,7 +21,6 @@ func NewDataManager(serversFile, subscriptionsFile string) *DataManager {
 		subscriptionsFile: subscriptionsFile,
 	}
 }
-
 
 // SaveServers saves servers to a JSON file
 func (dm *DataManager) SaveServers(servers []core.Server) error {

@@ -1,23 +1,58 @@
 package history
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
 )
 
+func TestMain(m *testing.M) {
+	// Setup test environment
+	err := setupEnvironment()
+	if err != nil {
+		fmt.Println("❌ Setup failed:", err)
+		os.Exit(1)
+	}
+
+	// Run tests
+	code := m.Run()
+
+	// Teardown test environment
+	teardownEnvironment()
+
+	os.Exit(code)
+}
+
+// setupEnvironment prepares the test environment
+func setupEnvironment() error {
+	// Clean up any existing test files
+	os.RemoveAll("./test_history.connections.json")
+	os.RemoveAll("./test_history.datausage.json")
+	os.RemoveAll("./test_history.alerts.json")
+	return nil
+}
+
+// teardownEnvironment cleans up the test environment
+func teardownEnvironment() {
+	// Clean up test files
+	os.RemoveAll("./test_history.connections.json")
+	os.RemoveAll("./test_history.datausage.json")
+	os.RemoveAll("./test_history.alerts.json")
+}
+
 func TestHistoryManager(t *testing.T) {
 	// Create a temporary file for testing
 	tempFile := "./test_history"
-	defer os.RemoveAll("./data/test_history.connections.json")
-	defer os.RemoveAll("./data/test_history.datausage.json")
-	defer os.RemoveAll("./data/test_history.alerts.json")
 
 	// Create history manager
 	hm := NewHistoryManager(tempFile)
 
 	// Test adding and retrieving connection records
 	t.Run("ConnectionRecords", func(t *testing.T) {
+		// Clean up any existing test files
+		os.RemoveAll("./test_history.connections.json")
+		
 		record := ConnectionRecord{
 			ID:             "test-connection-1",
 			ServerID:       "server-1",
@@ -48,13 +83,16 @@ func TestHistoryManager(t *testing.T) {
 			t.Errorf("Expected 1 record, got %d", len(records))
 		}
 
-		if records[0].ID != record.ID {
+		if len(records) > 0 && records[0].ID != record.ID {
 			t.Errorf("Expected ID %s, got %s", record.ID, records[0].ID)
 		}
 	})
 
 	// Test adding and retrieving data usage records
 	t.Run("DataUsageRecords", func(t *testing.T) {
+		// Clean up any existing test files
+		os.RemoveAll("./test_history.datausage.json")
+		
 		record := DataUsageRecord{
 			ID:           "test-data-1",
 			Timestamp:    time.Now(),
@@ -82,13 +120,16 @@ func TestHistoryManager(t *testing.T) {
 			t.Errorf("Expected 1 record, got %d", len(records))
 		}
 
-		if records[0].ID != record.ID {
+		if len(records) > 0 && records[0].ID != record.ID {
 			t.Errorf("Expected ID %s, got %s", record.ID, records[0].ID)
 		}
 	})
 
 	// Test adding and retrieving alert records
 	t.Run("AlertRecords", func(t *testing.T) {
+		// Clean up any existing test files
+		os.RemoveAll("./test_history.alerts.json")
+		
 		record := AlertRecord{
 			ID:        "test-alert-1",
 			Timestamp: time.Now(),
@@ -115,7 +156,7 @@ func TestHistoryManager(t *testing.T) {
 			t.Errorf("Expected 1 record, got %d", len(records))
 		}
 
-		if records[0].ID != record.ID {
+		if len(records) > 0 && records[0].ID != record.ID {
 			t.Errorf("Expected ID %s, got %s", record.ID, records[0].ID)
 		}
 

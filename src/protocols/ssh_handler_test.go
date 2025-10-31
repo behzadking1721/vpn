@@ -101,14 +101,14 @@ func TestSSHHandlerWithPrivateKey(t *testing.T) {
 
 	// Create a test server with private key authentication
 	server := core.Server{
-		ID:        utils.GenerateID(),
-		Name:      "Test SSH Server (Private Key)",
-		Host:      "example.com",
-		Port:      22,
-		Protocol:  core.ProtocolSSH,
-		Username:  "testuser",
+		ID:         utils.GenerateID(),
+		Name:       "Test SSH Server (Private Key)",
+		Host:       "example.com",
+		Port:       22,
+		Protocol:   core.ProtocolSSH,
+		Username:   "testuser",
 		PrivateKey: "-----BEGIN OPENSSH PRIVATE KEY-----\ntest-key-content\n-----END OPENSSH PRIVATE KEY-----",
-		Enabled:   true,
+		Enabled:    true,
 	}
 
 	// Test Connect

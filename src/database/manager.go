@@ -3,8 +3,8 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"time"
 	_ "github.com/mattn/go-sqlite3"
+	"time"
 )
 
 // Manager handles database operations
@@ -148,39 +148,39 @@ func (m *Manager) runMigrations() error {
 		},
 		{
 			Name: "create_connections_index",
-			SQL: `CREATE INDEX IF NOT EXISTS idx_connections_server_id ON connections(server_id)`,
+			SQL:  `CREATE INDEX IF NOT EXISTS idx_connections_server_id ON connections(server_id)`,
 		},
 		{
 			Name: "create_connections_time_index",
-			SQL: `CREATE INDEX IF NOT EXISTS idx_connections_time ON connections(start_time)`,
+			SQL:  `CREATE INDEX IF NOT EXISTS idx_connections_time ON connections(start_time)`,
 		},
 		{
 			Name: "create_data_usage_index",
-			SQL: `CREATE INDEX IF NOT EXISTS idx_data_usage_server_id ON data_usage(server_id)`,
+			SQL:  `CREATE INDEX IF NOT EXISTS idx_data_usage_server_id ON data_usage(server_id)`,
 		},
 		{
 			Name: "create_data_usage_time_index",
-			SQL: `CREATE INDEX IF NOT EXISTS idx_data_usage_time ON data_usage(timestamp)`,
+			SQL:  `CREATE INDEX IF NOT EXISTS idx_data_usage_time ON data_usage(timestamp)`,
 		},
 		{
 			Name: "create_pings_index",
-			SQL: `CREATE INDEX IF NOT EXISTS idx_pings_server_id ON pings(server_id)`,
+			SQL:  `CREATE INDEX IF NOT EXISTS idx_pings_server_id ON pings(server_id)`,
 		},
 		{
 			Name: "create_pings_time_index",
-			SQL: `CREATE INDEX IF NOT EXISTS idx_pings_time ON pings(timestamp)`,
+			SQL:  `CREATE INDEX IF NOT EXISTS idx_pings_time ON pings(timestamp)`,
 		},
 		{
 			Name: "create_alerts_index",
-			SQL: `CREATE INDEX IF NOT EXISTS idx_alerts_time ON alerts(timestamp)`,
+			SQL:  `CREATE INDEX IF NOT EXISTS idx_alerts_time ON alerts(timestamp)`,
 		},
 		{
 			Name: "create_alerts_resolved_index",
-			SQL: `CREATE INDEX IF NOT EXISTS idx_alerts_resolved ON alerts(resolved)`,
+			SQL:  `CREATE INDEX IF NOT EXISTS idx_alerts_resolved ON alerts(resolved)`,
 		},
 		{
 			Name: "create_alerts_read_index",
-			SQL: `CREATE INDEX IF NOT EXISTS idx_alerts_read ON alerts(read)`,
+			SQL:  `CREATE INDEX IF NOT EXISTS idx_alerts_read ON alerts(read)`,
 		},
 	}
 

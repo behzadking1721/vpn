@@ -1,8 +1,153 @@
 package managers
 
 import (
-	"c:/Users/behza/OneDrive/Documents/vvpn/src/core"
 	"c:/Users/behza/OneDrive/Documents/vpn/src/utils"
+	"c:/Users/behza/OneDrive/Documents/vvpn/src/core"
+	"os"
+	"testing"
+)
+
+func TestServerManagerInitialization(t *testing.T) {
+	// Create a temporary data manager for testing
+	dataManager := NewDataManager("./test_servers.json", "./test_subscriptions.json")
+	defer os.Remove("./test_servers.json")
+	defer os.Remove("./test_subscriptions.json")
+
+	// Test creating a new server manager
+	serverManager := NewServerManagerWithDataManager(dataManager)
+	if serverManager == nil {
+		t.Error("Failed to create server manager")
+	}
+
+	// Test initial state
+	servers := serverManager.GetAllServers()
+	if len(servers) != 0 {
+		t.Errorf("Expected empty server list initially, got %d servers", len(servers))
+	}
+}
+
+func TestServerManagerCRUDOperations(t *testing.T) {
+	// Create a temporary data manager for testing
+	dataManager := NewDataManager("./test_servers.json", "./test_subscriptions.json")
+	defer os.Remove("./test_servers.json")
+	defer os.Remove("./test_subscriptions.json")
+
+	// Create server manager with test data manager
+	serverManager := NewServerManagerWithDataManager(dataManager)
+
+	// Create a test server
+	testServer := core.Server{
+		ID:       utils.GenerateID(),
+		Name:     "Test Server",
+		Host:     "example.com",
+		Port:     443,
+		Protocol: core.ProtocolVMess,
+		Enabled:  true,
+	}
+
+	// Test creating a server
+	err := serverManager.AddServer(testServer)
+	if err != nil {
+		t.Errorf("Failed to add server: %v", err)
+	}
+
+	// Test reading a server
+	retrievedServer, err := serverManager.GetServer(testServer.ID)
+	if err != nil {
+		t.Errorf("Failed to get server: %v", err)
+	}
+	if retrievedServer.ID != testServer.ID {
+		t.Errorf("Expected server ID %s, got %s", testServer.ID, retrievedServer.ID)
+	}
+
+	// Test updating a server
+	updatedServer := retrievedServer
+	updatedServer.Name = "Updated Server Name"
+	err = serverManager.UpdateServer(updatedServer)
+	if err != nil {
+		t.Errorf("Failed to update server: %v", err)
+	}
+
+	// Verify update
+	verifiedServer, err := serverManager.GetServer(testServer.ID)
+	if err != nil {
+		t.Errorf("Failed to get updated server: %v", err)
+	}
+	if verifiedServer.Name != "Updated Server Name" {
+		t.Errorf("Expected updated name 'Updated Server Name', got '%s'", verifiedServer.Name)
+	}
+
+	// Test deleting a server
+	err = serverManager.RemoveServer(testServer.ID)
+	if err != nil {
+		t.Errorf("Failed to remove server: %v", err)
+	}
+
+	// Verify deletion
+	_, err = serverManager.GetServer(testServer.ID)
+	if err == nil {
+		t.Error("Expected error when getting deleted server")
+	}
+
+	// Verify server list is empty
+	servers := serverManager.GetAllServers()
+	if len(servers) != 0 {
+		t.Errorf("Expected 0 servers after deletion, got %d", len(servers))
+	}
+}
+
+func TestServerManagerDuplicateOperations(t *testing.T) {
+	// Create a temporary data manager for testing
+	dataManager := NewDataManager("./test_servers.json", "./test_subscriptions.json")
+	defer os.Remove("./test_servers.json")
+	defer os.Remove("./test_subscriptions.json")
+
+	// Create server manager with test data manager
+	serverManager := NewServerManagerWithDataManager(dataManager)
+
+	// Create a test server
+	testServer := core.Server{
+		ID:       utils.GenerateID(),
+		Name:     "Test Server",
+		Host:     "example.com",
+		Port:     443,
+		Protocol: core.ProtocolVMess,
+		Enabled:  true,
+	}
+
+	// Add server initially
+	err := serverManager.AddServer(testServer)
+	if err != nil {
+		t.Errorf("Failed to add server: %v", err)
+	}
+
+	// Try to add server with same ID (should fail)
+	err = serverManager.AddServer(testServer)
+	if err == nil {
+		t.Error("Expected error when adding server with duplicate ID")
+	}
+
+	// Try to update non-existent server (should fail)
+	nonExistentServer := core.Server{
+		ID:   "non-existent-id",
+		Name: "Non-existent Server",
+	}
+	err = serverManager.UpdateServer(nonExistentServer)
+	if err == nil {
+		t.Error("Expected error when updating non-existent server")
+	}
+
+	// Try to remove non-existent server (should fail)
+	err = serverManager.RemoveServer("non-existent-id")
+	if err == nil {
+		t.Error("Expected error when removing non-existent server")
+	}
+}
+package managers
+
+import (
+	"c:/Users/behza/OneDrive/Documents/vpn/src/utils"
+	"c:/Users/behza/OneDrive/Documents/vvpn/src/core"
 	"os"
 	"testing"
 )

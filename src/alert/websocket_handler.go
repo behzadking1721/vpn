@@ -30,7 +30,7 @@ func (w *WebSocketAlertHandler) HandleAlert(alert *Alert) {
 			"server_id": alert.ServerID,
 		},
 	}
-	
+
 	// Broadcast the alert to all connected clients
 	w.hub.BroadcastMessage(message)
 }

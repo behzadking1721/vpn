@@ -1,7 +1,7 @@
 package managers
 
 import (
-	"c:/Users/behza/OneDrive/Documents/vpn/src/core"
+	"vpn-client/src/core"
 	"errors"
 	"sync"
 	"time"
@@ -19,17 +19,17 @@ type ServerManager struct {
 func NewServerManager() *ServerManager {
 	// Create data manager with default file paths
 	dataManager := NewDataManager("./data/servers.json", "./data/subscriptions.json")
-	
+
 	// Create server manager
 	sm := &ServerManager{
 		servers:       make([]core.Server, 0),
 		subscriptions: make([]core.Subscription, 0),
 		dataManager:   dataManager,
 	}
-	
+
 	// Load existing data
 	sm.loadExistingData()
-	
+
 	return sm
 }
 
@@ -40,10 +40,10 @@ func NewServerManagerWithDataManager(dataManager *DataManager) *ServerManager {
 		subscriptions: make([]core.Subscription, 0),
 		dataManager:   dataManager,
 	}
-	
+
 	// Load existing data
 	sm.loadExistingData()
-	
+
 	return sm
 }
 
@@ -57,7 +57,7 @@ func (sm *ServerManager) loadExistingData() {
 	} else {
 		sm.servers = servers
 	}
-	
+
 	// Load subscriptions
 	subscriptions, err := sm.dataManager.LoadSubscriptions()
 	if err != nil {
@@ -81,10 +81,10 @@ func (sm *ServerManager) AddServer(server core.Server) error {
 	}
 
 	sm.servers = append(sm.servers, server)
-	
+
 	// Save to file
 	sm.saveServers()
-	
+
 	return nil
 }
 
@@ -97,10 +97,10 @@ func (sm *ServerManager) RemoveServer(serverID string) error {
 		if server.ID == serverID {
 			// Remove the server
 			sm.servers = append(sm.servers[:i], sm.servers[i+1:]...)
-			
+
 			// Save to file
 			sm.saveServers()
-			
+
 			return nil
 		}
 	}
@@ -116,10 +116,10 @@ func (sm *ServerManager) UpdateServer(server core.Server) error {
 	for i, s := range sm.servers {
 		if s.ID == server.ID {
 			sm.servers[i] = server
-			
+
 			// Save to file
 			sm.saveServers()
-			
+
 			return nil
 		}
 	}
@@ -165,10 +165,10 @@ func (sm *ServerManager) AddSubscription(sub core.Subscription) error {
 	}
 
 	sm.subscriptions = append(sm.subscriptions, sub)
-	
+
 	// Save to file
 	sm.saveSubscriptions()
-	
+
 	return nil
 }
 
@@ -181,10 +181,10 @@ func (sm *ServerManager) RemoveSubscription(subID string) error {
 		if sub.ID == subID {
 			// Remove the subscription
 			sm.subscriptions = append(sm.subscriptions[:i], sm.subscriptions[i+1:]...)
-			
+
 			// Save to file
 			sm.saveSubscriptions()
-			
+
 			return nil
 		}
 	}
@@ -200,10 +200,10 @@ func (sm *ServerManager) UpdateSubscription(sub core.Subscription) error {
 	for i, s := range sm.subscriptions {
 		if s.ID == sub.ID {
 			sm.subscriptions[i] = sub
-			
+
 			// Save to file
 			sm.saveSubscriptions()
-			
+
 			return nil
 		}
 	}
@@ -241,7 +241,7 @@ func (sm *ServerManager) saveServers() {
 	// Make a copy of servers to avoid holding the lock during I/O
 	servers := make([]core.Server, len(sm.servers))
 	copy(servers, sm.servers)
-	
+
 	// Save in a separate goroutine to avoid blocking
 	go func() {
 		err := sm.dataManager.SaveServers(servers)
@@ -256,7 +256,7 @@ func (sm *ServerManager) saveSubscriptions() {
 	// Make a copy of subscriptions to avoid holding the lock during I/O
 	subs := make([]core.Subscription, len(sm.subscriptions))
 	copy(subs, sm.subscriptions)
-	
+
 	// Save in a separate goroutine to avoid blocking
 	go func() {
 		err := sm.dataManager.SaveSubscriptions(subs)

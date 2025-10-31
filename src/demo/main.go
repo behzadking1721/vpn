@@ -83,7 +83,7 @@ func main() {
 		core.ProtocolShadowsocks,
 	} {
 		fmt.Printf("\nتست پروتکل %s:\n", protocolType)
-		
+
 		handler, err := protocolFactory.CreateHandler(protocolType)
 		if err != nil {
 			fmt.Printf("  خطا در ایجاد handler: %v\n", err)
@@ -111,7 +111,7 @@ func main() {
 
 		// شبیه‌سازی انتقال داده
 		time.Sleep(2 * time.Second)
-		
+
 		// دریافت آمار مصرف
 		sent, received, err := handler.GetDataUsage()
 		if err != nil {
@@ -119,7 +119,7 @@ func main() {
 		} else {
 			fmt.Printf("  داده ارسالی: %s\n", utils.FormatBytes(sent))
 			fmt.Printf("  داده دریافتی: %s\n", utils.FormatBytes(received))
-			
+
 			// ثبت داده در مدیر داده
 			dataManager.RecordDataUsage(testServer.ID, sent, received)
 		}
@@ -146,9 +146,9 @@ func main() {
 	fmt.Println("\nآمار مصرفی:")
 	allData := dataManager.GetAllData()
 	for serverID, data := range allData {
-		fmt.Printf("سرور %s: ارسال %s، دریافت %s\n", 
-			serverID[:8], 
-			utils.FormatBytes(data.TotalSent), 
+		fmt.Printf("سرور %s: ارسال %s، دریافت %s\n",
+			serverID[:8],
+			utils.FormatBytes(data.TotalSent),
 			utils.FormatBytes(data.TotalRecv))
 	}
 

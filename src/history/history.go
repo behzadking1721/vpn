@@ -17,29 +17,29 @@ type HistoryManager struct {
 
 // ConnectionRecord represents a connection record
 type ConnectionRecord struct {
-	ID             string    `json:"id"`
-	ServerID       string    `json:"server_id"`
-	ServerName     string    `json:"server_name"`
-	StartTime      time.Time `json:"start_time"`
-	EndTime        time.Time `json:"end_time"`
-	Duration       int64     `json:"duration"` // in seconds
-	DataSent       int64     `json:"data_sent"`
-	DataReceived   int64     `json:"data_received"`
-	Protocol       string    `json:"protocol"`
-	Status         string    `json:"status"` // connected, disconnected, error
-	DisconnectReason string  `json:"disconnect_reason,omitempty"`
+	ID               string    `json:"id"`
+	ServerID         string    `json:"server_id"`
+	ServerName       string    `json:"server_name"`
+	StartTime        time.Time `json:"start_time"`
+	EndTime          time.Time `json:"end_time"`
+	Duration         int64     `json:"duration"` // in seconds
+	DataSent         int64     `json:"data_sent"`
+	DataReceived     int64     `json:"data_received"`
+	Protocol         string    `json:"protocol"`
+	Status           string    `json:"status"` // connected, disconnected, error
+	DisconnectReason string    `json:"disconnect_reason,omitempty"`
 }
 
 // DataUsageRecord represents a data usage record
 type DataUsageRecord struct {
-	ID           string    `json:"id"`
-	Timestamp    time.Time `json:"timestamp"`
-	ServerID     string    `json:"server_id"`
-	ServerName   string    `json:"server_name"`
-	DataSent     int64     `json:"data_sent"`
-	DataReceived int64     `json:"data_received"`
-	TotalSent    int64     `json:"total_sent"`
-	TotalReceived int64    `json:"total_received"`
+	ID            string    `json:"id"`
+	Timestamp     time.Time `json:"timestamp"`
+	ServerID      string    `json:"server_id"`
+	ServerName    string    `json:"server_name"`
+	DataSent      int64     `json:"data_sent"`
+	DataReceived  int64     `json:"data_received"`
+	TotalSent     int64     `json:"total_sent"`
+	TotalReceived int64     `json:"total_received"`
 }
 
 // AlertRecord represents an alert record
@@ -60,7 +60,7 @@ func NewHistoryManager(historyFile string) *HistoryManager {
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		fmt.Printf("Failed to create history directory: %v\n", err)
 	}
-	
+
 	return &HistoryManager{
 		historyFile: historyFile,
 	}
@@ -70,16 +70,16 @@ func NewHistoryManager(historyFile string) *HistoryManager {
 func (h *HistoryManager) AddConnectionRecord(record ConnectionRecord) error {
 	h.mutex.Lock()
 	defer h.mutex.Unlock()
-	
+
 	// Load existing records
 	records, err := h.loadConnectionRecords()
 	if err != nil {
 		return err
 	}
-	
+
 	// Add new record
 	records = append(records, record)
-	
+
 	// Save records
 	return h.saveConnectionRecords(records)
 }
@@ -88,12 +88,12 @@ func (h *HistoryManager) AddConnectionRecord(record ConnectionRecord) error {
 func (h *HistoryManager) GetConnectionRecords(limit int, offset int) ([]ConnectionRecord, error) {
 	h.mutex.RLock()
 	defer h.mutex.RUnlock()
-	
+
 	records, err := h.loadConnectionRecords()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Apply limit and offset
 	if limit > 0 {
 		start := offset
@@ -106,7 +106,7 @@ func (h *HistoryManager) GetConnectionRecords(limit int, offset int) ([]Connecti
 		}
 		records = records[start:end]
 	}
-	
+
 	return records, nil
 }
 
@@ -114,16 +114,16 @@ func (h *HistoryManager) GetConnectionRecords(limit int, offset int) ([]Connecti
 func (h *HistoryManager) AddDataUsageRecord(record DataUsageRecord) error {
 	h.mutex.Lock()
 	defer h.mutex.Unlock()
-	
+
 	// Load existing records
 	records, err := h.loadDataUsageRecords()
 	if err != nil {
 		return err
 	}
-	
+
 	// Add new record
 	records = append(records, record)
-	
+
 	// Save records
 	return h.saveDataUsageRecords(records)
 }
@@ -132,12 +132,12 @@ func (h *HistoryManager) AddDataUsageRecord(record DataUsageRecord) error {
 func (h *HistoryManager) GetDataUsageRecords(serverID string, limit int, offset int) ([]DataUsageRecord, error) {
 	h.mutex.RLock()
 	defer h.mutex.RUnlock()
-	
+
 	records, err := h.loadDataUsageRecords()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Filter by server ID if provided
 	if serverID != "" {
 		filtered := make([]DataUsageRecord, 0)
@@ -148,7 +148,7 @@ func (h *HistoryManager) GetDataUsageRecords(serverID string, limit int, offset 
 		}
 		records = filtered
 	}
-	
+
 	// Apply limit and offset
 	if limit > 0 {
 		start := offset
@@ -161,7 +161,7 @@ func (h *HistoryManager) GetDataUsageRecords(serverID string, limit int, offset 
 		}
 		records = records[start:end]
 	}
-	
+
 	return records, nil
 }
 
@@ -169,16 +169,16 @@ func (h *HistoryManager) GetDataUsageRecords(serverID string, limit int, offset 
 func (h *HistoryManager) AddAlertRecord(record AlertRecord) error {
 	h.mutex.Lock()
 	defer h.mutex.Unlock()
-	
+
 	// Load existing records
 	records, err := h.loadAlertRecords()
 	if err != nil {
 		return err
 	}
-	
+
 	// Add new record
 	records = append(records, record)
-	
+
 	// Save records
 	return h.saveAlertRecords(records)
 }
@@ -187,12 +187,12 @@ func (h *HistoryManager) AddAlertRecord(record AlertRecord) error {
 func (h *HistoryManager) GetAlertRecords(unreadOnly bool, limit int, offset int) ([]AlertRecord, error) {
 	h.mutex.RLock()
 	defer h.mutex.RUnlock()
-	
+
 	records, err := h.loadAlertRecords()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Filter by unread status if requested
 	if unreadOnly {
 		filtered := make([]AlertRecord, 0)
@@ -203,7 +203,7 @@ func (h *HistoryManager) GetAlertRecords(unreadOnly bool, limit int, offset int)
 		}
 		records = filtered
 	}
-	
+
 	// Apply limit and offset
 	if limit > 0 {
 		start := offset
@@ -216,7 +216,7 @@ func (h *HistoryManager) GetAlertRecords(unreadOnly bool, limit int, offset int)
 		}
 		records = records[start:end]
 	}
-	
+
 	return records, nil
 }
 
@@ -224,12 +224,12 @@ func (h *HistoryManager) GetAlertRecords(unreadOnly bool, limit int, offset int)
 func (h *HistoryManager) MarkAlertAsRead(alertID string) error {
 	h.mutex.Lock()
 	defer h.mutex.Unlock()
-	
+
 	records, err := h.loadAlertRecords()
 	if err != nil {
 		return err
 	}
-	
+
 	// Find and mark the alert as read
 	for i := range records {
 		if records[i].ID == alertID {
@@ -237,7 +237,7 @@ func (h *HistoryManager) MarkAlertAsRead(alertID string) error {
 			break
 		}
 	}
-	
+
 	// Save records
 	return h.saveAlertRecords(records)
 }
@@ -245,37 +245,37 @@ func (h *HistoryManager) MarkAlertAsRead(alertID string) error {
 // loadConnectionRecords loads connection records from file
 func (h *HistoryManager) loadConnectionRecords() ([]ConnectionRecord, error) {
 	filePath := h.historyFile + ".connections.json"
-	
+
 	// Check if file exists
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return []ConnectionRecord{}, nil
 	}
-	
+
 	// Read file
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Parse JSON
 	var records []ConnectionRecord
 	if err := json.Unmarshal(data, &records); err != nil {
 		return nil, err
 	}
-	
+
 	return records, nil
 }
 
 // saveConnectionRecords saves connection records to file
 func (h *HistoryManager) saveConnectionRecords(records []ConnectionRecord) error {
 	filePath := h.historyFile + ".connections.json"
-	
+
 	// Convert to JSON
 	data, err := json.MarshalIndent(records, "", "  ")
 	if err != nil {
 		return err
 	}
-	
+
 	// Write to file
 	return os.WriteFile(filePath, data, 0644)
 }
@@ -283,37 +283,37 @@ func (h *HistoryManager) saveConnectionRecords(records []ConnectionRecord) error
 // loadDataUsageRecords loads data usage records from file
 func (h *HistoryManager) loadDataUsageRecords() ([]DataUsageRecord, error) {
 	filePath := h.historyFile + ".datausage.json"
-	
+
 	// Check if file exists
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return []DataUsageRecord{}, nil
 	}
-	
+
 	// Read file
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Parse JSON
 	var records []DataUsageRecord
 	if err := json.Unmarshal(data, &records); err != nil {
 		return nil, err
 	}
-	
+
 	return records, nil
 }
 
 // saveDataUsageRecords saves data usage records to file
 func (h *HistoryManager) saveDataUsageRecords(records []DataUsageRecord) error {
 	filePath := h.historyFile + ".datausage.json"
-	
+
 	// Convert to JSON
 	data, err := json.MarshalIndent(records, "", "  ")
 	if err != nil {
 		return err
 	}
-	
+
 	// Write to file
 	return os.WriteFile(filePath, data, 0644)
 }
@@ -321,37 +321,37 @@ func (h *HistoryManager) saveDataUsageRecords(records []DataUsageRecord) error {
 // loadAlertRecords loads alert records from file
 func (h *HistoryManager) loadAlertRecords() ([]AlertRecord, error) {
 	filePath := h.historyFile + ".alerts.json"
-	
+
 	// Check if file exists
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return []AlertRecord{}, nil
 	}
-	
+
 	// Read file
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Parse JSON
 	var records []AlertRecord
 	if err := json.Unmarshal(data, &records); err != nil {
 		return nil, err
 	}
-	
+
 	return records, nil
 }
 
 // saveAlertRecords saves alert records to file
 func (h *HistoryManager) saveAlertRecords(records []AlertRecord) error {
 	filePath := h.historyFile + ".alerts.json"
-	
+
 	// Convert to JSON
 	data, err := json.MarshalIndent(records, "", "  ")
 	if err != nil {
 		return err
 	}
-	
+
 	// Write to file
 	return os.WriteFile(filePath, data, 0644)
 }

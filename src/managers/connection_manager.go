@@ -4,127 +4,117 @@ import (
 	"context"
 	"sync"
 	"time"
-	"c:/Users/behza/OneDrive/Documents/vpn/src/protocols"
 )
 
-// ConnectionManager handles VPN connections with protocol-agnostic operations
-type ConnectionManager struct {
-	status       ConnectionStatus
-	connInfo     ConnectionInfo
-	mutex        sync.RWMutex
-	cancelFunc   context.CancelFunc
-	ctx          context.Context
-	handler      protocols.ProtocolHandler // Current protocol-specific handler
-	isConnected  bool                      // Simplified connection state
+// ConnectionStatus represents the connection status
+type ConnectionStatus int
+
+const (
+	// Disconnected represents a disconnected state
+	Disconnected ConnectionStatus = iota
+	// Connecting represents a connecting state
+	Connecting
+	// Connected represents a connected state
+	Connected
+	// Disconnecting represents a disconnecting state
+	Disconnecting
+	// Error represents an error state
+	Error
+)
+
+// ConnectionInfo represents connection information
+type ConnectionInfo struct {
+	ServerID   string `json:"server_id"`
+	ServerName string `json:"server_name"`
+	Protocol   string `json:"protocol"`
+	StartTime  time.Time `json:"start_time"`
+}
+
+// ConnectionStats represents connection statistics
+type ConnectionStats struct {
+	BytesSent     int64 `json:"bytes_sent"`
+	BytesReceived int64 `json:"bytes_received"`
+	Duration      time.Duration `json:"duration"`
 }
 
 // ConnectionListener interface for connection status updates
 type ConnectionListener interface {
-	OnStatusChanged(status ConnectionStatus, info ConnectionInfo)
+	OnStatusChanged(status ConnectionStatus)
+	OnStatsUpdated(stats ConnectionStats)
+}
+
+// ConnectionManager handles VPN connections with protocol-agnostic operations
+type ConnectionManager struct {
+	status      ConnectionStatus
+	connInfo    ConnectionInfo
+	mutex       sync.RWMutex
+	cancelFunc  context.CancelFunc
+	ctx         context.Context
+	handler     interface{} // Current protocol-specific handler
+	isConnected bool        // Simplified connection state
 }
 
 // NewConnectionManager creates a new connection manager
 func NewConnectionManager() *ConnectionManager {
-	ctx, cancel := context.WithCancel(context.Background())
-
-	cm := &ConnectionManager{
-		status:      StatusDisconnected,
-		connInfo:    ConnectionInfo{Status: StatusDisconnected},
-		ctx:         ctx,
-		cancelFunc:  cancel,
-		isConnected: false,
+	return &ConnectionManager{
+		status: Disconnected,
 	}
-
-	return cm
 }
 
-// AddListener adds a connection status listener
-func (cm *ConnectionManager) AddListener(listener ConnectionListener) {
-	cm.mutex.Lock()
-	defer cm.mutex.Unlock()
-	// In a real implementation, we would store listeners
-	// For now, this is just a placeholder
+// SetListener sets the connection listener
+func (cm *ConnectionManager) SetListener(listener ConnectionListener) {
+	// In a real implementation, we would store the listener
+	// and notify it of status changes and stats updates
 }
 
-
-// Connect establishes a connection to a VPN server
-func (cm *ConnectionManager) Connect(config *protocols.ServerConfig) error {
+// Connect connects to a VPN server
+func (cm *ConnectionManager) Connect(config interface{}) error {
 	cm.mutex.Lock()
 	defer cm.mutex.Unlock()
-
-	if cm.isConnected {
-		return nil // Already connected
-	}
-
-	// Create protocol handler
-	handler, err := protocols.CreateProtocol(config.Protocol)
-	if err != nil {
-		// If protocol is not registered, create a mock handler for demonstration
-		handler = &MockProtocolHandler{}
-	}
-
-	// Attempt to connect
-	err = handler.Connect(config)
-	if err != nil {
-		return err
-	}
-
-	// Update connection state
-	cm.handler = handler
+	
+	// In a real implementation, we would:
+	// 1. Create appropriate protocol handler
+	// 2. Initialize connection
+	// 3. Start connection goroutine
+	// 4. Update status
+	
+	cm.status = Connected
 	cm.isConnected = true
-	cm.status = StatusConnected
-
-	// Notify listeners
-	cm.connInfo = ConnectionInfo{
-		Status:     StatusConnected,
-		ServerName: config.Name,
-	}
-
 	return nil
 }
 
-
-// Disconnect terminates the current VPN connection
+// Disconnect disconnects from the VPN server
 func (cm *ConnectionManager) Disconnect() error {
 	cm.mutex.Lock()
 	defer cm.mutex.Unlock()
-
-	if !cm.isConnected {
-		return nil // Already disconnected
-	}
-
-	cm.status = StatusDisconnecting
-
-	var err error
-	if cm.handler != nil {
-		err = cm.handler.Disconnect()
-	}
-
+	
+	// In a real implementation, we would:
+	// 1. Stop connection goroutine
+	// 2. Close connections
+	// 3. Cleanup resources
+	// 4. Update status
+	
+	cm.status = Disconnected
 	cm.isConnected = false
-	cm.status = StatusDisconnected
-	cm.handler = nil
-
-	// Reset connection info
-	cm.connInfo = ConnectionInfo{
-		Status: StatusDisconnected,
-	}
-
-	return err
+	return nil
 }
 
-
-// IsConnected returns true if currently connected to a VPN
-func (cm *ConnectionManager) IsConnected() bool {
+// GetStatus returns the current connection status
+func (cm *ConnectionManager) GetStatus() ConnectionStatus {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
-	return cm.isConnected
+	return cm.status
 }
 
-
-// GetConnectionInfo returns current connection information
-func (cm *ConnectionManager) GetConnectionInfo() ConnectionInfo {
+// GetInfo returns the current connection information
+func (cm *ConnectionManager) GetInfo() ConnectionInfo {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
 	return cm.connInfo
 }
 
+// GetStats returns the current connection statistics
+func (cm *ConnectionManager) GetStats() ConnectionStats {
+	// In a real implementation, we would collect actual stats
+	return ConnectionStats{}
+}

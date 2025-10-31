@@ -16,7 +16,7 @@ func GenerateID() string {
 		// بازگشت به ID مبتنی بر زمان در صورت شکست تولید تصادفی
 		return fmt.Sprintf("id_%d", time.Now().UnixNano())
 	}
-	
+
 	// قالب‌بندی به عنوان رشته هگزادسیمال
 	return fmt.Sprintf("%x", bytes)
 }
@@ -29,7 +29,7 @@ func FormatBytes(bytes int64) string {
 		GB = MB * 1024
 		TB = GB * 1024
 	)
-	
+
 	switch {
 	case bytes >= TB:
 		return fmt.Sprintf("%.2f TB", float64(bytes)/TB)

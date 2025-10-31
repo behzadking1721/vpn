@@ -34,7 +34,7 @@ func TestDataUsageRecording(t *testing.T) {
 	}
 
 	// Record some data usage
-	sent := int64(1024 * 1024) // 1 MB
+	sent := int64(1024 * 1024)     // 1 MB
 	received := int64(2048 * 1024) // 2 MB
 	total := sent + received
 
@@ -88,9 +88,9 @@ func TestDataLimitEnforcement(t *testing.T) {
 	}
 
 	// Record data usage that exceeds the limit
-	sent := int64(3 * 1024 * 1024) // 3 MB
+	sent := int64(3 * 1024 * 1024)     // 3 MB
 	received := int64(3 * 1024 * 1024) // 3 MB
-	total := sent + received // 6 MB, which exceeds the 5 MB limit
+	total := sent + received           // 6 MB, which exceeds the 5 MB limit
 
 	dataManager.RecordDataUsage(server.ID, sent, received)
 
@@ -141,7 +141,7 @@ func TestDataUsageReset(t *testing.T) {
 	}
 
 	// Record some data usage
-	sent := int64(1024 * 1024) // 1 MB
+	sent := int64(1024 * 1024)     // 1 MB
 	received := int64(2048 * 1024) // 2 MB
 
 	dataManager.RecordDataUsage(server.ID, sent, received)

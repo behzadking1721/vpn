@@ -7,5 +7,23 @@
     "message": "This is a test alert",
     "server_id": "server-1",
     "read": true
+  },
+  {
+    "id": "test-alert-1",
+    "timestamp": "2025-10-31T16:46:57.745901+03:30",
+    "type": "warning",
+    "title": "Test Alert",
+    "message": "This is a test alert",
+    "server_id": "server-1",
+    "read": false
+  },
+  {
+    "id": "test-alert-1",
+    "timestamp": "2025-10-31T16:47:13.9986716+03:30",
+    "type": "warning",
+    "title": "Test Alert",
+    "message": "This is a test alert",
+    "server_id": "server-1",
+    "read": false
   }
 ]

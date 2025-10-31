@@ -11,14 +11,14 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	
+
 	"golang.org/x/crypto/pbkdf2"
 )
 
 // EncryptionManager manages data encryption and decryption
 type EncryptionManager struct {
-	key    []byte
-	salt   []byte
+	key  []byte
+	salt []byte
 }
 
 // NewEncryptionManager creates a new encryption manager
@@ -210,7 +210,7 @@ func (em *EncryptionManager) EncryptString(plaintext string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 
@@ -220,11 +220,11 @@ func (em *EncryptionManager) DecryptString(ciphertext string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	plaintext, err := em.Decrypt(data)
 	if err != nil {
 		return "", err
 	}
-	
+
 	return string(plaintext), nil
 }

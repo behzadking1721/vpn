@@ -38,14 +38,14 @@ const (
 
 // AnalyticsReport represents a complete analytics report
 type AnalyticsReport struct {
-	ID          string       `json:"id"`
-	Period      ReportPeriod `json:"period"`
-	StartDate   time.Time    `json:"start_date"`
-	EndDate     time.Time    `json:"end_date"`
-	PingStats   PingStats    `json:"ping_stats"`
+	ID          string         `json:"id"`
+	Period      ReportPeriod   `json:"period"`
+	StartDate   time.Time      `json:"start_date"`
+	EndDate     time.Time      `json:"end_date"`
+	PingStats   PingStats      `json:"ping_stats"`
 	DataUsage   DataUsageStats `json:"data_usage"`
-	TimePattern []TimePattern `json:"time_pattern"`
-	CreatedAt   time.Time    `json:"created_at"`
+	TimePattern []TimePattern  `json:"time_pattern"`
+	CreatedAt   time.Time      `json:"created_at"`
 }
 
 // PingAnalysisRequest represents a request for ping analysis
@@ -65,32 +65,32 @@ type ReportRequest struct {
 
 // DailyDataUsage represents daily data usage
 type DailyDataUsage struct {
-	Date        time.Time `json:"date"`
-	DataSent    int64     `json:"data_sent"`
-	DataReceived int64    `json:"data_received"`
+	Date         time.Time `json:"date"`
+	DataSent     int64     `json:"data_sent"`
+	DataReceived int64     `json:"data_received"`
 }
 
 // WeeklyDataUsage represents weekly data usage
 type WeeklyDataUsage struct {
-	WeekStart   time.Time `json:"week_start"`
-	WeekEnd     time.Time `json:"week_end"`
-	DataSent    int64     `json:"data_sent"`
-	DataReceived int64    `json:"data_received"`
+	WeekStart    time.Time `json:"week_start"`
+	WeekEnd      time.Time `json:"week_end"`
+	DataSent     int64     `json:"data_sent"`
+	DataReceived int64     `json:"data_received"`
 }
 
 // MonthlyDataUsage represents monthly data usage
 type MonthlyDataUsage struct {
-	MonthStart  time.Time `json:"month_start"`
-	MonthEnd    time.Time `json:"month_end"`
-	DataSent    int64     `json:"data_sent"`
-	DataReceived int64    `json:"data_received"`
+	MonthStart   time.Time `json:"month_start"`
+	MonthEnd     time.Time `json:"month_end"`
+	DataSent     int64     `json:"data_sent"`
+	DataReceived int64     `json:"data_received"`
 }
 
 // ConnectionPattern represents connection patterns
 type ConnectionPattern struct {
-	Hour         int `json:"hour"`
-	Connections  int `json:"connections"`
-	Disconnects  int `json:"disconnects"`
+	Hour        int `json:"hour"`
+	Connections int `json:"connections"`
+	Disconnects int `json:"disconnects"`
 }
 
 // ServerPerformance represents server performance metrics

@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"c:/Users/behza/OneDrive/Documents/vpn/src/managers"
 	"c:/Users/behza/OneDrive/Documents/vpn/src/core"
-	"github.com/gorilla/websocket"
+	"c:/Users/behza/OneDrive/Documents/vpn/src/managers"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 )
 
 // WebSocketHub maintains the set of active clients and broadcasts messages to the clients
@@ -31,7 +31,7 @@ type WebSocketHub struct {
 	connManager   *managers.ConnectionManager
 	dataManager   *managers.DataManager
 	configManager *managers.ConfigManager
-	
+
 	// Mutex for thread safety
 	mutex sync.RWMutex
 }
@@ -67,7 +67,7 @@ func (h *WebSocketHub) Run() {
 			h.mutex.Lock()
 			h.clients[client] = true
 			h.mutex.Unlock()
-			
+
 		case client := <-h.unregister:
 			h.mutex.Lock()
 			if _, ok := h.clients[client]; ok {
@@ -75,7 +75,7 @@ func (h *WebSocketHub) Run() {
 				close(client.send)
 			}
 			h.mutex.Unlock()
-			
+
 		case message := <-h.broadcast:
 			h.mutex.RLock()
 			for client := range h.clients {
@@ -87,7 +87,7 @@ func (h *WebSocketHub) Run() {
 				}
 			}
 			h.mutex.RUnlock()
-			
+
 		case <-ticker.C:
 			// Send dashboard updates periodically
 			h.sendDashboardUpdates()
@@ -100,13 +100,13 @@ func (h *WebSocketHub) sendDashboardUpdates() {
 	// Get connection status
 	status := h.connManager.GetStatus()
 	connInfo := h.connManager.GetConnectionInfo()
-	
+
 	connectionStatus := ConnectionStatusResponse{
 		Connected:    status == core.StatusConnected,
 		DataSent:     connInfo.DataSent,
 		DataReceived: connInfo.DataReceived,
 	}
-	
+
 	if status == core.StatusConnected {
 		currentServer := h.connManager.GetCurrentServer()
 		if currentServer != nil {
@@ -114,13 +114,13 @@ func (h *WebSocketHub) sendDashboardUpdates() {
 			connectionStatus.ConnectionTime = connInfo.StartTime
 		}
 	}
-	
+
 	// Prepare the message
 	message := WebSocketMessage{
 		Type: "dashboard_update",
 		Data: connectionStatus,
 	}
-	
+
 	// Send to all clients
 	h.broadcastMessage(message)
 }
@@ -131,7 +131,7 @@ func (h *WebSocketHub) broadcastMessage(msg WebSocketMessage) {
 	if err != nil {
 		return
 	}
-	
+
 	h.mutex.RLock()
 	for client := range h.clients {
 		select {
@@ -193,13 +193,13 @@ func (h *WebSocketHub) serveWs(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	
+
 	client := &WebSocketClient{
 		hub:  h,
 		conn: conn,
 		send: make(chan []byte, 256),
 	}
-	
+
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in
@@ -213,7 +213,7 @@ func (c *WebSocketClient) writePump() {
 	defer func() {
 		c.conn.Close()
 	}()
-	
+
 	for {
 		select {
 		case message, ok := <-c.send:
@@ -227,7 +227,7 @@ func (c *WebSocketClient) writePump() {
 			if err != nil {
 				return
 			}
-			
+
 			w.Write(message)
 
 			if err := w.Close(); err != nil {
@@ -243,7 +243,7 @@ func (c *WebSocketClient) readPump() {
 		c.hub.unregister <- c
 		c.conn.Close()
 	}()
-	
+
 	for {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
@@ -251,13 +251,13 @@ func (c *WebSocketClient) readPump() {
 			}
 			break
 		}
-		
+
 		// Handle incoming messages if needed
 		var msg WebSocketMessage
 		if err := json.Unmarshal(message, &msg); err != nil {
 			continue
 		}
-		
+
 		// Process message based on type
 		switch msg.Type {
 		case "ping":

@@ -1,8 +1,8 @@
 package database
 
 import (
-	"c:/Users/behza/OneDrive/Documents/vpn/src/history"
 	"c:/Users/behza/OneDrive/Documents/vpn/src/alert"
+	"c:/Users/behza/OneDrive/Documents/vpn/src/history"
 	"c:/Users/behza/OneDrive/Documents/vpn/src/settings"
 )
 
@@ -119,17 +119,17 @@ func NewAlertRepository(dbManager *Manager) *AlertRepository {
 // AddAlertRecord adds an alert record
 func (r *AlertRepository) AddAlertRecord(record alert.Alert) error {
 	dbRecord := AlertRecord{
-		ID:          record.ID,
-		Type:        string(record.Type),
-		Title:       record.Title,
-		Message:     record.Message,
-		Timestamp:   record.Timestamp,
-		Value:       record.Value,
-		Severity:    string(record.Severity),
-		Resolved:    record.Resolved,
-		Read:        record.Read,
-		ServerID:    record.ServerID,
-		ServerName:  record.ServerName,
+		ID:         record.ID,
+		Type:       string(record.Type),
+		Title:      record.Title,
+		Message:    record.Message,
+		Timestamp:  record.Timestamp,
+		Value:      record.Value,
+		Severity:   string(record.Severity),
+		Resolved:   record.Resolved,
+		Read:       record.Read,
+		ServerID:   record.ServerID,
+		ServerName: record.ServerName,
 	}
 
 	return r.dbManager.AddAlertRecord(dbRecord)
@@ -145,17 +145,17 @@ func (r *AlertRepository) GetAlertRecords(unread, unresolved bool, limit int) ([
 	records := make([]alert.Alert, len(dbRecords))
 	for i, dbRecord := range dbRecords {
 		records[i] = alert.Alert{
-			ID:          dbRecord.ID,
-			Type:        alert.AlertRuleType(dbRecord.Type),
-			Title:       dbRecord.Title,
-			Message:     dbRecord.Message,
-			Timestamp:   dbRecord.Timestamp,
-			Value:       dbRecord.Value,
-			Severity:    alert.AlertSeverity(dbRecord.Severity),
-			Resolved:    dbRecord.Resolved,
-			Read:        dbRecord.Read,
-			ServerID:    dbRecord.ServerID,
-			ServerName:  dbRecord.ServerName,
+			ID:         dbRecord.ID,
+			Type:       alert.AlertRuleType(dbRecord.Type),
+			Title:      dbRecord.Title,
+			Message:    dbRecord.Message,
+			Timestamp:  dbRecord.Timestamp,
+			Value:      dbRecord.Value,
+			Severity:   alert.AlertSeverity(dbRecord.Severity),
+			Resolved:   dbRecord.Resolved,
+			Read:       dbRecord.Read,
+			ServerID:   dbRecord.ServerID,
+			ServerName: dbRecord.ServerName,
 		}
 	}
 
@@ -165,17 +165,17 @@ func (r *AlertRepository) GetAlertRecords(unread, unresolved bool, limit int) ([
 // UpdateAlertRecord updates an alert record
 func (r *AlertRepository) UpdateAlertRecord(record alert.Alert) error {
 	dbRecord := AlertRecord{
-		ID:          record.ID,
-		Type:        string(record.Type),
-		Title:       record.Title,
-		Message:     record.Message,
-		Timestamp:   record.Timestamp,
-		Value:       record.Value,
-		Severity:    string(record.Severity),
-		Resolved:    record.Resolved,
-		Read:        record.Read,
-		ServerID:    record.ServerID,
-		ServerName:  record.ServerName,
+		ID:         record.ID,
+		Type:       string(record.Type),
+		Title:      record.Title,
+		Message:    record.Message,
+		Timestamp:  record.Timestamp,
+		Value:      record.Value,
+		Severity:   string(record.Severity),
+		Resolved:   record.Resolved,
+		Read:       record.Read,
+		ServerID:   record.ServerID,
+		ServerName: record.ServerName,
 	}
 
 	return r.dbManager.UpdateAlertRecord(dbRecord)

@@ -39,26 +39,26 @@ type DataUsageRecord struct {
 
 // PingRecord represents a ping record in the database
 type PingRecord struct {
-	ID        string    `json:"id" db:"id"`
-	Timestamp time.Time `json:"timestamp" db:"timestamp"`
-	ServerID  string    `json:"server_id" db:"server_id"`
-	ServerName string   `json:"server_name" db:"server_name"`
-	Ping      int       `json:"ping" db:"ping"`
+	ID         string    `json:"id" db:"id"`
+	Timestamp  time.Time `json:"timestamp" db:"timestamp"`
+	ServerID   string    `json:"server_id" db:"server_id"`
+	ServerName string    `json:"server_name" db:"server_name"`
+	Ping       int       `json:"ping" db:"ping"`
 }
 
 // AlertRecord represents an alert record in the database
 type AlertRecord struct {
-	ID          string    `json:"id" db:"id"`
-	Type        string    `json:"type" db:"type"`
-	Title       string    `json:"title" db:"title"`
-	Message     string    `json:"message" db:"message"`
-	Timestamp   time.Time `json:"timestamp" db:"timestamp"`
-	Value       float64   `json:"value" db:"value"`
-	Severity    string    `json:"severity" db:"severity"`
-	Resolved    bool      `json:"resolved" db:"resolved"`
-	Read        bool      `json:"read" db:"read"`
-	ServerID    string    `json:"server_id" db:"server_id"`
-	ServerName  string    `json:"server_name" db:"server_name"`
+	ID         string    `json:"id" db:"id"`
+	Type       string    `json:"type" db:"type"`
+	Title      string    `json:"title" db:"title"`
+	Message    string    `json:"message" db:"message"`
+	Timestamp  time.Time `json:"timestamp" db:"timestamp"`
+	Value      float64   `json:"value" db:"value"`
+	Severity   string    `json:"severity" db:"severity"`
+	Resolved   bool      `json:"resolved" db:"resolved"`
+	Read       bool      `json:"read" db:"read"`
+	ServerID   string    `json:"server_id" db:"server_id"`
+	ServerName string    `json:"server_name" db:"server_name"`
 }
 
 // DashboardSettingsRecord represents dashboard settings in the database

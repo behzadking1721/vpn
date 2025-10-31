@@ -7,7 +7,7 @@ import (
 
 func TestProtocolFactory(t *testing.T) {
 	factory := NewProtocolFactory()
-	
+
 	// Test VMess handler creation
 	t.Run("VMessHandlerCreation", func(t *testing.T) {
 		handler, err := factory.CreateHandler(core.ProtocolVMess)
@@ -18,7 +18,7 @@ func TestProtocolFactory(t *testing.T) {
 			t.Errorf("Expected VMess protocol, got %s", handler.GetProtocol())
 		}
 	})
-	
+
 	// Test Shadowsocks handler creation
 	t.Run("ShadowsocksHandlerCreation", func(t *testing.T) {
 		handler, err := factory.CreateHandler(core.ProtocolShadowsocks)
@@ -29,7 +29,7 @@ func TestProtocolFactory(t *testing.T) {
 			t.Errorf("Expected Shadowsocks protocol, got %s", handler.GetProtocol())
 		}
 	})
-	
+
 	// Test unsupported protocol
 	t.Run("UnsupportedProtocol", func(t *testing.T) {
 		_, err := factory.CreateHandler("unsupported")
@@ -41,12 +41,12 @@ func TestProtocolFactory(t *testing.T) {
 
 func TestVMessHandler(t *testing.T) {
 	handler := NewVMessHandler()
-	
+
 	// Test initial state
 	if handler.IsConnected() {
 		t.Error("Expected handler to be disconnected initially")
 	}
-	
+
 	// Test connection
 	server := core.Server{
 		ID:         "test-vmess",
@@ -57,16 +57,16 @@ func TestVMessHandler(t *testing.T) {
 		Encryption: "auto",
 		TLS:        true,
 	}
-	
+
 	err := handler.Connect(server)
 	if err != nil {
 		t.Errorf("Failed to connect: %v", err)
 	}
-	
+
 	if !handler.IsConnected() {
 		t.Error("Expected handler to be connected after Connect()")
 	}
-	
+
 	// Test data usage
 	sent, received, err := handler.GetDataUsage()
 	if err != nil {
@@ -75,7 +75,7 @@ func TestVMessHandler(t *testing.T) {
 	if sent == 0 || received == 0 {
 		t.Error("Expected non-zero data usage")
 	}
-	
+
 	// Test connection details
 	details, err := handler.GetConnectionDetails()
 	if err != nil {
@@ -84,13 +84,13 @@ func TestVMessHandler(t *testing.T) {
 	if details["protocol"] != "VMess" {
 		t.Errorf("Expected protocol VMess, got %v", details["protocol"])
 	}
-	
+
 	// Test disconnection
 	err = handler.Disconnect()
 	if err != nil {
 		t.Errorf("Failed to disconnect: %v", err)
 	}
-	
+
 	if handler.IsConnected() {
 		t.Error("Expected handler to be disconnected after Disconnect()")
 	}
@@ -98,12 +98,12 @@ func TestVMessHandler(t *testing.T) {
 
 func TestShadowsocksHandler(t *testing.T) {
 	handler := NewRealShadowsocksHandler()
-	
+
 	// Test initial state
 	if handler.IsConnected() {
 		t.Error("Expected handler to be disconnected initially")
 	}
-	
+
 	// Test connection
 	server := core.Server{
 		ID:       "test-ss",
@@ -114,27 +114,27 @@ func TestShadowsocksHandler(t *testing.T) {
 		Method:   "aes-256-gcm",
 		Password: "test-password",
 	}
-	
+
 	err := handler.Connect(server)
 	if err != nil {
 		t.Errorf("Failed to connect: %v", err)
 	}
-	
+
 	if !handler.IsConnected() {
 		t.Error("Expected handler to be connected after Connect()")
 	}
-	
+
 	// Test data usage
 	sent, received, err := handler.GetDataUsage()
 	if err != nil {
 		t.Errorf("Failed to get data usage: %v", err)
 	}
-	
+
 	// For simulation, we just check they are >= 0
 	if sent < 0 || received < 0 {
 		t.Error("Expected non-negative data usage")
 	}
-	
+
 	// Test connection details
 	details, err := handler.GetConnectionDetails()
 	if err != nil {
@@ -143,13 +143,13 @@ func TestShadowsocksHandler(t *testing.T) {
 	if details["protocol"] != "Shadowsocks" {
 		t.Errorf("Expected protocol Shadowsocks, got %v", details["protocol"])
 	}
-	
+
 	// Test disconnection
 	err = handler.Disconnect()
 	if err != nil {
 		t.Errorf("Failed to disconnect: %v", err)
 	}
-	
+
 	if handler.IsConnected() {
 		t.Error("Expected handler to be disconnected after Disconnect()")
 	}
