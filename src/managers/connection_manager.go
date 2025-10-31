@@ -9,16 +9,17 @@ import (
 	"time"
 )
 
-// ConnectionManager handles VPN connection lifecycle
+// ConnectionManager handles VPN connections with protocol-agnostic operations
 type ConnectionManager struct {
-	status       core.ConnectionStatus
+	status        core.ConnectionStatus
 	currentServer *core.Server
-	connInfo     core.ConnectionInfo
-	mutex        sync.RWMutex
-	cancelFunc   context.CancelFunc
-	ctx          context.Context
-	listeners    []ConnectionListener
-	handler      protocols.ProtocolHandler // Handler for the current connection
+	connInfo      core.ConnectionInfo
+	mutex         sync.RWMutex
+	cancelFunc    context.CancelFunc
+	ctx           context.Context
+	listeners     []ConnectionListener
+	handler       protocols.ProtocolHandler // Current protocol-specific handler
+	isConnected   bool                      // Simplified connection state
 }
 
 // ConnectionListener interface for connection status updates
@@ -28,10 +29,15 @@ type ConnectionListener interface {
 
 // NewConnectionManager creates a new connection manager
 func NewConnectionManager() *ConnectionManager {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	cm := &ConnectionManager{
 		status:    core.StatusDisconnected,
 		connInfo:  core.ConnectionInfo{Status: core.StatusDisconnected},
 		listeners: make([]ConnectionListener, 0),
+		ctx:       ctx,
+		cancelFunc: cancel,
+		isConnected: false,
 	}
 
 	return cm
@@ -71,17 +77,17 @@ func (cm *ConnectionManager) notifyListeners() {
 	}
 }
 
-// Connect connects to a specified server
+// Connect establishes a connection to a VPN server
 func (cm *ConnectionManager) Connect(server core.Server) error {
 	cm.mutex.Lock()
 
 	// Check if already connected or connecting
-	if cm.status == core.StatusConnected || cm.status == core.StatusConnecting {
+	if cm.isConnected {
 		cm.mutex.Unlock()
-		return errors.New("already connected or connecting")
+		return errors.New("already connected to a VPN server")
 	}
 
-	// Update status
+	// Reset connection info
 	cm.status = core.StatusConnecting
 	cm.currentServer = &server
 	cm.connInfo = core.ConnectionInfo{
@@ -111,7 +117,7 @@ func (cm *ConnectionManager) Connect(server core.Server) error {
 	cm.handler = handler
 
 	// Try to connect using the protocol handler
-	err = handler.Connect(server)
+	err = handler.Connect(&server.Config)
 	if err != nil {
 		cm.mutex.Lock()
 		cm.status = core.StatusError
@@ -124,6 +130,7 @@ func (cm *ConnectionManager) Connect(server core.Server) error {
 
 	// Update status to connected
 	cm.mutex.Lock()
+	cm.isConnected = true
 	cm.status = core.StatusConnected
 	cm.connInfo.Status = core.StatusConnected
 	cm.connInfo.LocalIP = "10.0.0.2"
@@ -166,14 +173,14 @@ func (cm *ConnectionManager) monitorDataUsage() {
 	}
 }
 
-// Disconnect disconnects from the current server
+// Disconnect terminates the current VPN connection
 func (cm *ConnectionManager) Disconnect() error {
 	cm.mutex.Lock()
 
 	// Check if already disconnected
-	if cm.status == core.StatusDisconnected || cm.status == core.StatusDisconnecting {
+	if !cm.isConnected {
 		cm.mutex.Unlock()
-		return errors.New("not connected")
+		return errors.New("not connected to any VPN server")
 	}
 
 	// Update status
@@ -186,7 +193,12 @@ func (cm *ConnectionManager) Disconnect() error {
 
 	// Disconnect using the protocol handler
 	if cm.handler != nil {
-		cm.handler.Disconnect()
+		err := cm.handler.Disconnect()
+		if err != nil {
+			cm.mutex.Lock()
+			cm.connInfo.Error = "Disconnect failed: " + err.Error()
+			cm.mutex.Unlock()
+		}
 		cm.handler = nil
 	}
 
@@ -195,6 +207,7 @@ func (cm *ConnectionManager) Disconnect() error {
 
 	// Update status to disconnected
 	cm.mutex.Lock()
+	cm.isConnected = false
 	cm.status = core.StatusDisconnected
 	cm.connInfo.Status = core.StatusDisconnected
 	cm.connInfo.EndTime = time.Now()
@@ -212,6 +225,13 @@ func (cm *ConnectionManager) GetStatus() core.ConnectionStatus {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
 	return cm.status
+}
+
+// IsConnected returns true if currently connected to a VPN server
+func (cm *ConnectionManager) IsConnected() bool {
+	cm.mutex.RLock()
+	defer cm.mutex.RUnlock()
+	return cm.isConnected
 }
 
 // GetCurrentServer returns the currently connected server

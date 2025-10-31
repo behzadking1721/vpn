@@ -1,4 +1,3 @@
-
 # Cross-Platform VPN Client
 
 A multi-platform VPN application with a simple and user-friendly interface similar to Hiddify, supporting various protocols and subscription links.
@@ -36,11 +35,9 @@ Before you can build and run this project, you need to install the following dep
 - **Linux**: `sudo apt install golang` (Ubuntu/Debian) or equivalent for your distribution
 
 ### Flutter (for mobile UI - future implementation)
-
 - Download from [flutter.dev](https://flutter.dev/docs/get-started/install)
 
 ### Node.js and npm (for desktop UI with Electron - future implementation)
-
 - Download from [nodejs.org](https://nodejs.org/)
 
 ## Technical Architecture
@@ -65,7 +62,6 @@ The application is built using a modular approach with shared core logic and pla
 ## Current Status
 
 ✅ **Phase 1: Core Functionality Completed**
-
 - Basic architecture with modular design
 - Data models and interfaces
 - Server management system
@@ -187,7 +183,6 @@ This project follows a structured release process:
 | macOS    | amd64, arm64        | ZIP                    |
 
 ### Phase 3: User Interface
-
 - Develop mobile UI with Flutter
 - Develop desktop UI with Electron/Tauri
 - Create UI components:
@@ -197,6 +192,7 @@ This project follows a structured release process:
   - Statistics dashboard
 
 ## Project Structure
+
 ```
 vpn/
 ├── src/
@@ -337,6 +333,42 @@ go run test_protocols.go
 
 See [Protocol Testing Guide](docs/protocol_testing.md) for detailed testing instructions.
 
+### Setting up Development Environment
+
+#### Windows
+
+Run the setup script:
+
+```
+setup-dev.bat
+```
+
+#### Linux/macOS
+
+Run the setup script:
+
+```bash
+chmod +x setup-dev.sh
+./setup-dev.sh
+```
+
+### Running Tests
+
+#### Windows
+
+```
+run-tests.bat
+```
+
+#### Linux/macOS
+
+```bash
+chmod +x run-tests.sh
+./run-tests.sh
+```
+
+See [Testing Guide](docs/testing-guide.md) for detailed testing instructions.
+
 ## UI Prototypes
 
 The project includes HTML prototypes of both desktop and mobile UIs:
@@ -348,6 +380,8 @@ These prototypes demonstrate the intended UI design and can be opened directly i
 ## Contributing
 
 We welcome contributions to this open-source project. Please see our roadmap in the [docs/roadmap.md](docs/roadmap.md) file for planned features and improvements.
+
+For development guidelines, see [Development Guide](docs/development.md).
 
 ## License
 

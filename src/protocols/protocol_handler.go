@@ -3,114 +3,67 @@ package protocols
 import (
 	"c:/Users/behza/OneDrive/Documents/vpn/src/core"
 	"errors"
-	"sync"
 	"time"
 )
 
-// ProtocolHandler defines the interface for handling different VPN protocols
+// BaseHandler provides common functionality for protocol handlers
+type BaseHandler struct {
+	protocol   core.ProtocolType
+	connected  bool
+	dataSent   int64
+	dataReceived int64
+	lastUpdate time.Time
+	mutex      sync.RWMutex
+}
+
+// ConnectionStats represents connection statistics
+type ConnectionStats struct {
+	BytesSent     int64
+	BytesReceived int64
+	Duration      int64 // in seconds
+}
+
+// ProtocolHandler defines the interface for all protocol handlers
 type ProtocolHandler interface {
-	// Connect establishes a connection to the server
-	Connect(server core.Server) error
+	// Connect establishes a connection to the VPN server
+	Connect(config *core.ServerConfig) error
 	
-	// Disconnect terminates the connection
+	// Disconnect terminates the VPN connection
 	Disconnect() error
 	
-	// IsConnected checks if the connection is active
+	// IsConnected returns true if the VPN is currently connected
 	IsConnected() bool
 	
-	// GetProtocol returns the protocol type this handler supports
-	GetProtocol() core.ProtocolType
-	
-	// GetDataUsage returns the amount of data sent and received
-	GetDataUsage() (sent, received int64, err error)
-	
-	// GetConnectionDetails returns detailed connection information
-	GetConnectionDetails() (map[string]interface{}, error)
-	
-	// UpdateDataUsage updates the data usage statistics
-	UpdateDataUsage(sent, received int64)
+	// GetStats returns connection statistics
+	GetStats() *ConnectionStats
 }
 
-// ProtocolFactory creates protocol handlers
-type ProtocolFactory struct{}
+// ProtocolFactory is a function that creates a new protocol handler
+type ProtocolFactory func() ProtocolHandler
 
-// NewProtocolFactory creates a new protocol factory
-func NewProtocolFactory() *ProtocolFactory {
-	return &ProtocolFactory{}
+// protocolFactories stores registered protocol factories
+var protocolFactories = make(map[string]ProtocolFactory)
+
+// RegisterProtocol registers a new protocol factory
+func RegisterProtocol(name string, factory ProtocolFactory) {
+	protocolFactories[name] = factory
 }
 
-// CreateHandler creates a protocol handler for the specified protocol type
-func (pf *ProtocolFactory) CreateHandler(protocolType core.ProtocolType) (ProtocolHandler, error) {
-	switch protocolType {
-	case core.ProtocolVMess:
-		return NewVMessHandler(), nil
-	case core.ProtocolVLESS:
-		return NewVLESSHandler(), nil
-	case core.ProtocolTrojan:
-		return NewTrojanHandler(), nil
-	case core.ProtocolReality:
-		return NewRealityHandler(), nil
-	case core.ProtocolHysteria:
-		return NewHysteriaHandler(), nil
-	case core.ProtocolTUIC:
-		return NewTUICHandler(), nil
-	case core.ProtocolSSH:
-		return NewSSHHandler(), nil
-	case core.ProtocolShadowsocks:
-		return NewShadowsocksHandler(), nil
-	default:
-		return nil, errors.New("unsupported protocol type")
+// CreateProtocol creates a new protocol handler by name
+func CreateProtocol(name string) (ProtocolHandler, error) {
+	factory, exists := protocolFactories[name]
+	if !exists {
+		return nil, &UnknownProtocolError{name}
 	}
+	return factory(), nil
 }
 
-// BaseHandler provides a base implementation for protocol handlers
-type BaseHandler struct {
-	connected   bool
-	protocol    core.ProtocolType
-	dataSent    int64
-	dataReceived int64
-	mutex       sync.RWMutex
-	lastUpdate  time.Time
+// UnknownProtocolError is returned when trying to create an unregistered protocol
+type UnknownProtocolError struct {
+	Protocol string
 }
 
-// IsConnected checks if the connection is active
-func (bh *BaseHandler) IsConnected() bool {
-	return bh.connected
+func (e *UnknownProtocolError) Error() string {
+	return "unknown protocol: " + e.Protocol
 }
 
-// GetProtocol returns the protocol type
-func (bh *BaseHandler) GetProtocol() core.ProtocolType {
-	return bh.protocol
-}
-
-// GetDataUsage returns the amount of data sent and received
-func (bh *BaseHandler) GetDataUsage() (sent, received int64, err error) {
-	bh.mutex.RLock()
-	defer bh.mutex.RUnlock()
-	
-	return bh.dataSent, bh.dataReceived, nil
-}
-
-// UpdateDataUsage updates the data usage statistics
-func (bh *BaseHandler) UpdateDataUsage(sent, received int64) {
-	bh.mutex.Lock()
-	defer bh.mutex.Unlock()
-	
-	bh.dataSent += sent
-	bh.dataReceived += received
-	bh.lastUpdate = time.Now()
-}
-
-// GetConnectionDetails returns detailed connection information
-// This is a default implementation that can be overridden by specific handlers
-func (bh *BaseHandler) GetConnectionDetails() (map[string]interface{}, error) {
-	if !bh.connected {
-		return nil, errors.New("not connected")
-	}
-	
-	details := map[string]interface{}{
-		"protocol": bh.protocol,
-	}
-	
-	return details, nil
-}

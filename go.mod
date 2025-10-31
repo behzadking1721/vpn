@@ -1,10 +1,14 @@
 module vpn-client
 
-go 1.21
+go 1.24.0
 
 require (
-    github.com/gorilla/mux v1.8.0
-    github.com/shadowsocks/go-shadowsocks2 v0.0.0-20230516033142-213602970b87
-    github.com/xtls/xray-core v1.8.0
-    github.com/makiuchi-d/gozxing v0.0.0-20230921130123-9dba00bbba54
+	github.com/makiuchi-d/gozxing v0.1.1
+	github.com/mattn/go-sqlite3 v1.14.32
+	golang.org/x/crypto v0.43.0
+)
+
+require (
+	golang.org/x/text v0.30.0 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )

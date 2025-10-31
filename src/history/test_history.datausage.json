@@ -1,0 +1,12 @@
+[
+  {
+    "id": "test-data-1",
+    "timestamp": "2025-10-31T03:24:16.7960037+03:30",
+    "server_id": "server-1",
+    "server_name": "Test Server",
+    "data_sent": 1024,
+    "data_received": 2048,
+    "total_sent": 10240,
+    "total_received": 20480
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "servers": [
+    {
+      "name": "سرور تست",
+      "address": "example.com",
+      "port": 443,
+      "protocol": "vless",
+      "uuid": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "security": "tls"
+    }
+  ],
+  "log_level": "info",
+  "auto_connect": true
+}

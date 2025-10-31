@@ -65,6 +65,8 @@ func (c *CLI) Run() {
 		case "7":
 			c.findFastestServer()
 		case "8":
+			c.testConnection()
+		case "9":
 			fmt.Println("Goodbye!")
 			return
 		default:
@@ -85,7 +87,8 @@ func (c *CLI) showMenu() {
 	fmt.Println("5. Show status")
 	fmt.Println("6. Ping servers")
 	fmt.Println("7. Find fastest server")
-	fmt.Println("8. Exit")
+	fmt.Println("8. Test connection")
+	fmt.Println("9. Exit")
 }
 
 // listServers displays all servers
@@ -284,6 +287,41 @@ func (c *CLI) showStatus() {
 				currentServer.Name, currentServer.Host, currentServer.Port)
 		}
 	}
+}
+
+// testConnection tests the connection functionality with a dummy server
+func (c *CLI) testConnection() {
+	fmt.Println("\n--- Test Connection ---")
+	
+	// Create a test server configuration
+	testServer := core.Server{
+		ID:       "test-connection",
+		Name:     "Test Server",
+		Host:     "test.example.com",
+		Port:     443,
+		Protocol: core.ProtocolVMess,
+		Enabled:  true,
+	}
+	
+	fmt.Printf("Testing connection to %s (%s:%d)...\n", testServer.Name, testServer.Host, testServer.Port)
+	
+	err := c.connManager.Connect(testServer)
+	if err != nil {
+		fmt.Printf("Failed to connect: %v\n", err)
+		return
+	}
+	
+	fmt.Println("Connection established successfully!")
+	
+	// Immediately disconnect
+	fmt.Println("Disconnecting...")
+	err = c.connManager.Disconnect()
+	if err != nil {
+		fmt.Printf("Failed to disconnect: %v\n", err)
+		return
+	}
+	
+	fmt.Println("Connection test completed successfully!")
 }
 
 // pingServers pings all enabled servers

@@ -1,171 +1,105 @@
 package main
 
 import (
-	"c:/Users/behza/OneDrive/Documents/vpn/src/api"
-	"c:/Users/behza/OneDrive/Documents/vpn/src/cli"
-	"c:/Users/behza/OneDrive/Documents/vpn/src/core"
-	"c:/Users/behza/OneDrive/Documents/vpn/src/managers"
-	"c:/Users/behza/OneDrive/Documents/vpn/src/protocols"
-	"c:/Users/behza/OneDrive/Documents/vpn/src/updater"
-	"c:/Users/behza/OneDrive/Documents/vpn/src/utils"
+	"encoding/json"
+	"flag"
 	"fmt"
-	"log"
-	"os"
-	"path/filepath"
+	"io/ioutil"
 )
 
-const (
-	// Application version
-	AppVersion = "1.0.0"
-	
-	// Update API URL (this should point to your update server)
-	UpdateAPIURL = "https://your-update-server.com/api/latest-release"
-)
+// Version of the application
+const Version = "1.0.0"
+
+// ServerConfig represents a VPN server configuration
+type ServerConfig struct {
+	Name     string `json:"name"`
+	Address  string `json:"address"`
+	Port     int    `json:"port"`
+	Protocol string `json:"protocol"`
+	UUID     string `json:"uuid"`
+	Security string `json:"security"`
+}
+
+// Config represents the application configuration
+type Config struct {
+	Servers     []ServerConfig `json:"servers"`
+	LogLevel    string         `json:"log_level"`
+	AutoConnect bool           `json:"auto_connect"`
+}
 
 func main() {
-	fmt.Println("VPN Client Application")
-	fmt.Println("======================")
+	// Define command line flags
+	version := flag.Bool("version", false, "Show version information")
+	help := flag.Bool("help", false, "Show help information")
+	configPath := flag.String("config", "config/settings.json", "Path to configuration file")
 
-	// Initialize logger
-	logger := utils.NewLogger(&utils.LoggerConfig{
-		Level:     utils.LogLevelInfo,
-		File:      "./logs/app.log",
-		Timestamp: true,
-	})
-	defer logger.Close()
+	// Parse command line flags
+	flag.Parse()
 
-	logger.Info("Starting VPN Client v%s", AppVersion)
+	// Handle version flag
+	if *version {
+		fmt.Printf("VPN Client v%s\n", Version)
+		return
+	}
 
-	// Check for updates
-	checkForUpdates(logger)
+	// Handle help flag
+	if *help {
+		fmt.Println("VPN Client - A cross-platform VPN client")
+		fmt.Printf("Version: %s\n", Version)
+		fmt.Println()
+		fmt.Println("Usage:")
+		fmt.Println("  vpn-client [options]")
+		fmt.Println()
+		fmt.Println("Options:")
+		fmt.Println("  --version    Show version information")
+		fmt.Println("  --help       Show help information")
+		fmt.Println("  --config     Path to configuration file (default: config/settings.json)")
+		return
+	}
 
-	// Check command line arguments
-	if len(os.Args) > 1 {
-		switch os.Args[1] {
-		case "--api":
-			startAPIServer(logger)
-			return
-		case "--cli":
-			startCLI(logger)
-			return
-		case "--help", "-h":
-			showHelp()
-			return
+	// Load configuration
+	config, err := loadConfig(*configPath)
+	if err != nil {
+		fmt.Printf("Warning: Could not load config file: %v\n", err)
+		fmt.Println("Using default configuration...")
+		config = &Config{
+			Servers: []ServerConfig{
+				{
+					Name:     "Default Server",
+					Address:  "example.com",
+					Port:     443,
+					Protocol: "vless",
+					UUID:     "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+					Security: "tls",
+				},
+			},
+			LogLevel:    "info",
+			AutoConnect: false,
 		}
 	}
 
-	// If no arguments, show help
-	showHelp()
+	// Display loaded configuration
+	fmt.Println("VPN Client started")
+	fmt.Printf("Loaded %d server(s)\n", len(config.Servers))
+	fmt.Printf("Log level: %s\n", config.LogLevel)
+	
+	// TODO: Implement actual VPN connection logic here
 }
 
-func checkForUpdates(logger *utils.Logger) {
-	logger.Info("Checking for updates...")
-
-	// Create updater
-	upd, err := updater.NewUpdater(AppVersion, UpdateAPIURL)
+// loadConfig loads the configuration from a JSON file
+func loadConfig(path string) (*Config, error) {
+	// Read the file
+	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		logger.Error("Failed to create updater: %v", err)
-		return
+		return nil, err
 	}
 
-	// Check for update
-	release, err := upd.CheckForUpdate()
+	// Parse JSON
+	var config Config
+	err = json.Unmarshal(data, &config)
 	if err != nil {
-		logger.Error("Failed to check for updates: %v", err)
-		return
+		return nil, err
 	}
 
-	if release != nil {
-		logger.Info("New version available: %s", release.Version)
-		
-		// In a real implementation, you would:
-		// 1. Notify the user about the update
-		// 2. Download the update
-		// 3. Apply the update
-		// 4. Restart the application
-		
-		fmt.Printf("New version %s is available!\n", release.Version)
-		fmt.Printf("Release notes: %s\n", release.Notes)
-		fmt.Println("Please visit our website to download the latest version.")
-	} else {
-		logger.Info("Application is up to date")
-	}
-}
-
-func startAPIServer(logger *utils.Logger) {
-	logger.Info("Starting API server")
-
-	// Initialize managers
-	configManager := managers.NewConfigManager("./config/app.json")
-	serverManager := managers.NewServerManager()
-	connManager := managers.NewConnectionManager()
-	
-	// Initialize protocol factory
-	protocolFactory := protocols.NewProtocolFactory()
-	
-	// Register protocol factory with connection manager
-	connManager.SetProtocolFactory(protocolFactory)
-	
-	// Create API server
-	apiServer := api.NewAPIServer(serverManager, connManager, configManager)
-	
-	// Get API port from config or use default
-	config := configManager.GetConfig()
-	port := config.APIPort
-	if port == 0 {
-		port = 8080
-	}
-	
-	logger.Info("API server starting on port %d", port)
-	
-	// Start the server
-	if err := apiServer.Start(fmt.Sprintf(":%d", port)); err != nil {
-		logger.Error("Failed to start API server: %v", err)
-		log.Fatal(err)
-	}
-}
-
-func startCLI(logger *utils.Logger) {
-	logger.Info("Starting CLI mode")
-	
-	// Initialize managers
-	configManager := managers.NewConfigManager("./config/app.json")
-	serverManager := managers.NewServerManager()
-	connManager := managers.NewConnectionManager()
-	
-	// Initialize protocol factory
-	protocolFactory := protocols.NewProtocolFactory()
-	
-	// Register protocol factory with connection manager
-	connManager.SetProtocolFactory(protocolFactory)
-	
-	// Create CLI
-	cliApp := cli.NewCLI(serverManager, connManager, configManager)
-	
-	// Run CLI
-	cliApp.Run()
-}
-
-func showHelp() {
-	execName := filepath.Base(os.Args[0])
-	
-	fmt.Printf("Usage: %s [option]\n\n", execName)
-	fmt.Println("Options:")
-	fmt.Println("  --api     Start API server")
-	fmt.Println("  --cli     Start command-line interface")
-	fmt.Println("  --help    Show this help message")
-	fmt.Println()
-	fmt.Println("Examples:")
-	fmt.Printf("  %s --api\n", execName)
-	fmt.Printf("  %s --cli\n", execName)
-}
-
-// GetAppVersion returns the application version
-func GetAppVersion() string {
-	return AppVersion
-}
-
-// GetUpdateAPIURL returns the update API URL
-func GetUpdateAPIURL() string {
-	return UpdateAPIURL
+	return &config, nil
 }

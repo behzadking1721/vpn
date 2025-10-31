@@ -1,87 +1,27 @@
 #!/bin/bash
 
-# Enhanced build script for VPN client supporting multiple platforms and architectures
+# Cross-platform build script for VPN Client
 
-set -e  # Exit on any error
+echo "Building VPN Client for all platforms..."
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Create output directory
+mkdir -p dist
 
-# Get the version from command line argument or git tag
-VERSION=${1:-$(git describe --tags --always --dirty 2>/dev/null || echo "dev")}
-COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+# Build for Windows
+echo "Building for Windows AMD64..."
+GOOS=windows GOARCH=amd64 go build -o dist/vpn-client-windows-amd64.exe ./src
 
-# Output directory
-OUTPUT_BASE_DIR="dist"
-RELEASE_DIR="release"
+# Build for Linux
+echo "Building for Linux AMD64..."
+GOOS=linux GOARCH=amd64 go build -o dist/vpn-client-linux-amd64 ./src
 
-# Clean previous builds
-echo -e "${BLUE}Cleaning previous builds...${NC}"
-rm -rf ${OUTPUT_BASE_DIR} ${RELEASE_DIR}
-mkdir -p ${OUTPUT_BASE_DIR} ${RELEASE_DIR}
+# Build for macOS
+echo "Building for macOS AMD64..."
+GOOS=darwin GOARCH=amd64 go build -o dist/vpn-client-darwin-amd64 ./src
 
-echo -e "${BLUE}Building VPN Client v${VERSION} (${COMMIT_HASH})${NC}"
+# Build for macOS ARM64 (Apple Silicon)
+echo "Building for macOS ARM64..."
+GOOS=darwin GOARCH=arm64 go build -o dist/vpn-client-darwin-arm64 ./src
 
-# Build flags
-LDFLAGS="-s -w -X main.version=${VERSION} -X main.commitHash=${COMMIT_HASH}"
-
-# Platform configurations
-declare -A PLATFORMS=(
-    ["windows/amd64"]=""
-    ["windows/386"]=""
-    ["windows/arm64"]=""
-    ["linux/amd64"]=""
-    ["linux/386"]=""
-    ["linux/arm64"]=""
-    ["linux/arm"]=""
-    ["darwin/amd64"]=""
-    ["darwin/arm64"]=""
-)
-
-# Build for each platform
-for platform in "${!PLATFORMS[@]}"; do
-    IFS='/' read -ra ADDR <<< "$platform"
-    GOOS=${ADDR[0]}
-    GOARCH=${ADDR[1]}
-    
-    # Determine binary name
-    BIN_NAME="vpn-client"
-    if [ "$GOOS" = "windows" ]; then
-        BIN_NAME="${BIN_NAME}.exe"
-    fi
-    
-    # Special handling for macOS
-    if [ "$GOOS" = "darwin" ]; then
-        # Enable CGO for macOS
-        export CGO_ENABLED=1
-    else
-        export CGO_ENABLED=0
-    fi
-    
-    OUTPUT_DIR="${OUTPUT_BASE_DIR}/${GOOS}_${GOARCH}"
-    mkdir -p "${OUTPUT_DIR}"
-    
-    echo -e "${YELLOW}Building for ${GOOS}/${GOARCH}...${NC}"
-    
-    # Build command
-    env GOOS=${GOOS} GOARCH=${GOARCH} go build -ldflags "${LDFLAGS}" -o "${OUTPUT_DIR}/${BIN_NAME}" ./src
-    
-    # Copy UI files for non-webview platforms
-    if [ -d "ui/desktop" ]; then
-        cp -r ui/desktop "${OUTPUT_DIR}/ui"
-    fi
-    
-    # Create basic directories
-    mkdir -p "${OUTPUT_DIR}/config"
-    mkdir -p "${OUTPUT_DIR}/data"
-    mkdir -p "${OUTPUT_DIR}/logs"
-    
-    echo -e "${GREEN}✓ Built for ${GOOS}/${GOARCH}${NC}"
-done
-
-echo -e "${GREEN}All builds completed successfully!${NC}"
-echo -e "${BLUE}Output directory: ${OUTPUT_BASE_DIR}${NC}"
+echo "Build process completed!"
+echo "Binaries are located in the dist/ directory."
