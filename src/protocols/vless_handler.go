@@ -1,16 +1,25 @@
 package protocols
 
 import (
-	"c:/Users/behza/OneDrive/Documents/vpn/src/core"
 	"fmt"
 	"math/rand"
 	"time"
 )
 
+// ServerConfig represents a VPN server configuration
+type ServerConfig struct {
+	Name     string `json:"name"`
+	Address  string `json:"address"`
+	Port     int    `json:"port"`
+	Protocol string `json:"protocol"`
+	UUID     string `json:"uuid"`
+	Security string `json:"security"`
+}
+
 // VLESSHandler handles VLESS protocol connections
 type VLESSHandler struct {
 	BaseHandler
-	server core.Server
+	server ServerConfig
 	stopCh chan struct{}
 }
 
@@ -19,44 +28,31 @@ func NewVLESSHandler() *VLESSHandler {
 	handler := &VLESSHandler{
 		stopCh: make(chan struct{}),
 	}
-	handler.BaseHandler.protocol = core.ProtocolVLESS
 	return handler
 }
 
 // Connect establishes a connection to the VLESS server
-func (vh *VLESSHandler) Connect(server core.Server) error {
+func (vh *VLESSHandler) Connect(server ServerConfig) error {
 	// Store server info
 	vh.server = server
 	
 	// In a real implementation, this would:
 	// 1. Parse the VLESS configuration
-	// 2. Initialize the VLESS client library
-	// 3. Establish connection to the server
+	// 2. Establish a TCP connection to the server
+	// 3. Perform the VLESS handshake
+	// 4. Set up data transfer channels
 	
-	fmt.Printf("Connecting to VLESS server: %s:%d\n", server.Host, server.Port)
-	fmt.Printf("UUID: %s\n", server.Password)
+	// For now, simulate connection
+	fmt.Printf("Connecting to VLESS server: %s:%d\n", server.Address, server.Port)
 	
-	// Simulate connection process
-	time.Sleep(1 * time.Second)
-	
-	// Check for required parameters
-	if server.Password == "" {
-		return fmt.Errorf("missing UUID")
-	}
-	
-	// Handle TLS if enabled
-	if server.TLS {
-		fmt.Println("Establishing TLS connection...")
-		time.Sleep(500 * time.Millisecond)
-	}
+	// Simulate connection delay
+	time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 	
 	// Mark as connected
-	vh.BaseHandler.connected = true
+	vh.connected = true
+	vh.lastUpdate = time.Now()
+	
 	fmt.Println("VLESS connection established")
-	
-	// Start data usage simulation in a goroutine
-	go vh.simulateDataUsage()
-	
 	return nil
 }
 

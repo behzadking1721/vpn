@@ -1,20 +1,9 @@
 package protocols
 
 import (
-	"c:/Users/behza/OneDrive/Documents/vpn/src/core"
-	"errors"
+	"sync"
 	"time"
 )
-
-// BaseHandler provides common functionality for protocol handlers
-type BaseHandler struct {
-	protocol   core.ProtocolType
-	connected  bool
-	dataSent   int64
-	dataReceived int64
-	lastUpdate time.Time
-	mutex      sync.RWMutex
-}
 
 // ConnectionStats represents connection statistics
 type ConnectionStats struct {
@@ -23,10 +12,20 @@ type ConnectionStats struct {
 	Duration      int64 // in seconds
 }
 
+// ServerConfig represents a VPN server configuration
+type ServerConfig struct {
+	Name     string `json:"name"`
+	Address  string `json:"address"`
+	Port     int    `json:"port"`
+	Protocol string `json:"protocol"`
+	UUID     string `json:"uuid"`
+	Security string `json:"security"`
+}
+
 // ProtocolHandler defines the interface for all protocol handlers
 type ProtocolHandler interface {
 	// Connect establishes a connection to the VPN server
-	Connect(config *core.ServerConfig) error
+	Connect(config *ServerConfig) error
 	
 	// Disconnect terminates the VPN connection
 	Disconnect() error
@@ -36,6 +35,15 @@ type ProtocolHandler interface {
 	
 	// GetStats returns connection statistics
 	GetStats() *ConnectionStats
+}
+
+// BaseHandler provides common functionality for protocol handlers
+type BaseHandler struct {
+	connected    bool
+	dataSent     int64
+	dataReceived int64
+	lastUpdate   time.Time
+	mutex        sync.RWMutex
 }
 
 // ProtocolFactory is a function that creates a new protocol handler
@@ -58,6 +66,18 @@ func CreateProtocol(name string) (ProtocolHandler, error) {
 	return factory(), nil
 }
 
+// Initialize registers all available protocols
+func Initialize() {
+	RegisterProtocol("vless", func() ProtocolHandler {
+		return &VLESSHandler{}
+	})
+	
+	// Add other protocols here as they are implemented
+	// RegisterProtocol("vmess", func() ProtocolHandler { return NewVMessHandler() })
+	// RegisterProtocol("trojan", func() ProtocolHandler { return NewTrojanHandler() })
+	// etc.
+}
+
 // UnknownProtocolError is returned when trying to create an unregistered protocol
 type UnknownProtocolError struct {
 	Protocol string
@@ -66,4 +86,3 @@ type UnknownProtocolError struct {
 func (e *UnknownProtocolError) Error() string {
 	return "unknown protocol: " + e.Protocol
 }
-
