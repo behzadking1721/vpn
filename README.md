@@ -377,6 +377,7 @@ See [Testing Guide](docs/testing-guide.md) for detailed testing instructions.
 ## UI Prototypes
 
 The project includes HTML prototypes of both desktop and mobile UIs:
+
 - Desktop: [ui/desktop/index.html](ui/desktop/index.html)
 - Mobile: [ui/mobile/index.html](ui/mobile/index.html)
 
