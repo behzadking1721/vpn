@@ -1,8 +1,6 @@
 package core
 
-import (
-	"time"
-)
+import "time"
 
 // ConnectionStatus represents the connection status
 type ConnectionStatus int
@@ -20,28 +18,38 @@ const (
 	Error
 )
 
-// Server represents a VPN server
-type Server struct {
-	ID       string    `json:"id"`
-	Name     string    `json:"name"`
-	Hostname string    `json:"hostname"`
-	IP       string    `json:"ip"`
-	Port     int       `json:"port"`
-	Country  string    `json:"country"`
-	City     string    `json:"city"`
-	Ping     int       `json:"ping"`
-	Active   bool      `json:"active"`
-	Created  time.Time `json:"created"`
-	Updated  time.Time `json:"updated"`
+// ConnectionInfo holds connection information
+type ConnectionInfo struct {
+	ID        string    `json:"id"`
+	StartedAt time.Time `json:"started_at"`
+	DataSent  int64     `json:"data_sent"`
+	DataRecv  int64     `json:"data_recv"`
 }
 
-// ConnectionInfo holds information about the current connection
-type ConnectionInfo struct {
-	ServerID      string        `json:"server_id"`
-	StartTime     time.Time     `json:"start_time"`
-	DataSent      int64         `json:"data_sent"`
-	DataReceived  int64         `json:"data_received"`
-	Status        ConnectionStatus `json:"status"`
-	LastError     string        `json:"last_error,omitempty"`
-	EncryptionKey string        `json:"encryption_key,omitempty"`
+// Server represents a VPN server
+type Server struct {
+	ID          string                 `json:"id"`
+	Name        string                 `json:"name"`
+	Host        string                 `json:"host"`
+	Port        int                    `json:"port"`
+	Protocol    string                 `json:"protocol"`
+	Country     string                 `json:"country,omitempty"`
+	Enabled     bool                   `json:"enabled"`
+	Ping        int                    `json:"ping"`        // in milliseconds
+	Config      map[string]interface{} `json:"config"`      // protocol-specific configuration
+	Remark      string                 `json:"remark,omitempty"`
+	CreatedAt   time.Time              `json:"created_at"`
+	UpdatedAt   time.Time              `json:"updated_at"`
+}
+
+// Subscription represents a subscription link
+type Subscription struct {
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	URL         string    `json:"url"`
+	AutoUpdate  bool      `json:"auto_update"`
+	LastUpdate  time.Time `json:"last_update,omitempty"`
+	ServerCount int       `json:"server_count"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }

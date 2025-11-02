@@ -1,7 +1,7 @@
 package alert
 
 import (
-	"vpn-client/src/core"
+	"vpnclient/src/core"
 	"errors"
 	"time"
 )

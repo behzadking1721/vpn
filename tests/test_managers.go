@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"vpn-client/internal/managers"
+	"vpnclient/internal/managers"
 )
 
 func TestNewConnectionManager() {

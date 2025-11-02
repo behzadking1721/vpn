@@ -1,0 +1,18 @@
+mode: set
+vpnclient/internal/managers/connection.go:26.43,27.11 1 1
+vpnclient/internal/managers/connection.go:28.20,29.24 1 1
+vpnclient/internal/managers/connection.go:30.18,31.22 1 1
+vpnclient/internal/managers/connection.go:32.17,33.21 1 1
+vpnclient/internal/managers/connection.go:34.21,35.25 1 1
+vpnclient/internal/managers/connection.go:36.13,37.17 1 1
+vpnclient/internal/managers/connection.go:38.10,39.19 1 1
+vpnclient/internal/managers/connection.go:52.48,56.2 1 1
+vpnclient/internal/managers/connection.go:59.59,63.2 3 1
+vpnclient/internal/managers/connection.go:66.55,68.2 1 1
+vpnclient/internal/managers/connection.go:71.64,81.2 6 1
+vpnclient/internal/managers/connection.go:84.49,94.2 6 1
+vpnclient/internal/managers/test_managers.go:7.40,9.15 2 0
+vpnclient/internal/managers/test_managers.go:9.15,12.3 2 0
+vpnclient/internal/managers/test_managers.go:14.2,15.52 2 0
+vpnclient/internal/managers/test_simple.go:8.33,11.17 2 0
+vpnclient/internal/managers/test_simple.go:11.17,13.3 1 0
