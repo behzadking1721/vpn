@@ -238,13 +238,13 @@ make deps    # Install dependencies
 make build   # Build the application
 ```
 
-### Windows
+### Windows Build
 
-```cmd
+```batch
 build.bat
 ```
 
-### Linux/macOS
+### Linux/macOS Build
 
 ```bash
 chmod +x build.sh
@@ -309,6 +309,7 @@ When running in API mode, the application exposes the following endpoints:
 The application supports multiple VPN protocols through a modular handler system. See [Protocol Integration Guide](docs/protocol_integration.md) for details on how to integrate new protocols.
 
 Currently implemented protocols:
+
 - VMess (with enhanced implementation)
 - VLESS
 - Shadowsocks (with real library integration)
@@ -339,15 +340,15 @@ See [Protocol Testing Guide](docs/protocol_testing.md) for detailed testing inst
 
 ### Setting up Development Environment
 
-#### Windows
+#### Windows Setup
 
 Run the setup script:
 
-```
+```batch
 setup-dev.bat
 ```
 
-#### Linux/macOS
+#### Linux/macOS Setup
 
 Run the setup script:
 
@@ -358,13 +359,13 @@ chmod +x setup-dev.sh
 
 ### Running Tests
 
-#### Windows
+#### Windows Tests
 
-```
+```batch
 run-tests.bat
 ```
 
-#### Linux/macOS
+#### Linux/macOS Tests
 
 ```bash
 chmod +x run-tests.sh
