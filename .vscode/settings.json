@@ -1,5 +1,7 @@
 {
     "Lingma.aI Chat.mcpToolsInAgentMode": true,
     "Lingma.cloudModelAutoTriggerGenerateLength": "long",
-    "Lingma.cloudModelManualTriggerGenerateLength": "long"
+    "Lingma.cloudModelManualTriggerGenerateLength": "long",
+    "makefile.makefilePath": "C:\\Users\\behza\\.lingma",
+    "CodeGPT.apiKey": "Anthropic"
 }

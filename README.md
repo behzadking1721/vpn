@@ -35,9 +35,11 @@ Before you can build and run this project, you need to install the following dep
 - **Linux**: `sudo apt install golang` (Ubuntu/Debian) or equivalent for your distribution
 
 ### Flutter (for mobile UI - future implementation)
+
 - Download from [flutter.dev](https://flutter.dev/docs/get-started/install)
 
 ### Node.js and npm (for desktop UI with Electron - future implementation)
+
 - Download from [nodejs.org](https://nodejs.org/)
 
 ## Technical Architecture
@@ -62,6 +64,7 @@ The application is built using a modular approach with shared core logic and pla
 ## Current Status
 
 ✅ **Phase 1: Core Functionality Completed**
+
 - Basic architecture with modular design
 - Data models and interfaces
 - Server management system
@@ -183,6 +186,7 @@ This project follows a structured release process:
 | macOS    | amd64, arm64        | ZIP                    |
 
 ### Phase 3: User Interface
+
 - Develop mobile UI with Flutter
 - Develop desktop UI with Electron/Tauri
 - Create UI components:
@@ -193,7 +197,7 @@ This project follows a structured release process:
 
 ## Project Structure
 
-```
+```text
 vpn/
 ├── src/
 │   ├── api/           # REST API for UI integration
