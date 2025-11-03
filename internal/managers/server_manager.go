@@ -3,6 +3,7 @@ package managers
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"vpnclient/internal/database"
 	"vpnclient/src/core"
@@ -11,12 +12,14 @@ import (
 // ServerManager manages VPN servers
 type ServerManager struct {
 	store *database.ServerStoreWrapper
+	subStore *database.SubscriptionStoreWrapper
 }
 
 // NewServerManager creates a new server manager
 func NewServerManager(store database.Store) *ServerManager {
 	return &ServerManager{
 		store: database.NewServerStore(store),
+		subStore: database.NewSubscriptionStore(store),
 	}
 }
 
@@ -99,124 +102,155 @@ func (sm *ServerManager) DisableServer(id string) error {
 
 // UpdatePing updates the ping value for a server
 func (sm *ServerManager) UpdatePing(id string, ping int) error {
-	return sm.store.UpdatePing(id, ping)
-}
-
-// GetServersByProtocol retrieves servers by protocol
-func (sm *ServerManager) GetServersByProtocol(protocol string) ([]*core.Server, error) {
-	all, err := sm.store.GetAllServers()
+	server, err := sm.store.GetServer(id)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	var filtered []*core.Server
-	for _, server := range all {
-		if strings.EqualFold(server.Protocol, protocol) {
-			filtered = append(filtered, server)
-		}
+	
+	if ping < 0 {
+		return fmt.Errorf("ping cannot be negative")
 	}
-
-	return filtered, nil
+	
+	server.Ping = ping
+	return sm.store.UpdateServer(server)
 }
 
-// SearchServers searches servers by name or host
-func (sm *ServerManager) SearchServers(query string) ([]*core.Server, error) {
-	if query == "" {
-		return sm.store.GetAllServers()
-	}
-
-	all, err := sm.store.GetAllServers()
-	if err != nil {
-		return nil, err
-	}
-
-	query = strings.ToLower(query)
-	var filtered []*core.Server
-
-	for _, server := range all {
-		name := strings.ToLower(server.Name)
-		host := strings.ToLower(server.Host)
-		country := strings.ToLower(server.Country)
-
-		if strings.Contains(name, query) ||
-			strings.Contains(host, query) ||
-			strings.Contains(country, query) {
-			filtered = append(filtered, server)
-		}
-	}
-
-	return filtered, nil
-}
-
-// GetFastestServer returns the server with the lowest ping
+// GetFastestServer returns the enabled server with the lowest ping
 func (sm *ServerManager) GetFastestServer() (*core.Server, error) {
-	enabled, err := sm.store.GetEnabledServers()
+	servers, err := sm.GetEnabledServers()
 	if err != nil {
 		return nil, err
 	}
-
-	if len(enabled) == 0 {
+	
+	if len(servers) == 0 {
 		return nil, fmt.Errorf("no enabled servers available")
 	}
-
-	fastest := enabled[0]
-	for _, server := range enabled {
+	
+	// Find server with lowest ping
+	fastest := servers[0]
+	for _, server := range servers[1:] {
+		// Consider servers with ping=0 as having high latency
 		if server.Ping > 0 && (fastest.Ping == 0 || server.Ping < fastest.Ping) {
 			fastest = server
 		}
 	}
-
+	
 	return fastest, nil
 }
 
-// validateServer validates server data
+// AddSubscription adds a new subscription
+func (sm *ServerManager) AddSubscription(sub *core.Subscription) error {
+	// Validate subscription
+	if sub.URL == "" {
+		return fmt.Errorf("subscription URL is required")
+	}
+	
+	if sub.Name == "" {
+		sub.Name = "Unnamed Subscription"
+	}
+	
+	// Generate ID if not provided
+	if sub.ID == "" {
+		sub.ID = sm.generateSubscriptionID(sub)
+	}
+	
+	// Set timestamps if not set
+	now := time.Now()
+	if sub.CreatedAt.IsZero() {
+		sub.CreatedAt = now
+	}
+	sub.UpdatedAt = now
+	
+	return sm.subStore.AddSubscription(sub)
+}
+
+// GetSubscription retrieves a subscription by ID
+func (sm *ServerManager) GetSubscription(id string) (*core.Subscription, error) {
+	if id == "" {
+		return nil, fmt.Errorf("subscription ID is required")
+	}
+	return sm.subStore.GetSubscription(id)
+}
+
+// GetAllSubscriptions retrieves all subscriptions
+func (sm *ServerManager) GetAllSubscriptions() ([]*core.Subscription, error) {
+	return sm.subStore.GetAllSubscriptions()
+}
+
+// UpdateSubscription updates an existing subscription
+func (sm *ServerManager) UpdateSubscription(sub *core.Subscription) error {
+	if sub.ID == "" {
+		return fmt.Errorf("subscription ID is required")
+	}
+	
+	sub.UpdatedAt = time.Now()
+	return sm.subStore.UpdateSubscription(sub)
+}
+
+// DeleteSubscription deletes a subscription by ID
+func (sm *ServerManager) DeleteSubscription(id string) error {
+	if id == "" {
+		return fmt.Errorf("subscription ID is required")
+	}
+	return sm.subStore.DeleteSubscription(id)
+}
+
+// UpdateSubscriptionServers updates servers from a subscription
+func (sm *ServerManager) UpdateSubscriptionServers(id string) error {
+	sub, err := sm.GetSubscription(id)
+	if err != nil {
+		return err
+	}
+	
+	// TODO: Parse subscription URL and import servers
+	// This would involve:
+	// 1. Fetching the subscription content from sub.URL
+	// 2. Parsing the format (Clash, Surfboard, etc.)
+	// 3. Converting to our server format
+	// 4. Adding/updating servers in the database
+	
+	// For now, just update the last update time
+	sub.LastUpdate = time.Now()
+	sub.UpdatedAt = time.Now()
+	
+	return sm.UpdateSubscription(sub)
+}
+
+// validateServer validates a server's fields
 func (sm *ServerManager) validateServer(server *core.Server) error {
 	if server.Name == "" {
 		return fmt.Errorf("server name is required")
 	}
+	
 	if server.Host == "" {
 		return fmt.Errorf("server host is required")
 	}
+	
 	if server.Port <= 0 || server.Port > 65535 {
-		return fmt.Errorf("invalid port number: %d", server.Port)
+		return fmt.Errorf("server port must be between 1 and 65535")
 	}
+	
 	if server.Protocol == "" {
 		return fmt.Errorf("server protocol is required")
 	}
-
-	// Validate protocol
-	validProtocols := map[string]bool{
-		"vmess":       true,
-		"vless":       true,
-		"shadowsocks": true,
-		"trojan":      true,
-		"reality":     true,
-		"hysteria2":   true,
-		"tuic":        true,
-		"ssh":         true,
-	}
-
-	if !validProtocols[strings.ToLower(server.Protocol)] {
-		return fmt.Errorf("unsupported protocol: %s", server.Protocol)
-	}
-
+	
 	return nil
 }
 
-// generateServerID generates a unique ID for a server
+// generateServerID generates a unique ID for a server based on its properties
 func (sm *ServerManager) generateServerID(server *core.Server) string {
-	// Simple ID generation: protocol-host-port-hash
-	base := fmt.Sprintf("%s-%s-%d", strings.ToLower(server.Protocol), server.Host, server.Port)
-	
-	// Add a simple hash based on name
-	hash := 0
-	for _, c := range server.Name {
-		hash = hash*31 + int(c)
-	}
-	if hash < 0 {
-		hash = -hash
-	}
-
-	return fmt.Sprintf("%s-%d", base, hash)
+	// Simple ID generation based on server properties
+	// In a real implementation, you might use UUID or a more sophisticated approach
+	return fmt.Sprintf("%s-%s-%d", server.Host, server.Protocol, server.Port)
 }
 
+// generateSubscriptionID generates a unique ID for a subscription
+func (sm *ServerManager) generateSubscriptionID(sub *core.Subscription) string {
+	// Simple ID generation based on URL
+	// In a real implementation, you might use UUID
+	parts := strings.Split(sub.URL, "//")
+	if len(parts) > 1 {
+		return strings.ReplaceAll(parts[1], "/", "-")
+	}
+	return "subscription-" + time.Now().Format("20060102150405")
+}

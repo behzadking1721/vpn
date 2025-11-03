@@ -53,6 +53,14 @@ func (s *Server) setupRoutes() {
 	api.HandleFunc("/servers/{id}/disable", s.disableServer).Methods("POST")
 	api.HandleFunc("/servers/{id}/ping", s.updatePing).Methods("PUT")
 
+	// Subscription management endpoints
+	api.HandleFunc("/subscriptions", s.getAllSubscriptions).Methods("GET")
+	api.HandleFunc("/subscriptions", s.addSubscription).Methods("POST")
+	api.HandleFunc("/subscriptions/{id}", s.getSubscription).Methods("GET")
+	api.HandleFunc("/subscriptions/{id}", s.updateSubscription).Methods("PUT")
+	api.HandleFunc("/subscriptions/{id}", s.deleteSubscription).Methods("DELETE")
+	api.HandleFunc("/subscriptions/{id}/update", s.updateSubscriptionServers).Methods("POST")
+
 	// Connection management endpoints
 	api.HandleFunc("/connect", s.connect).Methods("POST")
 	api.HandleFunc("/disconnect", s.disconnect).Methods("POST")
@@ -128,4 +136,3 @@ func (s *Server) healthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"status":"ok"}`))
 }
-

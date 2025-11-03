@@ -1,0 +1,9 @@
+{
+  "id": "s1",
+  "name": "Test",
+  "host": "127.0.0.1",
+  "port": 443,
+  "protocol": "vmess",
+  "enabled": true
+}
+

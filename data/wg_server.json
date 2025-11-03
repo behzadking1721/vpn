@@ -1,0 +1,17 @@
+{
+  "id": "wg1",
+  "name": "WG Test",
+  "host": "1.2.3.4",
+  "port": 51820,
+  "protocol": "wireguard",
+  "enabled": true,
+  "config": {
+    "interface_name": "wg0",
+    "private_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+    "public_key": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=",
+    "endpoint": "example.com:51820",
+    "allowed_ips": "0.0.0.0/0,::/0",
+    "persistent_keepalive": 25
+  }
+}
+

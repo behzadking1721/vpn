@@ -8,8 +8,10 @@ import (
 	"vpnclient/internal/managers"
 )
 
+var version = "dev"
+
 func main() {
-	fmt.Println("VPN Client Application")
+	fmt.Printf("VPN Client Application - Version %s\n", version)
 	
 	// Create a connection manager instance
 	cm := managers.NewConnectionManager()

@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 
@@ -214,6 +215,129 @@ func (s *Server) getStats(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// addSubscription adds a new subscription
+func (s *Server) addSubscription(w http.ResponseWriter, r *http.Request) {
+	var subscription core.Subscription
+
+	if err := json.NewDecoder(r.Body).Decode(&subscription); err != nil {
+		respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
+		return
+	}
+
+	// Generate ID if not provided
+	if subscription.ID == "" {
+		subscription.ID = generateID()
+	}
+
+	// Set timestamps
+	now := time.Now()
+	if subscription.CreatedAt.IsZero() {
+		subscription.CreatedAt = now
+	}
+	subscription.UpdatedAt = now
+
+	// TODO: Parse subscription link and import servers
+	// For now, we'll just save the subscription
+
+	if err := s.serverManager.AddSubscription(&subscription); err != nil {
+		respondError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	respondJSON(w, http.StatusCreated, subscription)
+}
+
+// getAllSubscriptions returns all subscriptions
+func (s *Server) getAllSubscriptions(w http.ResponseWriter, r *http.Request) {
+	subscriptions, err := s.serverManager.GetAllSubscriptions()
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondJSON(w, http.StatusOK, subscriptions)
+}
+
+// getSubscription returns a single subscription by ID
+func (s *Server) getSubscription(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	subscription, err := s.serverManager.GetSubscription(id)
+	if err != nil {
+		respondError(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	respondJSON(w, http.StatusOK, subscription)
+}
+
+// updateSubscription updates an existing subscription
+func (s *Server) updateSubscription(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	var subscription core.Subscription
+	if err := json.NewDecoder(r.Body).Decode(&subscription); err != nil {
+		respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
+		return
+	}
+
+	subscription.ID = id // Ensure ID matches
+	subscription.UpdatedAt = time.Now()
+
+	if err := s.serverManager.UpdateSubscription(&subscription); err != nil {
+		respondError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	respondJSON(w, http.StatusOK, subscription)
+}
+
+// deleteSubscription deletes a subscription
+func (s *Server) deleteSubscription(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	if err := s.serverManager.DeleteSubscription(id); err != nil {
+		respondError(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// updateSubscriptionServers updates servers from a subscription
+func (s *Server) updateSubscriptionServers(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	// Get subscription
+	subscription, err := s.serverManager.GetSubscription(id)
+	if err != nil {
+		respondError(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	// TODO: Parse subscription link and import servers
+	// For now, we'll just update the last update time
+	subscription.LastUpdate = time.Now()
+	subscription.UpdatedAt = time.Now()
+
+	if err := s.serverManager.UpdateSubscription(subscription); err != nil {
+		respondError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	respondJSON(w, http.StatusOK, subscription)
+}
+
+// generateID generates a simple ID (in a real app, use UUID)
+func generateID() string {
+	// This is a simple ID generator, in a real application you should use UUID
+	return time.Now().Format("20060102150405")
+}
+
 // respondJSON sends a JSON response
 func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
@@ -227,4 +351,3 @@ func respondError(w http.ResponseWriter, status int, message string) {
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(map[string]string{"error": message})
 }
-
