@@ -1,15 +1,11 @@
-; VPN Client Installer Script for Inno Setup
 #define MyAppName "VPN Client"
-#define MyAppVersion "v1.0.0-9-g12875ad-dirty"
-#define MyAppPublisher "Your Company Name"
-#define MyAppURL "https://your-website.com"
+#define MyAppVersion "1.0.0"
+#define MyAppPublisher "My Company"
+#define MyAppURL "https://www.mycompany.com/"
 #define MyAppExeName "vpn-client.exe"
 
 [Setup]
-; NOTE: The value of AppId uniquely identifies this application.
-; Do not use the same AppId value in installers for other applications.
-; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{YOUR-APP-GUID-HERE}
+AppId={{B0220C80-15F7-4039-9964-233E788B538D}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
@@ -19,8 +15,7 @@ AppUpdatesURL={#MyAppURL}
 
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=LICENSE
-OutputDir=.
+OutputDir=Output
 OutputBaseFilename=vpn-client-setup
 Compression=lzma
 SolidCompression=yes
@@ -33,9 +28,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "dist\windows_amd64\vpn-client.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dist\windows_amd64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+Source: "..\dist\windows_amd64\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\windows_amd64\ui\*"; DestDir: "{app}\ui"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
