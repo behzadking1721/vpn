@@ -18,6 +18,7 @@ The backend service is written in Go and provides a REST API for all client inte
 - Statistics tracking
 - Notification system
 - Logging
+- Automatic server updates
 
 ### Desktop UI
 The desktop UI is a web-based interface that communicates with the backend service through REST API calls. Features include:
@@ -25,6 +26,7 @@ The desktop UI is a web-based interface that communicates with the backend servi
 - Connection status and controls
 - Statistics visualization
 - Settings management
+- Automatic update configuration
 
 ### Mobile App
 The mobile app is built with React Native and provides a native mobile experience:
@@ -109,6 +111,26 @@ Launch the mobile app on your device or emulator.
 
 See [API Documentation](api.md) for details on the REST API.
 
+## Advanced Features
+
+### Automatic Server Updates
+The VPN client supports automatic server updates from subscriptions. This feature:
+- Periodically checks for new servers in subscriptions
+- Automatically adds new servers
+- Updates existing server configurations
+- Can be configured through the UI or API
+
+See [Updater Documentation](updater.md) for more details.
+
+### Comprehensive Testing
+The project includes extensive tests covering:
+- Unit tests for all core components
+- Integration tests for API endpoints
+- End-to-end tests for critical workflows
+- Mock-based tests for external dependencies
+
+See [Testing Documentation](testing.md) for more details.
+
 ## Development
 
 ### Project Structure
@@ -124,6 +146,7 @@ vpnclient/
 │   ├── managers/          # Business logic managers
 │   ├── notifications/     # Notification system
 │   ├── stats/             # Statistics system
+│   ├── updater/           # Automatic updater
 │   └── core/              # Core data structures
 ├── ui/
 │   └── desktop/           # Desktop web UI

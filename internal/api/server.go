@@ -24,6 +24,7 @@ type Server struct {
 	connectionManager  *managers.ConnectionManager
 	notificationManager *notifications.NotificationManager
 	statsManager       *stats.StatsManager
+	updater            *updater.Updater
 	logger             *logging.Logger
 	logFilePath        string
 	addr               string
@@ -37,6 +38,7 @@ func NewServer(
 	connectionManager *managers.ConnectionManager,
 	notificationManager *notifications.NotificationManager,
 	statsManager *stats.StatsManager,
+	updater *updater.Updater,
 	logger *logging.Logger,
 	logFilePath string,
 ) *Server {
@@ -46,6 +48,7 @@ func NewServer(
 		connectionManager:  connectionManager,
 		notificationManager: notificationManager,
 		statsManager:       statsManager,
+		updater:            updater,
 		logger:             logger,
 		logFilePath:        logFilePath,
 		addr:               addr,
@@ -96,6 +99,11 @@ func (s *Server) setupRoutes() {
 	api.HandleFunc("/stats/daily", s.getDailyStats).Methods("GET")
 	api.HandleFunc("/stats/chart", s.getChartData).Methods("GET")
 	api.HandleFunc("/stats/clear", s.clearStats).Methods("POST")
+
+	// Updater endpoints
+	api.HandleFunc("/updater/status", s.getUpdaterStatus).Methods("GET")
+	api.HandleFunc("/updater/config", s.setUpdaterConfig).Methods("POST")
+	api.HandleFunc("/updater/update", s.triggerUpdate).Methods("POST")
 
 	// Notification management endpoints
 	api.HandleFunc("/notifications", s.getNotifications).Methods("GET")

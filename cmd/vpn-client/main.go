@@ -15,6 +15,7 @@ import (
 	"vpnclient/internal/managers"
 	"vpnclient/internal/notifications"
 	"vpnclient/internal/stats"
+	"vpnclient/internal/updater"
 )
 
 func main() {
@@ -73,6 +74,18 @@ func main() {
 	// Initialize subscription parser
 	subscriptionParser := managers.NewSubscriptionParser()
 
+	// Initialize updater
+	updaterConfig := updater.Config{
+		Interval: 24 * time.Hour, // Update once per day by default
+		Enabled:  true,
+	}
+	
+	updater := updater.NewUpdater(serverManager, subscriptionManager, updaterConfig, logger)
+	
+	// Start the updater
+	updater.Start()
+	defer updater.Stop()
+
 	// Create API server
 	apiServer := api.NewServer(
 		":8080",
@@ -80,6 +93,7 @@ func main() {
 		connectionManager,
 		notificationManager,
 		statsManager,
+		updater,
 		logger,
 		logFilePath,
 	)
