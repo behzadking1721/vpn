@@ -577,3 +577,6 @@ Returns server health status.
     "status": "ok"
   }
   ```
+  This API documentation provides a comprehensive overview of the available endpoints and their corresponding functionality. Each endpoint is described in detail, including its endpoint, description, example request, request body (if applicable), response, and response body (if applicable).
+   
+ 

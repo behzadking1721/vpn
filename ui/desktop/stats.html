@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPN Client - Statistics</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --sidebar-width: 250px;
+            --header-height: 70px;
+        }
+
+        .theme-dark {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --bg-primary: #121826;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            height: 100vh;
+            position: fixed;
+            transition: all 0.3s ease;
+            border-right: 1px solid var(--border-color);
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .sidebar-menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: var(--text-primary);
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu-item:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        .sidebar-menu-item.active {
+            background-color: var(--bg-tertiary);
+            border-left: 3px solid var(--primary);
+        }
+
+        .sidebar-menu-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .language-selector {
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .theme-toggle i {
+            font-size: 1.2rem;
+            margin: 0 5px;
+        }
+
+        .theme-toggle .active {
+            color: var(--primary);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stat-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .stat-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .stat-card-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-card-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Charts */
+        .chart-container {
+            background-color: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-header h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chart-actions select {
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Sessions Table */
+        .sessions-table-container {
+            background-color: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .sessions-table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .sessions-table-header h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        tr:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+        /* Utility Classes */
+        .text-success {
+            color: var(--success);
+        }
+
+        .text-danger {
+            color: var(--danger);
+        }
+
+        .text-warning {
+            color: var(--warning);
+        }
+
+        .mb-30 {
+            margin-bottom: 30px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar-header h1,
+            .sidebar-menu-item span {
+                display: none;
+            }
+            
+            .sidebar-menu-item {
+                justify-content: center;
+                padding: 15px;
+            }
+            
+            .sidebar-menu-item i {
+                margin-right: 0;
+                font-size: 1.2rem;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="theme-dark">
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1 data-i18n="vpnClient">VPN Client</h1>
+            </div>
+            <div class="sidebar-menu">
+                <a href="vpn-client.html#dashboard" class="sidebar-menu-item" data-i18n="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span data-i18n="dashboard">Dashboard</span>
+                </a>
+                <a href="vpn-client.html#servers" class="sidebar-menu-item" data-i18n="servers">
+                    <i class="fas fa-server"></i>
+                    <span data-i18n="servers">Servers</span>
+                </a>
+                <a href="vpn-client.html#subscriptions" class="sidebar-menu-item" data-i18n="subscriptions">
+                    <i class="fas fa-link"></i>
+                    <span data-i18n="subscriptions">Subscriptions</span>
+                </a>
+                <a href="stats.html" class="sidebar-menu-item active" data-i18n="statistics">
+                    <i class="fas fa-chart-bar"></i>
+                    <span data-i18n="statistics">Statistics</span>
+                </a>
+                <a href="vpn-client.html#settings" class="sidebar-menu-item" data-i18n="settings">
+                    <i class="fas fa-cog"></i>
+                    <span data-i18n="settings">Settings</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h2 data-i18n="statistics">Statistics</h2>
+                <div class="header-actions">
+                    <select class="language-selector" id="languageSelector">
+                        <option value="en" data-i18n="english">English</option>
+                        <option value="fa" data-i18n="persian">Persian</option>
+                        <option value="zh" data-i18n="chinese">Chinese</option>
+                    </select>
+                    <div class="theme-toggle">
+                        <i class="fas fa-sun"></i>
+                        <i class="fas fa-moon active"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-card-title" data-i18n="totalDataSent">Total Data Sent</div>
+                        <div class="stat-card-icon" style="background-color: rgba(54, 162, 235, 0.2); color: #36a2eb;">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-value" id="totalDataSent">0 KB</div>
+                    <div class="stat-card-description" data-i18n="allTime">All time</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-card-title" data-i18n="totalDataReceived">Total Data Received</div>
+                        <div class="stat-card-icon" style="background-color: rgba(255, 99, 132, 0.2); color: #ff6384;">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-value" id="totalDataReceived">0 KB</div>
+                    <div class="stat-card-description" data-i18n="allTime">All time</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-card-title" data-i18n="currentSession">Current Session</div>
+                        <div class="stat-card-icon" style="background-color: rgba(75, 192, 192, 0.2); color: #4bc0c0;">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-value" id="currentSessionTime">00:00:00</div>
+                    <div class="stat-card-description" data-i18n="duration">Duration</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-card-title" data-i18n="activeConnections">Active Connections</div>
+                        <div class="stat-card-icon" style="background-color: rgba(153, 102, 255, 0.2); color: #9966ff;">
+                            <i class="fas fa-plug"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-value" id="activeConnections">0</div>
+                    <div class="stat-card-description" data-i18n="currentlyConnected">Currently connected</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 data-i18n="dataUsage">Data Usage</h3>
+                    <div class="chart-actions">
+                        <select id="chartType">
+                            <option value="daily_usage" data-i18n="dailyUsage">Daily Usage</option>
+                            <option value="data_comparison" data-i18n="dataComparison">Data Comparison</option>
+                            <option value="session_duration" data-i18n="sessionDuration">Session Duration</option>
+                        </select>
+                        <select id="chartDays">
+                            <option value="7" data-i18n="last7Days">Last 7 Days</option>
+                            <option value="14" data-i18n="last14Days">Last 14 Days</option>
+                            <option value="30" data-i18n="last30Days">Last 30 Days</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="dataUsageChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 data-i18n="connectionHistory">Connection History</h3>
+                    <button class="btn btn-danger" id="clearStatsBtn" data-i18n="clearStatistics">
+                        <i class="fas fa-trash"></i>
+                        <span data-i18n="clearStatistics">Clear Statistics</span>
+                    </button>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="connectionHistoryChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Sessions Table -->
+            <div class="sessions-table-container">
+                <div class="sessions-table-header">
+                    <h3 data-i18n="recentSessions">Recent Sessions</h3>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th data-i18n="server">Server</th>
+                                <th data-i18n="startTime">Start Time</th>
+                                <th data-i18n="endTime">End Time</th>
+                                <th data-i18n="duration">Duration</th>
+                                <th data-i18n="dataSent">Data Sent</th>
+                                <th data-i18n="dataReceived">Data Received</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sessionsTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center" data-i18n="noSessions">No sessions available</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Base URL
+        const API_BASE_URL = 'http://localhost:8080/api';
+
+        // Current chart instances
+        let dataUsageChart = null;
+        let connectionHistoryChart = null;
+
+        // Language translations
+        const translations = {
+            en: {
+                vpnClient: "VPN Client",
+                dashboard: "Dashboard",
+                servers: "Servers",
+                subscriptions: "Subscriptions",
+                statistics: "Statistics",
+                settings: "Settings",
+                totalDataSent: "Total Data Sent",
+                totalDataReceived: "Total Data Received",
+                currentSession: "Current Session",
+                activeConnections: "Active Connections",
+                allTime: "All time",
+                duration: "Duration",
+                currentlyConnected: "Currently connected",
+                dataUsage: "Data Usage",
+                dailyUsage: "Daily Usage",
+                dataComparison: "Data Comparison",
+                sessionDuration: "Session Duration",
+                last7Days: "Last 7 Days",
+                last14Days: "Last 14 Days",
+                last30Days: "Last 30 Days",
+                connectionHistory: "Connection History",
+                clearStatistics: "Clear Statistics",
+                recentSessions: "Recent Sessions",
+                server: "Server",
+                startTime: "Start Time",
+                endTime: "End Time",
+                dataSent: "Data Sent",
+                dataReceived: "Data Received",
+                noSessions: "No sessions available",
+                english: "English",
+                persian: "Persian",
+                chinese: "Chinese",
+                confirmClearStats: "Are you sure you want to clear all statistics?",
+                statsCleared: "Statistics cleared successfully",
+                errorClearingStats: "Error clearing statistics"
+            },
+            fa: {
+                vpnClient: "کلاینت VPN",
+                dashboard: "داشبورد",
+                servers: "سرورها",
+                subscriptions: "اشتراک‌ها",
+                statistics: "آمار",
+                settings: "تنظیمات",
+                totalDataSent: "کل داده ارسالی",
+                totalDataReceived: "کل داده دریافتی",
+                currentSession: "جلسه فعلی",
+                activeConnections: "اتصالات فعال",
+                allTime: "همه زمان‌ها",
+                duration: "مدت زمان",
+                currentlyConnected: "در حال اتصال",
+                dataUsage: "مصرف داده",
+                dailyUsage: "مصرف روزانه",
+                dataComparison: "مقایسه داده",
+                sessionDuration: "مدت جلسه",
+                last7Days: "7 روز گذشته",
+                last14Days: "14 روز گذشته",
+                last30Days: "30 روز گذشته",
+                connectionHistory: "تاریخچه اتصال",
+                clearStatistics: "پاک کردن آمار",
+                recentSessions: "جلسات اخیر",
+                server: "سرور",
+                startTime: "زمان شروع",
+                endTime: "زمان پایان",
+                dataSent: "داده ارسالی",
+                dataReceived: "داده دریافتی",
+                noSessions: "جلسه‌ای موجود نیست",
+                english: "انگلیسی",
+                persian: "فارسی",
+                chinese: "چینی",
+                confirmClearStats: "آیا مطمئن هستید که می‌خواهید تمام آمارها را پاک کنید؟",
+                statsCleared: "آمارها با موفقیت پاک شدند",
+                errorClearingStats: "خطا در پاک کردن آمارها"
+            },
+            zh: {
+                vpnClient: "VPN客户端",
+                dashboard: "仪表板",
+                servers: "服务器",
+                subscriptions: "订阅",
+                statistics: "统计数据",
+                settings: "设置",
+                totalDataSent: "总发送数据",
+                totalDataReceived: "总接收数据",
+                currentSession: "当前会话",
+                activeConnections: "活动连接",
+                allTime: "所有时间",
+                duration: "持续时间",
+                currentlyConnected: "当前连接",
+                dataUsage: "数据使用情况",
+                dailyUsage: "每日使用情况",
+                dataComparison: "数据对比",
+                sessionDuration: "会话时长",
+                last7Days: "最近7天",
+                last14Days: "最近14天",
+                last30Days: "最近30天",
+                connectionHistory: "连接历史",
+                clearStatistics: "清除统计数据",
+                recentSessions: "最近会话",
+                server: "服务器",
+                startTime: "开始时间",
+                endTime: "结束时间",
+                dataSent: "发送数据",
+                dataReceived: "接收数据",
+                noSessions: "无可用会话",
+                english: "英语",
+                persian: "波斯语",
+                chinese: "中文",
+                confirmClearStats: "您确定要清除所有统计数据吗？",
+                statsCleared: "统计数据清除成功",
+                errorClearingStats: "清除统计数据时出错"
+            }
+        };
+
+        // Current language
+        let currentLanguage = 'en';
+
+        // DOM Elements
+        const elements = {
+            totalDataSent: document.getElementById('totalDataSent'),
+            totalDataReceived: document.getElementById('totalDataReceived'),
+            currentSessionTime: document.getElementById('currentSessionTime'),
+            activeConnections: document.getElementById('activeConnections'),
+            sessionsTableBody: document.getElementById('sessionsTableBody'),
+            chartType: document.getElementById('chartType'),
+            chartDays: document.getElementById('chartDays'),
+            clearStatsBtn: document.getElementById('clearStatsBtn'),
+            languageSelector: document.getElementById('languageSelector')
+        };
+
+        // Format bytes to human readable format
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Format time to HH:MM:SS
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // Format duration
+        function formatDuration(start, end) {
+            const duration = new Date(end) - new Date(start);
+            const seconds = Math.floor(duration / 1000);
+            return formatTime(seconds);
+        }
+
+        // Update statistics
+        async function updateStatistics() {
+            try {
+                // Get stats summary
+                const summaryResponse = await fetch(`${API_BASE_URL}/stats/summary`);
+                const summary = await summaryResponse.json();
+
+                // Update total data sent and received
+                elements.totalDataSent.textContent = formatBytes(summary.total_data_sent);
+                elements.totalDataReceived.textContent = formatBytes(summary.total_data_recv);
+
+                // Update active connections
+                elements.activeConnections.textContent = summary.current_connection ? 1 : 0;
+
+                // Update current session time
+                if (summary.current_connection) {
+                    const duration = Math.floor((Date.now() - new Date(summary.current_connection.timestamp).getTime()) / 1000);
+                    elements.currentSessionTime.textContent = formatTime(duration);
+                } else {
+                    elements.currentSessionTime.textContent = '00:00:00';
+                }
+
+                // Update sessions table
+                updateSessionsTable(summary.recent_sessions);
+
+                // Update charts
+                updateCharts();
+            } catch (error) {
+                console.error('Error updating statistics:', error);
+            }
+        }
+
+        // Update sessions table
+        function updateSessionsTable(sessions) {
+            if (!sessions || sessions.length === 0) {
+                elements.sessionsTableBody.innerHTML = '<tr><td colspan="6" class="text-center" data-i18n="noSessions">No sessions available</td></tr>';
+                return;
+            }
+
+            let html = '';
+            sessions.forEach(session => {
+                html += `
+                    <tr>
+                        <td>${session.server_name || session.server_id}</td>
+                        <td>${new Date(session.started_at).toLocaleString()}</td>
+                        <td>${new Date(session.ended_at).toLocaleString()}</td>
+                        <td>${formatDuration(session.started_at, session.ended_at)}</td>
+                        <td>${formatBytes(session.data_sent)}</td>
+                        <td>${formatBytes(session.data_recv)}</td>
+                    </tr>
+                `;
+            });
+
+            elements.sessionsTableBody.innerHTML = html;
+        }
+
+        // Update charts
+        async function updateCharts() {
+            const chartType = elements.chartType.value;
+            const days = elements.chartDays.value;
+
+            try {
+                // Get chart data
+                const chartResponse = await fetch(`${API_BASE_URL}/stats/chart?type=${chartType}&days=${days}`);
+                const chartData = await chartResponse.json();
+
+                // Update data usage chart
+                updateDataUsageChart(chartData);
+
+                // Get connection history data
+                const historyResponse = await fetch(`${API_BASE_URL}/stats/chart?type=session_duration`);
+                const historyData = await historyResponse.json();
+
+                // Update connection history chart
+                updateConnectionHistoryChart(historyData);
+            } catch (error) {
+                console.error('Error updating charts:', error);
+            }
+        }
+
+        // Update data usage chart
+        function updateDataUsageChart(data) {
+            const ctx = document.getElementById('dataUsageChart').getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (dataUsageChart) {
+                dataUsageChart.destroy();
+            }
+
+            // Create new chart
+            dataUsageChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: data.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatBytes(value);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatBytes(context.parsed.y);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update connection history chart
+        function updateConnectionHistoryChart(data) {
+            const ctx = document.getElementById('connectionHistoryChart').getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (connectionHistoryChart) {
+                connectionHistoryChart.destroy();
+            }
+
+            // Create new chart
+            connectionHistoryChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: data.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + 's';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' seconds';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Clear statistics
+        async function clearStatistics() {
+            if (!confirm(translations[currentLanguage].confirmClearStats || 'Are you sure you want to clear all statistics?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/stats/clear`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    alert(translations[currentLanguage].statsCleared || 'Statistics cleared successfully');
+                    updateStatistics();
+                } else {
+                    alert(translations[currentLanguage].errorClearingStats || 'Error clearing statistics');
+                }
+            } catch (error) {
+                console.error('Error clearing statistics:', error);
+                alert(translations[currentLanguage].errorClearingStats || 'Error clearing statistics');
+            }
+        }
+
+        // Translate page
+        function translatePage() {
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translations[currentLanguage][key]) {
+                    if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                        element.placeholder = translations[currentLanguage][key];
+                    } else {
+                        element.textContent = translations[currentLanguage][key];
+                    }
+                }
+            });
+        }
+
+        // Change language
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            translatePage();
+            localStorage.setItem('language', lang);
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            document.body.classList.toggle('theme-dark');
+            const isDark = document.body.classList.contains('theme-dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            
+            // Update theme toggle icons
+            document.querySelector('.fa-sun').classList.toggle('active', !isDark);
+            document.querySelector('.fa-moon').classList.toggle('active', isDark);
+        }
+
+        // Initialize
+        function init() {
+            // Load saved language
+            const savedLanguage = localStorage.getItem('language');
+            if (savedLanguage && translations[savedLanguage]) {
+                currentLanguage = savedLanguage;
+                elements.languageSelector.value = savedLanguage;
+            }
+            
+            // Load saved theme
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.remove('theme-dark');
+                document.querySelector('.fa-sun').classList.add('active');
+                document.querySelector('.fa-moon').classList.remove('active');
+            }
+
+            // Translate page
+            translatePage();
+
+            // Set up event listeners
+            elements.chartType.addEventListener('change', updateCharts);
+            elements.chartDays.addEventListener('change', updateCharts);
+            elements.clearStatsBtn.addEventListener('click', clearStatistics);
+            elements.languageSelector.addEventListener('change', (e) => changeLanguage(e.target.value));
+            
+            document.querySelector('.theme-toggle').addEventListener('click', toggleTheme);
+
+            // Update statistics initially
+            updateStatistics();
+
+            // Update statistics every 5 seconds
+            setInterval(updateStatistics, 5000);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

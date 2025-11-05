@@ -1,51 +1,82 @@
 package managers
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/url"
 	"strings"
+	"sync"
+	"time"
 
 	"vpnclient/src/core"
 )
 
 // SubscriptionParser parses subscription links and extracts server information
-type SubscriptionParser struct{}
+type SubscriptionParser struct {
+	cache    map[string][]*core.Server
+	cacheMux sync.RWMutex
+	cacheTTL time.Duration
+}
 
 // NewSubscriptionParser creates a new subscription parser
 func NewSubscriptionParser() *SubscriptionParser {
-	return &SubscriptionParser{}
+	return &SubscriptionParser{
+		cache:    make(map[string][]*core.Server),
+		cacheTTL: 10 * time.Minute, // Default cache TTL of 10 minutes
+	}
 }
 
 // Parse parses a subscription link and returns a list of servers
 func (sp *SubscriptionParser) Parse(subLink string) ([]*core.Server, error) {
 	link := strings.TrimSpace(subLink)
 	
+	// Check cache first
+	sp.cacheMux.RLock()
+	if servers, exists := sp.cache[link]; exists {
+		sp.cacheMux.RUnlock()
+		return servers, nil
+	}
+	sp.cacheMux.RUnlock()
+	
 	// Handle different protocol formats
+	var servers []*core.Server
+	var err error
+	
 	if strings.HasPrefix(link, "vmess://") {
-		server, err := sp.parseVMessLink(link)
-		if err != nil {
-			return nil, err
+		server, parseErr := sp.parseVMessLink(link)
+		if parseErr != nil {
+			return nil, parseErr
 		}
-		return []*core.Server{server}, nil
+		servers = []*core.Server{server}
 	} else if strings.HasPrefix(link, "ss://") {
-		server, err := sp.parseShadowsocksLink(link)
-		if err != nil {
-			return nil, err
+		server, parseErr := sp.parseShadowsocksLink(link)
+		if parseErr != nil {
+			return nil, parseErr
 		}
-		return []*core.Server{server}, nil
+		servers = []*core.Server{server}
 	} else if strings.HasPrefix(link, "trojan://") {
-		server, err := sp.parseTrojanLink(link)
-		if err != nil {
-			return nil, err
+		server, parseErr := sp.parseTrojanLink(link)
+		if parseErr != nil {
+			return nil, parseErr
 		}
-		return []*core.Server{server}, nil
+		servers = []*core.Server{server}
 	} else {
 		// Assume it's a base64-encoded subscription link
-		return sp.parseBase64Subscription(link)
+		servers, err = sp.parseBase64Subscription(link)
+		if err != nil {
+			return nil, err
+		}
 	}
+	
+	// Update cache
+	sp.cacheMux.Lock()
+	sp.cache[link] = servers
+	sp.cacheMux.Unlock()
+	
+	return servers, nil
 }
 
 // parseVMessLink parses a VMess link
@@ -99,223 +130,108 @@ func (sp *SubscriptionParser) parseShadowsocksLink(link string) (*core.Server, e
 	base64Part := strings.TrimPrefix(link, "ss://")
 	
 	// Handle different formats
-	if strings.Contains(base64Part, "#") {
-		// Format: ss://base64(method:password)@server:port#name
-		parts := strings.SplitN(base64Part, "#", 2)
-		base64Part = parts[0]
-		// The name part is URL encoded
-		name, _ := url.QueryUnescape(parts[1])
-		
-		// Try to decode base64 part
-		decoded, err := base64.StdEncoding.DecodeString(base64Part)
-		if err != nil {
-			// If base64 decode fails, assume the part before @ is not base64 encoded
-			// Try to parse as plain text
-			atIndex := strings.LastIndex(base64Part, "@")
-			if atIndex == -1 {
-				return nil, fmt.Errorf("invalid Shadowsocks link format")
-			}
-			
-			creds := base64Part[:atIndex]
-			serverInfo := base64Part[atIndex+1:]
-			
-			// Try to decode credentials part
-			decodedCreds, err := base64.StdEncoding.DecodeString(creds)
-			if err != nil {
-				// If decode fails, use as plain text
-				decodedCreds = []byte(creds)
-			}
-			
-			// Split credentials
-			colonIndex := strings.Index(string(decodedCreds), ":")
-			if colonIndex == -1 {
-				return nil, fmt.Errorf("invalid Shadowsocks credentials format")
-			}
-			
-			method := string(decodedCreds)[:colonIndex]
-			password := string(decodedCreds)[colonIndex+1:]
-			
-			// Split server info
-			colonIndex = strings.LastIndex(serverInfo, ":")
-			if colonIndex == -1 {
-				return nil, fmt.Errorf("invalid Shadowsocks server info format")
-			}
-			
-			host := serverInfo[:colonIndex]
-			var port int
-			fmt.Sscanf(serverInfo[colonIndex+1:], "%d", &port)
-			
-			server := &core.Server{
-				ID:       generateID(),
-				Name:     name,
-				Host:     host,
-				Port:     port,
-				Protocol: "shadowsocks",
-				Config: map[string]interface{}{
-					"method":   method,
-					"password": password,
-				},
-				Enabled: true,
-			}
-			
-			// Set server name if empty
-			if server.Name == "" {
-				server.Name = fmt.Sprintf("Shadowsocks %s:%d", server.Host, server.Port)
-			}
-			
-			return server, nil
-		} else {
-			// Successfully decoded base64
-			decodedStr := string(decoded)
-			
-			// Parse the decoded string
-			atIndex := strings.LastIndex(decodedStr, "@")
-			if atIndex == -1 {
-				return nil, fmt.Errorf("invalid Shadowsocks link format")
-			}
-			
-			creds := decodedStr[:atIndex]
-			serverInfo := decodedStr[atIndex+1:]
-			
-			// Split credentials
-			colonIndex := strings.Index(creds, ":")
-			if colonIndex == -1 {
-				return nil, fmt.Errorf("invalid Shadowsocks credentials format")
-			}
-			
-			method := creds[:colonIndex]
-			password := creds[colonIndex+1:]
-			
-			// Split server info
-			colonIndex = strings.LastIndex(serverInfo, ":")
-			if colonIndex == -1 {
-				return nil, fmt.Errorf("invalid Shadowsocks server info format")
-			}
-			
-			host := serverInfo[:colonIndex]
-			var port int
-			fmt.Sscanf(serverInfo[colonIndex+1:], "%d", &port)
-			
-			server := &core.Server{
-				ID:       generateID(),
-				Name:     name,
-				Host:     host,
-				Port:     port,
-				Protocol: "shadowsocks",
-				Config: map[string]interface{}{
-					"method":   method,
-					"password": password,
-				},
-				Enabled: true,
-			}
-			
-			// Set server name if empty
-			if server.Name == "" {
-				server.Name = fmt.Sprintf("Shadowsocks %s:%d", server.Host, server.Port)
-			}
-			
-			return server, nil
-		}
+	var decodedStr string
+	var err error
+	
+	// Try to decode as base64
+	decodedBytes, decodeErr := base64.URLEncoding.DecodeString(base64Part)
+	if decodeErr != nil {
+		decodedBytes, decodeErr = base64.StdEncoding.DecodeString(base64Part)
+	}
+	
+	if decodeErr == nil {
+		decodedStr = string(decodedBytes)
 	} else {
-		// No name part, try to decode base64 part
-		decoded, err := base64.StdEncoding.DecodeString(base64Part)
-		if err != nil {
-			// Try to parse as plain text
-			atIndex := strings.LastIndex(base64Part, "@")
-			if atIndex == -1 {
-				return nil, fmt.Errorf("invalid Shadowsocks link format")
-			}
-			
-			creds := base64Part[:atIndex]
-			serverInfo := base64Part[atIndex+1:]
-			
-			// Try to decode credentials part
-			decodedCreds, err := base64.StdEncoding.DecodeString(creds)
-			if err != nil {
-				// If decode fails, use as plain text
-				decodedCreds = []byte(creds)
-			}
-			
-			// Split credentials
-			colonIndex := strings.Index(string(decodedCreds), ":")
-			if colonIndex == -1 {
-				return nil, fmt.Errorf("invalid Shadowsocks credentials format")
-			}
-			
-			method := string(decodedCreds)[:colonIndex]
-			password := string(decodedCreds)[colonIndex+1:]
-			
-			// Split server info
-			colonIndex = strings.LastIndex(serverInfo, ":")
-			if colonIndex == -1 {
-				return nil, fmt.Errorf("invalid Shadowsocks server info format")
-			}
-			
-			host := serverInfo[:colonIndex]
-			var port int
-			fmt.Sscanf(serverInfo[colonIndex+1:], "%d", &port)
-			
-			server := &core.Server{
-				ID:       generateID(),
-				Name:     fmt.Sprintf("Shadowsocks %s:%d", host, port),
-				Host:     host,
-				Port:     port,
-				Protocol: "shadowsocks",
-				Config: map[string]interface{}{
-					"method":   method,
-					"password": password,
-				},
-				Enabled: true,
-			}
-			
-			return server, nil
-		}
-		
-		decodedStr := string(decoded)
-		
-		// Parse the decoded string
-		atIndex := strings.LastIndex(decodedStr, "@")
-		if atIndex == -1 {
+		decodedStr = base64Part
+	}
+	
+	// Parse the link
+	var host, port, password, method, name string
+	
+	// Handle SIP002 format (ss://method:password@host:port#name)
+	if strings.Contains(decodedStr, "@") {
+		// Split method:password and host:port
+		parts := strings.Split(decodedStr, "@")
+		if len(parts) != 2 {
 			return nil, fmt.Errorf("invalid Shadowsocks link format")
 		}
 		
-		creds := decodedStr[:atIndex]
-		serverInfo := decodedStr[atIndex+1:]
+		// Parse method:password
+		authPart := parts[0]
+		authParts := strings.Split(authPart, ":")
+		if len(authParts) != 2 {
+			return nil, fmt.Errorf("invalid Shadowsocks authentication format")
+		}
+		method = authParts[0]
+		password = authParts[1]
 		
-		// Split credentials
-		colonIndex := strings.Index(creds, ":")
-		if colonIndex == -1 {
-			return nil, fmt.Errorf("invalid Shadowsocks credentials format")
+		// Parse host:port and name
+		hostPortPart := parts[1]
+		if strings.Contains(hostPortPart, "#") {
+			namePart := strings.Split(hostPortPart, "#")
+			hostPortPart = namePart[0]
+			name = namePart[1]
 		}
 		
-		method := creds[:colonIndex]
-		password := creds[colonIndex+1:]
-		
-		// Split server info
-		colonIndex = strings.LastIndex(serverInfo, ":")
-		if colonIndex == -1 {
-			return nil, fmt.Errorf("invalid Shadowsocks server info format")
+		hostPortParts := strings.Split(hostPortPart, ":")
+		if len(hostPortParts) != 2 {
+			return nil, fmt.Errorf("invalid Shadowsocks host:port format")
+		}
+		host = hostPortParts[0]
+		port = hostPortParts[1]
+	} else {
+		// Handle legacy format
+		// Split by #
+		parts := strings.Split(decodedStr, "#")
+		if len(parts) > 1 {
+			name = parts[1]
 		}
 		
-		host := serverInfo[:colonIndex]
-		var port int
-		fmt.Sscanf(serverInfo[colonIndex+1:], "%d", &port)
-		
-		server := &core.Server{
-			ID:       generateID(),
-			Name:     fmt.Sprintf("Shadowsocks %s:%d", host, port),
-			Host:     host,
-			Port:     port,
-			Protocol: "shadowsocks",
-			Config: map[string]interface{}{
-				"method":   method,
-				"password": password,
-			},
-			Enabled: true,
+		// Split by : for host:port
+		mainPart := parts[0]
+		mainParts := strings.Split(mainPart, ":")
+		if len(mainParts) < 3 {
+			return nil, fmt.Errorf("invalid Shadowsocks link format")
 		}
 		
-		return server, nil
+		// Last two parts are host and port
+		port = mainParts[len(mainParts)-1]
+		host = mainParts[len(mainParts)-2]
+		
+		// Everything else is method:password
+		methodPassword := strings.Join(mainParts[:len(mainParts)-2], ":")
+		methodPasswordParts := strings.Split(methodPassword, ":")
+		if len(methodPasswordParts) != 2 {
+			return nil, fmt.Errorf("invalid Shadowsocks method:password format")
+		}
+		method = methodPasswordParts[0]
+		password = methodPasswordParts[1]
 	}
+	
+	// Convert port to int
+	var portInt int
+	fmt.Sscanf(port, "%d", &portInt)
+	
+	// Create server
+	server := &core.Server{
+		ID:       generateID(),
+		Name:     name,
+		Host:     host,
+		Port:     portInt,
+		Protocol: "shadowsocks",
+		Config: map[string]interface{}{
+			"method":   method,
+			"password": password,
+		},
+		Enabled: true,
+	}
+	
+	// Set default name if empty
+	if server.Name == "" {
+		server.Name = fmt.Sprintf("Shadowsocks %s:%d", host, portInt)
+	}
+	
+	return server, nil
 }
 
 // parseTrojanLink parses a Trojan link
@@ -365,48 +281,38 @@ func (sp *SubscriptionParser) parseTrojanLink(link string) (*core.Server, error)
 
 // parseBase64Subscription parses a base64-encoded subscription
 func (sp *SubscriptionParser) parseBase64Subscription(link string) ([]*core.Server, error) {
-	// Decode base64 subscription data
-	decodedData, err := base64.StdEncoding.DecodeString(link)
+	// Decode base64
+	decodedBytes, err := base64.StdEncoding.DecodeString(link)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode subscription data: %v", err)
+		// Try URL encoding
+		decodedBytes, err = base64.URLEncoding.DecodeString(link)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode subscription link: %v", err)
+		}
 	}
-
-	// Split lines and parse each server
-	lines := strings.Split(string(decodedData), "\n")
+	
+	// Split lines
+	links := strings.Split(string(decodedBytes), "\n")
+	
+	// Parse each link
 	var servers []*core.Server
-
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" {
+	for _, subLink := range links {
+		subLink = strings.TrimSpace(subLink)
+		if subLink == "" {
 			continue
 		}
-
-		// Parse different protocol formats
-		if strings.HasPrefix(line, "vmess://") {
-			server, err := sp.parseVMessLink(line)
-			if err != nil {
-				// Log error but continue parsing other lines
-				continue
-			}
-			servers = append(servers, server)
-		} else if strings.HasPrefix(line, "ss://") {
-			server, err := sp.parseShadowsocksLink(line)
-			if err != nil {
-				// Log error but continue parsing other lines
-				continue
-			}
-			servers = append(servers, server)
-		} else if strings.HasPrefix(line, "trojan://") {
-			server, err := sp.parseTrojanLink(line)
-			if err != nil {
-				// Log error but continue parsing other lines
-				continue
-			}
-			servers = append(servers, server)
+		
+		// Parse the link
+		parser := NewSubscriptionParser()
+		serverList, err := parser.Parse(subLink)
+		if err != nil {
+			// Skip invalid links
+			continue
 		}
-		// Add support for other protocols as needed
+		
+		servers = append(servers, serverList...)
 	}
-
+	
 	return servers, nil
 }
 
@@ -420,29 +326,27 @@ func getStringValue(m map[string]interface{}, key, defaultValue string) string {
 	return defaultValue
 }
 
+// getIntValue gets an int value from a map with a default
 func getIntValue(m map[string]interface{}, key string, defaultValue int) int {
 	if val, ok := m[key]; ok {
-		switch v := val.(type) {
-		case float64:
-			return int(v)
-		case int:
-			return v
-		case string:
-			var i int
-			fmt.Sscanf(v, "%d", &i)
-			return i
+		if num, ok := val.(float64); ok {
+			return int(num)
+		}
+		if num, ok := val.(int); ok {
+			return num
 		}
 	}
 	return defaultValue
 }
 
+// generateID generates a random ID
 func generateID() string {
-	// Generate a random ID
 	bytes := make([]byte, 16)
-	_, err := rand.Read(bytes)
-	if err != nil {
-		// Fallback to timestamp-based ID if random generation fails
-		return fmt.Sprintf("srv_%d", len(fmt.Sprintf("%v", &bytes)))
+	if _, err := rand.Read(bytes); err != nil {
+		// Fallback to timestamp if random generation fails
+		return fmt.Sprintf("server_%d", time.Now().UnixNano())
 	}
-	return base64.URLEncoding.EncodeToString(bytes)
+	
+	// Convert to hex string
+	return fmt.Sprintf("%x", bytes)
 }
