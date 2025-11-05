@@ -102,6 +102,36 @@ func (cm *ConnectionManager) connectWireGuard(server *core.Server) error {
 	return nil
 }
 
+func (cm *ConnectionManager) disconnectWireGuard(server *core.Server) error {
+	if server == nil {
+		return fmt.Errorf("nil server")
+	}
+
+	cfg := server.Config
+	ifaceName, _ := cfg["interface_name"].(string)
+	if ifaceName == "" {
+		ifaceName = "wg0"
+	}
+
+	client, err := wgctrl.New()
+	if err != nil {
+		return fmt.Errorf("wgctrl open failed: %w", err)
+	}
+	defer client.Close()
+
+	// Remove all peers to effectively disconnect
+	devCfg := wgtypes.Config{
+		ReplacePeers: true,
+		Peers:        []wgtypes.PeerConfig{},
+	}
+
+	if err := client.ConfigureDevice(ifaceName, devCfg); err != nil {
+		return fmt.Errorf("configure wireguard device failed: %w", err)
+	}
+
+	return nil
+}
+
 func durationPtrSecondsWG(s int) *time.Duration {
 	if s <= 0 {
 		return nil

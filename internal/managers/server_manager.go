@@ -2,6 +2,7 @@ package managers
 
 import (
 	"fmt"
+	"net"
 	"strings"
 	"time"
 
@@ -115,6 +116,77 @@ func (sm *ServerManager) UpdatePing(id string, ping int) error {
 	return sm.store.UpdateServer(server)
 }
 
+// TestServerPing tests the ping for a specific server
+func (sm *ServerManager) TestServerPing(id string) (int, error) {
+	server, err := sm.GetServer(id)
+	if err != nil {
+		return 0, err
+	}
+	
+	ping, err := sm.pingServer(server)
+	if err != nil {
+		return 0, err
+	}
+	
+	// Update the server's ping value
+	err = sm.UpdatePing(id, ping)
+	if err != nil {
+		return 0, fmt.Errorf("failed to update server ping: %v", err)
+	}
+	
+	return ping, nil
+}
+
+// TestAllServersPing tests the ping for all enabled servers
+func (sm *ServerManager) TestAllServersPing() (map[string]int, error) {
+	servers, err := sm.GetEnabledServers()
+	if err != nil {
+		return nil, err
+	}
+	
+	results := make(map[string]int)
+	
+	for _, server := range servers {
+		ping, err := sm.pingServer(server)
+		if err != nil {
+			// If ping fails, set ping to a high value (e.g., 9999)
+			ping = 9999
+		}
+		
+		results[server.ID] = ping
+		
+		// Update the server's ping value
+		err = sm.UpdatePing(server.ID, ping)
+		if err != nil {
+			// Log error but continue with other servers
+			fmt.Printf("Failed to update ping for server %s: %v\n", server.ID, err)
+		}
+	}
+	
+	return results, nil
+}
+
+// pingServer performs a ping test to a server
+func (sm *ServerManager) pingServer(server *core.Server) (int, error) {
+	// Perform a TCP connection test to measure latency
+	address := fmt.Sprintf("%s:%d", server.Host, server.Port)
+	start := time.Now()
+	
+	// Try to establish a TCP connection with a timeout
+	conn, err := net.DialTimeout("tcp", address, time.Second*5)
+	if err != nil {
+		return 0, fmt.Errorf("failed to connect to server: %v", err)
+	}
+	
+	// Close connection immediately
+	conn.Close()
+	
+	// Calculate round-trip time
+	ping := int(time.Since(start).Milliseconds())
+	
+	return ping, nil
+}
+
 // GetFastestServer returns the enabled server with the lowest ping
 func (sm *ServerManager) GetFastestServer() (*core.Server, error) {
 	servers, err := sm.GetEnabledServers()
@@ -136,6 +208,96 @@ func (sm *ServerManager) GetFastestServer() (*core.Server, error) {
 	}
 	
 	return fastest, nil
+}
+
+// GetBestServer performs a comprehensive test to find the best server
+func (sm *ServerManager) GetBestServer() (*core.Server, error) {
+	// First, test ping for all servers
+	_, err := sm.TestAllServersPing()
+	if err != nil {
+		return nil, fmt.Errorf("failed to test server pings: %v", err)
+	}
+	
+	// Get the top 5 fastest servers based on ping
+	topServers, err := sm.getTopServersByPing(5)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get top servers: %v", err)
+	}
+	
+	if len(topServers) == 0 {
+		return nil, fmt.Errorf("no servers available for deep testing")
+	}
+	
+	// Perform deep speed tests on top servers
+	bestServer := topServers[0]
+	bestSpeed := int64(0)
+	
+	for _, server := range topServers {
+		speed, err := sm.testServerSpeed(server)
+		if err != nil {
+			// If speed test fails, continue with other servers
+			fmt.Printf("Speed test failed for server %s: %v\n", server.Name, err)
+			continue
+		}
+		
+		// Select server with highest speed
+		if speed > bestSpeed {
+			bestSpeed = speed
+			bestServer = server
+		}
+	}
+	
+	return bestServer, nil
+}
+
+// getTopServersByPing returns the top N servers with the lowest ping
+func (sm *ServerManager) getTopServersByPing(n int) ([]*core.Server, error) {
+	servers, err := sm.GetEnabledServers()
+	if err != nil {
+		return nil, err
+	}
+	
+	// Sort servers by ping (simple bubble sort for demonstration)
+	for i := 0; i < len(servers)-1; i++ {
+		for j := 0; j < len(servers)-i-1; j++ {
+			// Consider servers with ping=0 as having high latency
+			if (servers[j].Ping == 0 && servers[j+1].Ping > 0) ||
+				(servers[j].Ping > 0 && servers[j+1].Ping > 0 && servers[j].Ping > servers[j+1].Ping) {
+				servers[j], servers[j+1] = servers[j+1], servers[j]
+			}
+		}
+	}
+	
+	// Return top N servers (or all servers if less than N)
+	if len(servers) < n {
+		n = len(servers)
+	}
+	
+	return servers[:n], nil
+}
+
+// testServerSpeed performs a speed test on a server
+func (sm *ServerManager) testServerSpeed(server *core.Server) (int64, error) {
+	// In a real implementation, you would:
+	// 1. Connect to the server
+	// 2. Download a test file
+	// 3. Measure the download speed
+	// 4. Return the speed in bytes per second
+	
+	// For demonstration purposes, we'll simulate a speed test
+	// In a real implementation, you would replace this with actual speed testing logic
+	
+	// Simulate a speed test by returning a random value based on ping
+	// Lower ping generally indicates higher potential speed
+	if server.Ping <= 0 {
+		return 0, fmt.Errorf("invalid ping value")
+	}
+	
+	// Simulate speed in Mbps (for demonstration)
+	// In real implementation, this would be actual measured speed
+	simulatedSpeed := int64(1000000.0 / float64(server.Ping) * 10) // Simplified simulation
+	
+	return simulatedSpeed, nil
 }
 
 // AddSubscription adds a new subscription

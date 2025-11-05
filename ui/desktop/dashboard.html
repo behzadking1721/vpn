@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPN Client - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        body.theme-light {
+            background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+            color: #333;
+        }
+        
+        body.theme-dark {
+            background: linear-gradient(135deg, #1e1e1e, #2d2d2d);
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .theme-light header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .user-actions button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .theme-light .user-actions button {
+            background: rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            color: #333;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .theme-light .panel {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .theme-dark .panel {
+            background: rgba(50, 50, 50, 0.7);
+            border: 1px solid rgba(100, 100, 100, 0.3);
+        }
+        
+        .panel h2 {
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .theme-light .stat-card {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .server-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .server-item {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .theme-light .server-item {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .server-info {
+            flex: 1;
+        }
+        
+        .server-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .server-details {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .server-ping {
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .ping-good {
+            background: rgba(46, 213, 115, 0.2);
+            color: #2ed573;
+        }
+        
+        .ping-medium {
+            background: rgba(255, 187, 0, 0.2);
+            color: #ffbb00;
+        }
+        
+        .ping-bad {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+        
+        nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        nav a {
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .theme-light nav a {
+            color: #333;
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        nav a.active {
+            background: #3742fa;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">VPN Client</div>
+            <div class="user-actions">
+                <button id="themeToggle">Toggle Theme</button>
+            </div>
+        </header>
+        
+        <nav>
+            <a href="index.html">Connection</a>
+            <a href="dashboard.html" class="active">Dashboard</a>
+            <a href="alerts.html">Alerts</a>
+        </nav>
+        
+        <div class="main-content">
+            <div class="main-panel">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Connections</div>
+                        <div class="stat-value" id="totalConnections">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Current Uptime</div>
+                        <div class="stat-value" id="currentUptime">0s</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Data</div>
+                        <div class="stat-value" id="totalData">0 KB</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Active Servers</div>
+                        <div class="stat-value" id="activeServers">0</div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h2>📊 Data Usage Over Time</h2>
+                    <div class="chart-container">
+                        <canvas id="dataUsageChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h2>⏱ Connection History</h2>
+                    <div id="connectionHistory">
+                        <p>No connection history available</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="panel">
+                    <h2>🌐 Top Servers</h2>
+                    <div class="server-list" id="topServersList">
+                        <p>Loading servers...</p>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h2>🔔 Recent Alerts</h2>
+                    <div id="recentAlerts">
+                        <p>No recent alerts</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API base URL
+        const API_BASE_URL = 'http://localhost:8080/api';
+        
+        // DOM Elements
+        const themeToggle = document.getElementById('themeToggle');
+        const totalConnections = document.getElementById('totalConnections');
+        const currentUptime = document.getElementById('currentUptime');
+        const totalData = document.getElementById('totalData');
+        const activeServers = document.getElementById('activeServers');
+        const topServersList = document.getElementById('topServersList');
+        
+        // Chart
+        let dataUsageChart;
+        
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') {
+                document.body.classList.add('theme-light');
+            } else {
+                document.body.classList.add('theme-dark');
+            }
+        }
+        
+        // Toggle theme
+        function toggleTheme() {
+            document.body.classList.toggle('theme-light');
+            document.body.classList.toggle('theme-dark');
+            
+            // Save theme preference
+            const isLight = document.body.classList.contains('theme-light');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        }
+        
+        // Format bytes to human readable format
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 KB';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Format time duration
+        function formatDuration(seconds) {
+            if (seconds < 60) {
+                return seconds + 's';
+            } else if (seconds < 3600) {
+                return Math.floor(seconds / 60) + 'm ' + (seconds % 60) + 's';
+            } else {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                return hours + 'h ' + minutes + 'm';
+            }
+        }
+        
+        // Fetch dashboard data
+        async function fetchDashboardData() {
+            try {
+                // Fetch stats
+                const statusResponse = await fetch(`${API_BASE_URL}/status`);
+                const statsResponse = await fetch(`${API_BASE_URL}/stats`);
+                const serversResponse = await fetch(`${API_BASE_URL}/servers`);
+                
+                if (statusResponse.ok && statsResponse.ok && serversResponse.ok) {
+                    const status = await statusResponse.json();
+                    const stats = await statsResponse.json();
+                    const servers = await serversResponse.json();
+                    
+                    // Update stats
+                    updateStats(status, stats, servers);
+                    
+                    // Update top servers
+                    updateTopServers(servers);
+                }
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+            }
+        }
+        
+        // Update stats
+        function updateStats(status, stats, servers) {
+            // For demo purposes, we'll use placeholder values
+            // In a real implementation, you would track these values over time
+            totalConnections.textContent = '12';
+            currentUptime.textContent = status.connected ? formatDuration(stats.uptime || 0) : '0s';
+            totalData.textContent = formatBytes((stats.data_sent || 0) + (stats.data_recv || 0));
+            
+            // Count active servers
+            const activeServersCount = servers.filter(server => server.enabled).length;
+            activeServers.textContent = activeServersCount;
+        }
+        
+        // Update top servers list
+        function updateTopServers(servers) {
+            // Sort servers by ping
+            const sortedServers = [...servers].sort((a, b) => {
+                if (a.ping === 0 && b.ping > 0) return 1;
+                if (b.ping === 0 && a.ping > 0) return -1;
+                return a.ping - b.ping;
+            });
+            
+            // Take top 5 servers
+            const topServers = sortedServers.slice(0, 5);
+            
+            topServersList.innerHTML = '';
+            
+            if (topServers.length === 0) {
+                topServersList.innerHTML = '<p>No servers available</p>';
+                return;
+            }
+            
+            topServers.forEach(server => {
+                const serverItem = document.createElement('div');
+                serverItem.className = 'server-item';
+                serverItem.innerHTML = `
+                    <div class="server-info">
+                        <div class="server-name">${server.name}</div>
+                        <div class="server-details">${server.host}:${server.port}</div>
+                    </div>
+                    <div class="server-ping ping-${getPingClass(server.ping)}">${server.ping > 0 ? server.ping + 'ms' : 'N/A'}</div>
+                `;
+                topServersList.appendChild(serverItem);
+            });
+        }
+        
+        // Get ping class for styling
+        function getPingClass(ping) {
+            if (ping <= 0) return 'bad';
+            if (ping < 100) return 'good';
+            if (ping < 300) return 'medium';
+            return 'bad';
+        }
+        
+        // Initialize Chart
+        function initChart() {
+            const ctx = document.getElementById('dataUsageChart').getContext('2d');
+            dataUsageChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['0s', '10s', '20s', '30s', '40s', '50s', '60s'],
+                    datasets: [
+                        {
+                            label: 'Download (MB)',
+                            data: [0, 0.5, 1.2, 1.8, 2.1, 2.9, 3.5],
+                            borderColor: '#2ed573',
+                            backgroundColor: 'rgba(46, 213, 115, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Upload (MB)',
+                            data: [0, 0.1, 0.3, 0.6, 0.8, 1.1, 1.5],
+                            borderColor: '#3742fa',
+                            backgroundColor: 'rgba(55, 66, 250, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#fff'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#fff'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update chart colors based on theme
+        function updateChartColors() {
+            const isLight = document.body.classList.contains('theme-light');
+            const textColor = isLight ? '#333' : '#fff';
+            
+            if (dataUsageChart) {
+                dataUsageChart.options.scales.x.ticks.color = textColor;
+                dataUsageChart.options.scales.y.ticks.color = textColor;
+                dataUsageChart.options.scales.x.grid.color = isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+                dataUsageChart.options.scales.y.grid.color = isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+                dataUsageChart.options.plugins.legend.labels.color = textColor;
+                dataUsageChart.update();
+            }
+        }
+        
+        // Initialize the dashboard
+        function init() {
+            loadTheme();
+            initChart();
+            fetchDashboardData();
+            
+            // Event listeners
+            themeToggle.addEventListener('click', () => {
+                toggleTheme();
+                updateChartColors();
+            });
+            
+            // Update data periodically
+            setInterval(fetchDashboardData, 5000);
+        }
+        
+        // Start the dashboard
+        init();
+    </script>
+</body>
+</html>

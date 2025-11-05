@@ -103,13 +103,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
-            border: 5px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .theme-light .status-indicator {
-            border: 5px solid rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
         
         .status-indicator.connected {
@@ -117,60 +113,65 @@
         }
         
         .connect-button {
-            background: #ff6b6b;
+            background: #3742fa;
             color: white;
             border: none;
             padding: 15px 40px;
             font-size: 18px;
-            border-radius: 30px;
+            border-radius: 50px;
             cursor: pointer;
-            margin: 20px 0;
             transition: all 0.3s ease;
+            margin: 20px 0;
         }
         
         .connect-button:hover {
-            transform: scale(1.05);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
         
         .connect-button.connected {
-            background: #2ed573;
+            background: #ff4757;
         }
         
-        .server-info {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
+        .server-selection {
+            margin: 30px 0;
         }
         
-        .theme-light .server-info {
-            background: rgba(0, 0, 0, 0.05);
+        .server-selection select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
         }
         
-        .theme-dark .server-info {
-            background: rgba(100, 100, 100, 0.2);
+        .theme-light .server-selection select {
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.7);
+            color: #333;
         }
         
-        .stats {
+        .data-stats {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
         }
         
         .stat-card {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .theme-light .stat-card {
-            background: rgba(0, 0, 0, 0.05);
-        }
-        
-        .theme-dark .stat-card {
-            background: rgba(100, 100, 100, 0.2);
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
         
         .stat-value {
@@ -181,39 +182,39 @@
         
         .stat-label {
             font-size: 14px;
-            opacity: 0.7;
+            opacity: 0.8;
         }
         
         .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .panel {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
-            padding: 20px;
+            padding: 25px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .theme-light .sidebar {
+        .theme-light .panel {
             background: rgba(255, 255, 255, 0.7);
             border: 1px solid rgba(0, 0, 0, 0.1);
         }
         
-        .theme-dark .sidebar {
+        .theme-dark .panel {
             background: rgba(50, 50, 50, 0.7);
             border: 1px solid rgba(100, 100, 100, 0.3);
         }
         
-        .section-title {
-            font-size: 18px;
+        .panel h2 {
             margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 20px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-        }
-        
-        .theme-light .section-title {
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            gap: 10px;
         }
         
         .server-list {
@@ -222,20 +223,19 @@
         }
         
         .server-item {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
             padding: 15px;
+            border-radius: 8px;
             margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
             cursor: pointer;
             transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .theme-light .server-item {
-            background: rgba(0, 0, 0, 0.05);
-        }
-        
-        .theme-dark .server-item {
-            background: rgba(100, 100, 100, 0.2);
+            background: rgba(255, 255, 255, 0.5);
         }
         
         .server-item:hover {
@@ -243,16 +243,16 @@
         }
         
         .theme-light .server-item:hover {
-            background: rgba(0, 0, 0, 0.1);
-        }
-        
-        .theme-dark .server-item:hover {
-            background: rgba(150, 150, 150, 0.3);
+            background: rgba(255, 255, 255, 0.8);
         }
         
         .server-item.active {
-            background: rgba(46, 213, 115, 0.2);
-            border: 1px solid rgba(46, 213, 115, 0.5);
+            background: rgba(55, 66, 250, 0.3);
+            border: 1px solid rgba(55, 66, 250, 0.5);
+        }
+        
+        .server-info {
+            flex: 1;
         }
         
         .server-name {
@@ -261,475 +261,104 @@
         }
         
         .server-details {
-            font-size: 12px;
-            opacity: 0.7;
-            display: flex;
-            justify-content: space-between;
+            font-size: 14px;
+            opacity: 0.8;
         }
         
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .action-button {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        .theme-light .action-button {
-            background: rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            color: #333;
-        }
-        
-        .theme-dark .action-button {
-            background: rgba(100, 100, 100, 0.3);
-            border: 1px solid rgba(150, 150, 150, 0.4);
-            color: #fff;
-        }
-        
-        .nav-menu {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .nav-button {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .theme-light .nav-button {
-            background: rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            color: #333;
-        }
-        
-        .theme-dark .nav-button {
-            background: rgba(100, 100, 100, 0.3);
-            border: 1px solid rgba(150, 150, 150, 0.4);
-            color: #fff;
-        }
-        
-        .nav-button.active {
-            background: rgba(46, 213, 115, 0.3);
-            border-color: rgba(46, 213, 115, 0.7);
-        }
-        
-        .theme-light .nav-button.active {
-            background: rgba(46, 213, 115, 0.3);
-            border-color: rgba(46, 213, 115, 0.7);
-        }
-        
-        .nav-button:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .theme-light .nav-button:hover {
-            background: rgba(0, 0, 0, 0.2);
-        }
-        
-        .theme-dark .nav-button:hover {
-            background: rgba(150, 150, 150, 0.4);
-        }
-        
-        .page-content {
-            display: none;
-        }
-        
-        .page-content.active {
-            display: block;
-        }
-        
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .dashboard-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .theme-light .dashboard-card {
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-        }
-        
-        .theme-dark .dashboard-card {
-            background: rgba(50, 50, 50, 0.7);
-            border: 1px solid rgba(100, 100, 100, 0.3);
-        }
-        
-        .card-title {
-            font-size: 18px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .theme-light .card-title {
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
+        .server-ping {
+            padding: 3px 8px;
+            border-radius: 20px;
             font-size: 12px;
             font-weight: bold;
         }
         
-        .status-badge.online {
+        .ping-good {
             background: rgba(46, 213, 115, 0.2);
             color: #2ed573;
         }
         
-        .status-badge.offline {
+        .ping-medium {
+            background: rgba(255, 187, 0, 0.2);
+            color: #ffbb00;
+        }
+        
+        .ping-bad {
             background: rgba(255, 71, 87, 0.2);
             color: #ff4757;
         }
         
-        .status-badge.limited {
-            background: rgba(255, 184, 0, 0.2);
-            color: #ffb800;
-        }
-        
-        .progress-bar {
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-        
-        .theme-light .progress-bar {
-            background: rgba(0, 0, 0, 0.1);
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: #2ed573;
-            border-radius: 4px;
-        }
-        
-        .progress-fill.warning {
-            background: #ffb800;
-        }
-        
-        .progress-fill.danger {
-            background: #ff4757;
-        }
-        
-        .log-entry {
-            padding: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 14px;
-        }
-        
-        .theme-light .log-entry {
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
-        
-        .log-entry:last-child {
-            border-bottom: none;
-        }
-        
-        .log-level {
-            display: inline-block;
-            width: 50px;
-            font-weight: bold;
-        }
-        
-        .log-level.info {
-            color: #2ed573;
-        }
-        
-        .log-level.warn {
-            color: #ffb800;
-        }
-        
-        .log-level.error {
-            color: #ff4757;
-        }
-        
-        .chart-container {
-            position: relative;
-            height: 200px;
-            margin-top: 15px;
-        }
-        
-        .alert-item {
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            position: relative;
-        }
-        
-        .theme-light .alert-item {
-            background: rgba(0, 0, 0, 0.05);
-        }
-        
-        .theme-dark .alert-item {
-            background: rgba(100, 100, 100, 0.2);
-        }
-        
-        .alert-item.warning {
-            border-left: 3px solid #ffb800;
-        }
-        
-        .alert-item.error {
-            border-left: 3px solid #ff4757;
-        }
-        
-        .alert-item.critical {
-            border-left: 3px solid #ff0000;
-            background: rgba(255, 0, 0, 0.1);
-        }
-        
-        .theme-light .alert-item.critical {
-            background: rgba(255, 0, 0, 0.1);
-        }
-        
-        .alert-item.info {
-            border-left: 3px solid #2ed573;
-        }
-        
-        .alert-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .alert-time {
-            font-size: 12px;
-            opacity: 0.7;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 5px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            z-index: 1000;
-            transform: translateX(120%);
-            transition: transform 0.3s ease;
-            max-width: 350px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-        
-        .notification.show {
-            transform: translateX(0);
-        }
-        
-        .notification.error {
-            border-left: 4px solid #ff4757;
-        }
-        
-        .notification.warning {
-            border-left: 4px solid #ffb800;
-        }
-        
-        .notification.info {
-            border-left: 4px solid #2ed573;
-        }
-        
-        .notification.critical {
-            border-left: 4px solid #ff0000;
-            background: rgba(255, 0, 0, 0.2);
-        }
-        
-        .notification .close-btn {
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        .history-table {
+        .subscription-form input {
             width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .history-table th,
-        .history-table td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .theme-light .history-table th,
-        .theme-light .history-table td {
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
-        
-        .history-table th {
-            font-weight: bold;
-            opacity: 0.7;
-        }
-        
-        .rules-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .rules-table th,
-        .rules-table td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .theme-light .rules-table th,
-        .theme-light .rules-table td {
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
-        
-        .rules-table th {
-            font-weight: bold;
-            opacity: 0.7;
-        }
-        
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 20px;
-        }
-        
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 20px;
-        }
-        
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .slider {
-            background-color: #2ed573;
-        }
-        
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
-        
-        .report-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .report-control {
-            flex: 1;
-            min-width: 150px;
-        }
-        
-        .report-control label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-        
-        .report-control select,
-        .report-control input {
-            width: 100%;
-            padding: 8px;
-            border-radius: 4px;
-            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             color: white;
+            font-size: 16px;
+            margin-bottom: 15px;
         }
         
-        .theme-light .report-control select,
-        .theme-light .report-control input {
-            background: rgba(0, 0, 0, 0.1);
+        .theme-light .subscription-form input {
             border: 1px solid rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.7);
             color: #333;
         }
         
-        .theme-dark .report-control select,
-        .theme-dark .report-control input {
-            background: rgba(100, 100, 100, 0.3);
-            border: 1px solid rgba(150, 150, 150, 0.4);
-            color: #fff;
+        .subscription-form button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: #3742fa;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
         }
         
-        .analytics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        .subscription-form button:hover {
+            opacity: 0.9;
         }
         
-        .settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        /* Chart container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
         }
         
+        /* Navigation */
+        nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        nav a {
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .theme-light nav a {
+            color: #333;
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        nav a.active {
+            background: #3742fa;
+        }
+        
+        /* Responsive design */
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
             }
             
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .analytics-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .settings-grid {
-                grid-template-columns: 1fr;
+            header {
+                flex-direction: column;
+                gap: 20px;
             }
         }
     </style>
@@ -739,21 +368,19 @@
         <header>
             <div class="logo">VPN Client</div>
             <div class="user-actions">
-                <button id="settingsButton">Settings</button>
-                <button id="profileButton">Profile</button>
+                <button id="settingsBtn">Settings</button>
+                <button id="themeToggle">Toggle Theme</button>
             </div>
         </header>
         
-        <div class="nav-menu">
-            <button class="nav-button active" data-page="main">Main</button>
-            <button class="nav-button" data-page="dashboard">Dashboard</button>
-            <button class="nav-button" data-page="history">History</button>
-            <button class="nav-button" data-page="alerts">Alerts</button>
-            <button class="nav-button" data-page="analytics">Analytics</button>
-        </div>
+        <nav>
+            <a href="index.html" class="active">Connection</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="alerts.html">Alerts</a>
+        </nav>
         
-        <div class="page-content active" id="mainPage">
-            <div class="main-content">
+        <div class="main-content">
+            <div class="main-panel">
                 <div class="connection-panel">
                     <div class="status-indicator" id="statusIndicator">
                         DISCONNECTED
@@ -765,467 +392,314 @@
                         CONNECT
                     </button>
                     
-                    <div class="server-info">
-                        <div class="server-name" id="selectedServerName">No server selected</div>
-                        <div class="server-location" id="selectedServerDetails">Select a server to connect</div>
+                    <div class="server-selection">
+                        <select id="serverSelect">
+                            <option value="">Select a server</option>
+                        </select>
                     </div>
                     
-                    <div class="stats">
+                    <div class="data-stats">
                         <div class="stat-card">
                             <div class="stat-label">Download</div>
                             <div class="stat-value" id="downloadStat">0 KB</div>
-                            <div class="stat-label">Total: <span id="downloadTotal">0 MB</span></div>
+                            <div class="stat-label">Total: <span id="downloadTotal">0 KB</span></div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-label">Upload</div>
                             <div class="stat-value" id="uploadStat">0 KB</div>
-                            <div class="stat-label">Total: <span id="uploadTotal">0 MB</span></div>
+                            <div class="stat-label">Total: <span id="uploadTotal">0 KB</span></div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="sidebar">
-                    <h2 class="section-title">Servers</h2>
-                    <div class="server-list" id="serverList">
-                        <!-- Servers will be loaded dynamically -->
-                    </div>
-                    
-                    <div class="actions">
-                        <button class="action-button" id="addServerButton">Add Server</button>
-                        <button class="action-button" id="importButton">Import</button>
-                    </div>
-                    
-                    <h2 class="section-title" style="margin-top: 30px;">Quick Actions</h2>
-                    <div class="actions">
-                        <button class="action-button" id="fastestServerButton">Fastest Server</button>
-                        <button class="action-button" id="pingServersButton">Ping All</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="page-content" id="dashboardPage">
-            <div class="dashboard-grid">
-                <div class="dashboard-card">
-                    <div class="card-title">Connection Status</div>
-                    <div id="connectionStatusContent">
-                        <!-- Connection status will be loaded dynamically -->
-                    </div>
-                </div>
-                
-                <div class="dashboard-card">
-                    <div class="card-title">
-                        Data Usage
-                        <select id="usagePeriodSelector">
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                    </div>
+                <!-- Data usage chart -->
+                <div class="panel">
+                    <h2>📊 Data Usage</h2>
                     <div class="chart-container">
                         <canvas id="dataUsageChart"></canvas>
                     </div>
                 </div>
-                
-                <div class="dashboard-card">
-                    <div class="card-title">Statistics</div>
-                    <div id="statisticsContent">
-                        <!-- Statistics will be loaded dynamically -->
-                    </div>
-                </div>
             </div>
             
-            <div class="dashboard-grid">
-                <div class="dashboard-card">
-                    <div class="card-title">Server Status</div>
-                    <div id="serverStatusContent">
-                        <!-- Server status will be loaded dynamically -->
+            <div class="sidebar">
+                <div class="panel">
+                    <h2>🌐 Servers</h2>
+                    <div class="server-list" id="serverList">
+                        <!-- Servers will be populated here -->
+                    </div>
+                    <button id="fastestServerBtn" style="margin-top: 15px; width: 100%; padding: 10px; background: #3742fa; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        Connect to Fastest Server
+                    </button>
+                    <button id="testPingBtn" style="margin-top: 10px; width: 100%; padding: 10px; background: #2ed573; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        Test All Server Ping
+                    </button>
+                    <button id="bestServerBtn" style="margin-top: 10px; width: 100%; padding: 10px; background: #ffa502; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        Connect to Best Server
+                    </button>
+                </div>
+                
+                <div class="panel">
+                    <h2>🔗 Subscription</h2>
+                    <div class="subscription-form">
+                        <input type="text" id="subscriptionUrl" placeholder="Enter subscription URL">
+                        <button id="importSubscriptionBtn">Import</button>
                     </div>
                 </div>
                 
-                <div class="dashboard-card">
-                    <div class="card-title">Recent Alerts</div>
-                    <div id="alertsContent">
-                        <!-- Alerts will be loaded dynamically -->
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="page-content" id="historyPage">
-            <div class="dashboard-grid">
-                <div class="dashboard-card">
-                    <div class="card-title">Connection History</div>
-                    <div>
-                        <table class="history-table">
-                            <thead>
-                                <tr>
-                                    <th>Server</th>
-                                    <th>Start Time</th>
-                                    <th>Duration</th>
-                                    <th>Data Sent</th>
-                                    <th>Data Received</th>
-                                </tr>
-                            </thead>
-                            <tbody id="connectionHistoryTable">
-                                <!-- Connection history will be loaded dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="dashboard-card">
-                    <div class="card-title">Data Usage History</div>
-                    <div>
-                        <table class="history-table">
-                            <thead>
-                                <tr>
-                                    <th>Server</th>
-                                    <th>Time</th>
-                                    <th>Data Sent</th>
-                                    <th>Data Received</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dataUsageHistoryTable">
-                                <!-- Data usage history will be loaded dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="page-content" id="alertsPage">
-            <div class="dashboard-grid">
-                <div class="dashboard-card">
-                    <div class="card-title">Alert Rules</div>
-                    <div>
-                        <table class="rules-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Type</th>
-                                    <th>Threshold</th>
-                                    <th>Enabled</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="alertRulesTable">
-                                <!-- Alert rules will be loaded dynamically -->
-                            </tbody>
-                        </table>
-                        <div style="margin-top: 15px;">
-                            <button class="action-button" id="addRuleButton">Add Rule</button>
-                            <button class="action-button" id="exportRulesButton">Export Rules</button>
-                            <button class="action-button" id="importRulesButton">Import Rules</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="dashboard-card">
-                    <div class="card-title">Active Alerts</div>
-                    <div id="activeAlertsContent">
-                        <!-- Active alerts will be loaded dynamically -->
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="page-content" id="analyticsPage">
-            <div class="report-controls">
-                <div class="report-control">
-                    <label for="analyticsPeriod">Period</label>
-                    <select id="analyticsPeriod">
-                        <option value="7d">Last 7 Days</option>
-                        <option value="30d" selected>Last 30 Days</option>
-                        <option value="90d">Last 90 Days</option>
-                        <option value="365d">Last Year</option>
-                    </select>
-                </div>
-                
-                <div class="report-control">
-                    <label for="analyticsType">Report Type</label>
-                    <select id="analyticsType">
-                        <option value="overview">Overview</option>
-                        <option value="ping">Ping Statistics</option>
-                        <option value="usage">Data Usage</option>
-                        <option value="patterns">Usage Patterns</option>
-                    </select>
-                </div>
-                
-                <div class="report-control">
-                    <label>&nbsp;</label>
-                    <button class="action-button" id="generateReportButton">Generate Report</button>
-                </div>
-            </div>
-            
-            <div class="analytics-grid">
-                <div class="dashboard-card">
-                    <div class="card-title">Ping Statistics</div>
-                    <div class="chart-container">
-                        <canvas id="pingStatsChart"></canvas>
-                    </div>
-                    <div id="pingStatsContent">
-                        <!-- Ping statistics will be loaded dynamically -->
-                    </div>
-                </div>
-                
-                <div class="dashboard-card">
-                    <div class="card-title">Data Usage</div>
-                    <div class="chart-container">
-                        <canvas id="dataUsageAnalyticsChart"></canvas>
-                    </div>
-                    <div id="dataUsageAnalyticsContent">
-                        <!-- Data usage statistics will be loaded dynamically -->
-                    </div>
-                </div>
-                
-                <div class="dashboard-card">
-                    <div class="card-title">Usage Patterns</div>
-                    <div class="chart-container">
-                        <canvas id="usagePatternsChart"></canvas>
-                    </div>
-                    <div id="usagePatternsContent">
-                        <!-- Usage patterns will be loaded dynamically -->
-                    </div>
-                </div>
-            </div>
-            
-            <div class="dashboard-grid">
-                <div class="dashboard-card">
-                    <div class="card-title">Daily Data Usage</div>
-                    <div>
-                        <table class="history-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Data Sent</th>
-                                    <th>Data Received</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dailyDataUsageTable">
-                                <!-- Daily data usage will be loaded dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="dashboard-card">
-                    <div class="card-title">Weekly Reports</div>
-                    <div>
-                        <button class="action-button" id="generateWeeklyReportButton">Generate Weekly Report</button>
-                        <div id="weeklyReportContent" style="margin-top: 15px;">
-                            <!-- Weekly report will be loaded dynamically -->
-                        </div>
+                <div class="panel">
+                    <h2>🔔 Alerts</h2>
+                    <div id="alertsList">
+                        No alerts
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="notification" id="notification"></div>
 
     <script>
-        // API Configuration
+        // API base URL
         const API_BASE_URL = 'http://localhost:8080/api';
-        
-        // State variables
-        let connected = false;
-        let currentServer = null;
-        let servers = [];
-        let dataUsage = { download: 0, upload: 0 };
-        let dataUsageInterval = null;
-        let currentPage = 'main';
-        let ws = null; // WebSocket connection
-        let dataUsageChart = null;
-        let pingStatsChart = null;
-        let dataUsageAnalyticsChart = null;
-        let usagePatternsChart = null;
-        let alertNotifications = []; // Store active notifications
-        let dashboardSettings = {
-            theme: 'system',
-            chart_window: '24h'
-        };
         
         // DOM Elements
         const connectButton = document.getElementById('connectButton');
         const statusIndicator = document.getElementById('statusIndicator');
+        const serverSelect = document.getElementById('serverSelect');
         const serverList = document.getElementById('serverList');
         const downloadStat = document.getElementById('downloadStat');
         const uploadStat = document.getElementById('uploadStat');
         const downloadTotal = document.getElementById('downloadTotal');
         const uploadTotal = document.getElementById('uploadTotal');
-        const selectedServerName = document.getElementById('selectedServerName');
-        const selectedServerDetails = document.getElementById('selectedServerDetails');
-        const notification = document.getElementById('notification');
-        const addServerButton = document.getElementById('addServerButton');
-        const importButton = document.getElementById('importButton');
-        const fastestServerButton = document.getElementById('fastestServerButton');
-        const pingServersButton = document.getElementById('pingServersButton');
-        const mainPage = document.getElementById('mainPage');
-        const dashboardPage = document.getElementById('dashboardPage');
-        const historyPage = document.getElementById('historyPage');
-        const alertsPage = document.getElementById('alertsPage');
-        const analyticsPage = document.getElementById('analyticsPage');
-        const navButtons = document.querySelectorAll('.nav-button');
-        const usagePeriodSelector = document.getElementById('usagePeriodSelector');
-        const addRuleButton = document.getElementById('addRuleButton');
-        const exportRulesButton = document.getElementById('exportRulesButton');
-        const importRulesButton = document.getElementById('importRulesButton');
-        const analyticsPeriod = document.getElementById('analyticsPeriod');
-        const analyticsType = document.getElementById('analyticsType');
-        const generateReportButton = document.getElementById('generateReportButton');
-        const generateWeeklyReportButton = document.getElementById('generateWeeklyReportButton');
-        const settingsButton = document.getElementById('settingsButton');
+        const themeToggle = document.getElementById('themeToggle');
+        const subscriptionUrl = document.getElementById('subscriptionUrl');
+        const importSubscriptionBtn = document.getElementById('importSubscriptionBtn');
+        const fastestServerBtn = document.getElementById('fastestServerBtn');
+        const testPingBtn = document.getElementById('testPingBtn');
+        const bestServerBtn = document.getElementById('bestServerBtn');
         
-        // Dashboard elements
-        const connectionStatusContent = document.getElementById('connectionStatusContent');
-        const statisticsContent = document.getElementById('statisticsContent');
-        const serverStatusContent = document.getElementById('serverStatusContent');
-        const alertsContent = document.getElementById('alertsContent');
-        const connectionHistoryTable = document.getElementById('connectionHistoryTable');
-        const dataUsageHistoryTable = document.getElementById('dataUsageHistoryTable');
-        const alertRulesTable = document.getElementById('alertRulesTable');
-        const activeAlertsContent = document.getElementById('activeAlertsContent');
-        const pingStatsContent = document.getElementById('pingStatsContent');
-        const dataUsageAnalyticsContent = document.getElementById('dataUsageAnalyticsContent');
-        const usagePatternsContent = document.getElementById('usagePatternsContent');
-        const dailyDataUsageTable = document.getElementById('dailyDataUsageTable');
-        const weeklyReportContent = document.getElementById('weeklyReportContent');
+        // State
+        let connected = false;
+        let dataUsageInterval = null;
+        let dataUsageHistory = {
+            timestamps: [],
+            download: [],
+            upload: []
+        };
+        let currentServer = null;
         
-        // Initialize the application
-        async function init() {
-            try {
-                await loadServers();
-                await loadDashboardSettings();
-                setupEventListeners();
-                updateServerList();
-                startDashboardUpdates();
-                connectWebSocket();
-                initializeCharts();
-                applyTheme();
-            } catch (error) {
-                showNotification('Failed to load servers: ' + error.message, 'error');
-            }
-        }
-        
-        // Load dashboard settings
-        async function loadDashboardSettings() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/settings/dashboard`);
-                if (response.ok) {
-                    dashboardSettings = await response.json();
-                }
-            } catch (error) {
-                console.error('Error loading dashboard settings:', error);
-            }
-        }
-        
-        // Save dashboard settings
-        async function saveDashboardSettings() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/settings/dashboard`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
+        // Initialize Chart
+        const ctx = document.getElementById('dataUsageChart').getContext('2d');
+        const dataUsageChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Download (MB)',
+                        data: [],
+                        borderColor: '#2ed573',
+                        backgroundColor: 'rgba(46, 213, 115, 0.1)',
+                        tension: 0.4,
+                        fill: true
                     },
-                    body: JSON.stringify(dashboardSettings)
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to save dashboard settings');
+                    {
+                        label: 'Upload (MB)',
+                        data: [],
+                        borderColor: '#3742fa',
+                        backgroundColor: 'rgba(55, 66, 250, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#fff'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#fff'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#fff'
+                        }
+                    }
                 }
-                
-                // Apply the theme
-                applyTheme();
-            } catch (error) {
-                console.error('Error saving dashboard settings:', error);
-                showNotification('Failed to save dashboard settings: ' + error.message, 'error');
             }
+        });
+        
+        // Theme handling
+        function toggleTheme() {
+            document.body.classList.toggle('theme-light');
+            document.body.classList.toggle('theme-dark');
+            
+            // Save theme preference
+            const isLight = document.body.classList.contains('theme-light');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            
+            // Update chart colors
+            updateChartColors();
         }
         
-        // Apply theme to the page
-        function applyTheme() {
-            const body = document.body;
+        function updateChartColors() {
+            const isLight = document.body.classList.contains('theme-light');
+            const textColor = isLight ? '#333' : '#fff';
             
-            // Remove existing theme classes
-            body.classList.remove('theme-light', 'theme-dark');
-            
-            // Apply the selected theme
-            if (dashboardSettings.theme === 'light') {
-                body.classList.add('theme-light');
-            } else if (dashboardSettings.theme === 'dark') {
-                body.classList.add('theme-dark');
+            dataUsageChart.options.scales.x.ticks.color = textColor;
+            dataUsageChart.options.scales.y.ticks.color = textColor;
+            dataUsageChart.options.scales.x.grid.color = isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+            dataUsageChart.options.scales.y.grid.color = isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+            dataUsageChart.options.plugins.legend.labels.color = textColor;
+            dataUsageChart.update();
+        }
+        
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') {
+                document.body.classList.add('theme-light');
             } else {
-                // For system theme, check the system preference
-                const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                if (prefersDarkScheme) {
-                    body.classList.add('theme-dark');
-                } else {
-                    body.classList.add('theme-light');
-                }
+                document.body.classList.add('theme-dark');
             }
+            updateChartColors();
         }
         
-        // Load servers from API
-        async function loadServers() {
+        // Format bytes to human readable format
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 KB';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Update data usage chart
+        function updateDataUsageChart(download, upload) {
+            const now = new Date();
+            const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
+                              now.getMinutes().toString().padStart(2, '0') + ':' + 
+                              now.getSeconds().toString().padStart(2, '0');
+            
+            // Add new data points
+            dataUsageHistory.timestamps.push(timeString);
+            dataUsageHistory.download.push(download / (1024 * 1024)); // Convert to MB
+            dataUsageHistory.upload.push(upload / (1024 * 1024)); // Convert to MB
+            
+            // Keep only last 20 data points
+            if (dataUsageHistory.timestamps.length > 20) {
+                dataUsageHistory.timestamps.shift();
+                dataUsageHistory.download.shift();
+                dataUsageHistory.upload.shift();
+            }
+            
+            // Update chart data
+            dataUsageChart.data.labels = dataUsageHistory.timestamps;
+            dataUsageChart.data.datasets[0].data = dataUsageHistory.download;
+            dataUsageChart.data.datasets[1].data = dataUsageHistory.upload;
+            dataUsageChart.update();
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            // In a real app, you would show a proper notification
+            console.log(`[${type}] ${message}`);
+        }
+        
+        // Fetch servers
+        async function fetchServers() {
             try {
                 const response = await fetch(`${API_BASE_URL}/servers`);
                 if (response.ok) {
-                    servers = await response.json();
-                } else {
-                    throw new Error('Failed to load servers');
+                    const servers = await response.json();
+                    updateServerList(servers);
+                    updateServerSelect(servers);
                 }
             } catch (error) {
-                console.error('Error loading servers:', error);
-                throw error;
+                console.error('Error fetching servers:', error);
+                showNotification('Failed to load servers', 'error');
             }
         }
         
-        // Update server list in UI
-        function updateServerList() {
+        // Update server list in sidebar
+        function updateServerList(servers) {
             serverList.innerHTML = '';
             
             if (servers.length === 0) {
-                serverList.innerHTML = '<div class="server-item"><div class="server-name">No servers available</div></div>';
+                serverList.innerHTML = '<p>No servers available</p>';
                 return;
             }
+            
+            // Sort servers by ping
+            servers.sort((a, b) => {
+                // Servers with ping=0 are considered to have high latency
+                if (a.ping === 0 && b.ping > 0) return 1;
+                if (b.ping === 0 && a.ping > 0) return -1;
+                return a.ping - b.ping;
+            });
             
             servers.forEach(server => {
                 const serverItem = document.createElement('div');
                 serverItem.className = 'server-item';
-                if (currentServer && currentServer.id === server.id) {
-                    serverItem.classList.add('active');
-                }
-                
                 serverItem.innerHTML = `
-                    <div class="server-name">${server.name}</div>
-                    <div class="server-details">
-                        <span>${server.protocol}</span>
-                        <span>${server.ping ? server.ping + 'ms' : 'N/A'}</span>
+                    <div class="server-info">
+                        <div class="server-name">${server.name}</div>
+                        <div class="server-details">${server.host}:${server.port} (${server.protocol})</div>
                     </div>
+                    <div class="server-ping ping-${getPingClass(server.ping)}">${server.ping > 0 ? server.ping + 'ms' : 'N/A'}</div>
                 `;
                 
                 serverItem.addEventListener('click', () => {
-                    selectServer(server);
+                    // Select server in dropdown
+                    serverSelect.value = server.id;
+                    // Connect to server
+                    connectToServer(server.id);
                 });
                 
                 serverList.appendChild(serverItem);
             });
         }
         
-        // Select a server
-        function selectServer(server) {
-            currentServer = server;
-            selectedServerName.textContent = server.name;
-            selectedServerDetails.textContent = `${server.protocol} - ${server.host}:${server.port}`;
-            updateServerList();
+        // Update server select dropdown
+        function updateServerSelect(servers) {
+            serverSelect.innerHTML = '<option value="">Select a server</option>';
+            
+            servers.forEach(server => {
+                const option = document.createElement('option');
+                option.value = server.id;
+                option.textContent = `${server.name} (${server.protocol})`;
+                serverSelect.appendChild(option);
+            });
         }
         
-        // Connect to selected server
+        // Get ping class for styling
+        function getPingClass(ping) {
+            if (ping <= 0) return 'bad';
+            if (ping < 100) return 'good';
+            if (ping < 300) return 'medium';
+            return 'bad';
+        }
+        
+        // Connect to server
         async function connect() {
-            if (!currentServer) {
+            const serverId = serverSelect.value;
+            if (!serverId) {
                 showNotification('Please select a server first', 'error');
                 return;
             }
@@ -1236,29 +710,28 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        server_id: currentServer.id
-                    })
+                    body: JSON.stringify({ server_id: serverId })
                 });
                 
                 if (response.ok) {
                     connected = true;
                     updateConnectionUI();
                     startDataUsageUpdates();
-                    showNotification(`Connected to ${currentServer.name}`, 'info');
-                    updateDashboard();
+                    showNotification('Connected successfully', 'success');
                 } else {
-                    throw new Error('Failed to connect');
+                    const error = await response.json();
+                    showNotification('Connection failed: ' + error.error, 'error');
                 }
             } catch (error) {
+                console.error('Connection error:', error);
                 showNotification('Connection failed: ' + error.message, 'error');
             }
         }
         
-        // Disconnect from current server
-        async function disconnect() {
+        // Connect to fastest server
+        async function connectToFastestServer() {
             try {
-                const response = await fetch(`${API_BASE_URL}/disconnect`, {
+                const response = await fetch(`${API_BASE_URL}/connect/fastest`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1266,15 +739,95 @@
                 });
                 
                 if (response.ok) {
-                    connected = false;
-                    stopDataUsageUpdates();
+                    connected = true;
                     updateConnectionUI();
-                    showNotification('Disconnected', 'info');
-                    updateDashboard();
+                    startDataUsageUpdates();
+                    showNotification('Connected to fastest server', 'success');
+                    
+                    // Refresh server list to show active server
+                    fetchServers();
                 } else {
-                    throw new Error('Failed to disconnect');
+                    const error = await response.json();
+                    showNotification('Connection failed: ' + error.error, 'error');
                 }
             } catch (error) {
+                console.error('Connection error:', error);
+                showNotification('Connection failed: ' + error.message, 'error');
+            }
+        }
+        
+        // Connect to best server
+        async function connectToBestServer() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/connect/best`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    connected = true;
+                    updateConnectionUI();
+                    startDataUsageUpdates();
+                    showNotification('Connected to best server', 'success');
+                    
+                    // Refresh server list to show active server
+                    fetchServers();
+                } else {
+                    const error = await response.json();
+                    showNotification('Connection failed: ' + error.error, 'error');
+                }
+            } catch (error) {
+                console.error('Connection error:', error);
+                showNotification('Connection failed: ' + error.message, 'error');
+            }
+        }
+        
+        // Connect to specific server
+        async function connectToServer(serverId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/connect`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ server_id: serverId })
+                });
+                
+                if (response.ok) {
+                    connected = true;
+                    updateConnectionUI();
+                    startDataUsageUpdates();
+                    showNotification('Connected successfully', 'success');
+                } else {
+                    const error = await response.json();
+                    showNotification('Connection failed: ' + error.error, 'error');
+                }
+            } catch (error) {
+                console.error('Connection error:', error);
+                showNotification('Connection failed: ' + error.message, 'error');
+            }
+        }
+        
+        // Disconnect
+        async function disconnect() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/disconnect`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    connected = false;
+                    updateConnectionUI();
+                    stopDataUsageUpdates();
+                    showNotification('Disconnected successfully', 'success');
+                } else {
+                    const error = await response.json();
+                    showNotification('Disconnection failed: ' + error.error, 'error');
+                }
+            } catch (error) {
+                console.error('Disconnection error:', error);
                 showNotification('Disconnection failed: ' + error.message, 'error');
             }
         }
@@ -1332,6 +885,7 @@
                     dataUsage.download = stats.data_received || 0;
                     dataUsage.upload = stats.data_sent || 0;
                     updateDataUsageUI();
+                    updateDataUsageChart(dataUsage.download, dataUsage.upload);
                 }
             } catch (error) {
                 console.error('Error updating data usage:', error);
@@ -1346,1340 +900,81 @@
             uploadTotal.textContent = formatBytes(dataUsage.upload);
         }
         
-        // Connect to fastest server
-        async function connectToFastestServer() {
+        // Test all servers ping
+        async function testAllServersPing() {
             try {
-                const response = await fetch(`${API_BASE_URL}/connect/fastest`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    connected = true;
-                    currentServer = result.server;
-                    updateConnectionUI();
-                    startDataUsageUpdates();
-                    updateServerList();
-                    showNotification(`Connected to fastest server: ${currentServer.name}`, 'info');
-                    updateDashboard();
-                } else {
-                    throw new Error('Failed to connect to fastest server');
-                }
-            } catch (error) {
-                showNotification('Failed to connect to fastest server: ' + error.message, 'error');
-            }
-        }
-        
-        // Ping all servers
-        async function pingAllServers() {
-            try {
-                pingServersButton.disabled = true;
-                pingServersButton.textContent = 'Pinging...';
-                
-                const response = await fetch(`${API_BASE_URL}/servers/ping`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    await loadServers();
-                    updateServerList();
-                    showNotification('All servers pinged successfully', 'info');
-                    updateDashboard();
-                } else {
-                    throw new Error('Failed to ping servers');
-                }
-            } catch (error) {
-                showNotification('Failed to ping servers: ' + error.message, 'error');
-            } finally {
-                pingServersButton.disabled = false;
-                pingServersButton.textContent = 'Ping All';
-            }
-        }
-        
-        // Format bytes for display
-        function formatBytes(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-            return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
-        }
-        
-        // Show notification
-        function showNotification(message, type = 'info', duration = 5000) {
-            // Remove any existing notifications of the same type
-            const existingNotification = document.querySelector(`.notification.${type}`);
-            if (existingNotification) {
-                existingNotification.remove();
-            }
-            
-            // Create notification element
-            const notificationElement = document.createElement('div');
-            notificationElement.className = `notification ${type} show`;
-            notificationElement.innerHTML = `
-                <span>${message}</span>
-                <span class="close-btn">&times;</span>
-            `;
-            
-            // Add close functionality
-            const closeBtn = notificationElement.querySelector('.close-btn');
-            closeBtn.addEventListener('click', () => {
-                notificationElement.classList.remove('show');
-                setTimeout(() => {
-                    if (notificationElement.parentNode) {
-                        notificationElement.parentNode.removeChild(notificationElement);
-                    }
-                }, 300);
-            });
-            
-            // Add to document
-            document.body.appendChild(notificationElement);
-            
-            // Auto-remove after duration
-            if (duration > 0) {
-                setTimeout(() => {
-                    notificationElement.classList.remove('show');
-                    setTimeout(() => {
-                        if (notificationElement.parentNode) {
-                            notificationElement.parentNode.removeChild(notificationElement);
-                        }
-                    }, 300);
-                }, duration);
-            }
-            
-            return notificationElement;
-        }
-        
-        // Show desktop notification
-        function showDesktopNotification(title, message, type = 'info') {
-            // Check if browser supports notifications
-            if (!("Notification" in window)) {
-                console.log("This browser does not support desktop notification");
-                return;
-            }
-            
-            // Check if permission is already granted
-            if (Notification.permission === "granted") {
-                new Notification(title, { body: message, icon: 'icon.png' });
-            } else if (Notification.permission !== "denied") {
-                // Request permission
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        new Notification(title, { body: message, icon: 'icon.png' });
-                    }
-                });
-            }
-        }
-        
-        // Switch between pages
-        function switchPage(page) {
-            currentPage = page;
-            
-            // Update navigation buttons
-            navButtons.forEach(button => {
-                if (button.dataset.page === page) {
-                    button.classList.add('active');
-                } else {
-                    button.classList.remove('active');
-                }
-            });
-            
-            // Show/hide pages
-            if (page === 'main') {
-                mainPage.classList.add('active');
-                dashboardPage.classList.remove('active');
-                historyPage.classList.remove('active');
-                alertsPage.classList.remove('active');
-                analyticsPage.classList.remove('active');
-            } else if (page === 'dashboard') {
-                mainPage.classList.remove('active');
-                dashboardPage.classList.add('active');
-                historyPage.classList.remove('active');
-                alertsPage.classList.remove('active');
-                analyticsPage.classList.remove('active');
-                updateDashboard();
-            } else if (page === 'history') {
-                mainPage.classList.remove('active');
-                dashboardPage.classList.remove('active');
-                historyPage.classList.add('active');
-                alertsPage.classList.remove('active');
-                analyticsPage.classList.remove('active');
-                updateHistory();
-            } else if (page === 'alerts') {
-                mainPage.classList.remove('active');
-                dashboardPage.classList.remove('active');
-                historyPage.classList.remove('active');
-                alertsPage.classList.add('active');
-                analyticsPage.classList.remove('active');
-                updateAlertsPage();
-            } else if (page === 'analytics') {
-                mainPage.classList.remove('active');
-                dashboardPage.classList.remove('active');
-                historyPage.classList.remove('active');
-                alertsPage.classList.remove('active');
-                analyticsPage.classList.add('active');
-                updateAnalyticsPage();
-            }
-        }
-        
-        // Update dashboard data
-        async function updateDashboard() {
-            if (currentPage !== 'dashboard') return;
-            
-            try {
-                // Update connection status
-                await updateConnectionStatus();
-                
-                // Update data usage chart
-                await updateDataUsageChart();
-                
-                // Update server status
-                await updateServerStatus();
-                
-                // Update statistics
-                await updateStatistics();
-                
-                // Update alerts
-                await updateRecentAlerts();
-            } catch (error) {
-                console.error('Error updating dashboard:', error);
-            }
-        }
-        
-        // Update connection status
-        async function updateConnectionStatus() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/dashboard/status`);
-                if (response.ok) {
-                    const status = await response.json();
-                    
-                    let content = `
-                        <div style="text-align: center;">
-                            <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">
-                                ${status.connected ? 'CONNECTED' : 'DISCONNECTED'}
-                            </div>
-                            <div style="margin-bottom: 10px;">
-                                ${status.connected ? `Connected to ${status.server?.name || 'Unknown server'}` : 'Not connected to any server'}
-                            </div>
-                            ${status.connected ? `
-                                <div>Since: ${new Date(status.connection_time).toLocaleString()}</div>
-                                <div style="margin-top: 10px;">
-                                    <div>Sent: ${formatBytes(status.data_sent)}</div>
-                                    <div>Received: ${formatBytes(status.data_received)}</div>
-                                </div>
-                            ` : ''}
-                        </div>
-                    `;
-                    
-                    connectionStatusContent.innerHTML = content;
-                }
-            } catch (error) {
-                console.error('Error updating connection status:', error);
-            }
-        }
-        
-        // Initialize charts
-        function initializeCharts() {
-            // Main dashboard data usage chart
-            const ctx1 = document.getElementById('dataUsageChart').getContext('2d');
-            dataUsageChart = new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Data Sent',
-                        data: [],
-                        borderColor: '#ff6b6b',
-                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }, {
-                        label: 'Data Received',
-                        data: [],
-                        borderColor: '#2ed573',
-                        backgroundColor: 'rgba(46, 213, 115, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return formatBytes(value);
-                                }
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#fff'
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Analytics ping stats chart
-            const ctx2 = document.getElementById('pingStatsChart').getContext('2d');
-            pingStatsChart = new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: ['Average', 'Max', 'Min', '95th Percentile'],
-                    datasets: [{
-                        label: 'Ping (ms)',
-                        data: [0, 0, 0, 0],
-                        backgroundColor: [
-                            'rgba(54, 162, 235, 0.5)',
-                            'rgba(255, 99, 132, 0.5)',
-                            'rgba(75, 192, 192, 0.5)',
-                            'rgba(153, 102, 255, 0.5)'
-                        ],
-                        borderColor: [
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(153, 102, 255, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#fff'
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Analytics data usage chart
-            const ctx3 = document.getElementById('dataUsageAnalyticsChart').getContext('2d');
-            dataUsageAnalyticsChart = new Chart(ctx3, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Data Sent',
-                        data: [],
-                        borderColor: '#ff6b6b',
-                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }, {
-                        label: 'Data Received',
-                        data: [],
-                        borderColor: '#2ed573',
-                        backgroundColor: 'rgba(46, 213, 115, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return formatBytes(value);
-                                }
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#fff'
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Usage patterns chart
-            const ctx4 = document.getElementById('usagePatternsChart').getContext('2d');
-            usagePatternsChart = new Chart(ctx4, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Connections',
-                        data: [],
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }, {
-                        label: 'Disconnects',
-                        data: [],
-                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#fff'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        // Update data usage chart
-        async function updateDataUsageChart() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/dashboard/history/datausage`);
-                if (response.ok) {
-                    const history = await response.json();
-                    
-                    // Prepare data for chart
-                    const labels = [];
-                    const sentData = [];
-                    const receivedData = [];
-                    
-                    // Take last 10 records for display
-                    const recentHistory = history.slice(-10);
-                    
-                    recentHistory.forEach(record => {
-                        labels.push(new Date(record.timestamp).toLocaleTimeString());
-                        sentData.push(record.data_sent);
-                        receivedData.push(record.data_received);
-                    });
-                    
-                    // Update chart data
-                    dataUsageChart.data.labels = labels;
-                    dataUsageChart.data.datasets[0].data = sentData;
-                    dataUsageChart.data.datasets[1].data = receivedData;
-                    dataUsageChart.update();
-                }
-            } catch (error) {
-                console.error('Error updating data usage chart:', error);
-            }
-        }
-        
-        // Update server status
-        async function updateServerStatus() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/dashboard/servers`);
-                if (response.ok) {
-                    const serversData = await response.json();
-                    
-                    let content = '';
-                    if (serversData.servers && serversData.servers.length > 0) {
-                        content = `
-                            <div style="max-height: 300px; overflow-y: auto;">
-                                ${serversData.servers.map(server => {
-                                    let statusClass = 'offline';
-                                    if (server.status === 'online') statusClass = 'online';
-                                    else if (server.status === 'limited') statusClass = 'limited';
-                                    
-                                    return `
-                                        <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                                <div style="font-weight: bold;">${server.name}</div>
-                                                <div class="status-badge ${statusClass}">${server.status.toUpperCase()}</div>
-                                            </div>
-                                            <div style="font-size: 12px; margin-bottom: 5px;">
-                                                ${server.protocol} - ${server.host}
-                                            </div>
-                                            <div style="display: flex; justify-content: space-between; font-size: 12px;">
-                                                <div>Ping: ${server.ping}ms</div>
-                                                <div>${server.enabled ? 'Enabled' : 'Disabled'}</div>
-                                            </div>
-                                            ${server.data_limit > 0 ? `
-                                                <div style="margin-top: 5px;">
-                                                    <div style="font-size: 11px;">
-                                                        Data: ${formatBytes(server.data_used)} / ${formatBytes(server.data_limit)}
-                                                    </div>
-                                                    <div class="progress-bar">
-                                                        <div class="progress-fill" style="width: ${(server.data_used / server.data_limit) * 100}%"></div>
-                                                    </div>
-                                                </div>
-                                            ` : ''}
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        `;
-                    } else {
-                        content = '<div>No servers available</div>';
-                    }
-                    
-                    serverStatusContent.innerHTML = content;
-                }
-            } catch (error) {
-                console.error('Error updating server status:', error);
-            }
-        }
-        
-        // Update statistics
-        async function updateStatistics() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/dashboard/stats`);
-                if (response.ok) {
-                    const stats = await response.json();
-                    
-                    const content = `
-                        <div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                                <div class="stat-card">
-                                    <div class="stat-label">Total Connections</div>
-                                    <div class="stat-value">${stats.total_connections}</div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-label">Active Servers</div>
-                                    <div class="stat-value">${stats.active_servers}/${stats.total_servers}</div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-label">Data Sent</div>
-                                    <div class="stat-value">${formatBytes(stats.total_data_sent)}</div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-label">Data Received</div>
-                                    <div class="stat-value">${formatBytes(stats.total_data_received)}</div>
-                                </div>
-                            </div>
-                            <div style="margin-top: 15px; text-align: center;">
-                                <div>Avg. Connection Time: ${stats.avg_connection_time}</div>
-                            </div>
-                        </div>
-                    `;
-                    
-                    statisticsContent.innerHTML = content;
-                }
-            } catch (error) {
-                console.error('Error updating statistics:', error);
-            }
-        }
-        
-        // Update recent alerts
-        async function updateRecentAlerts() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/alerts?unread=true`);
-                if (response.ok) {
-                    const alerts = await response.json();
-                    
-                    let content = '';
-                    if (alerts && alerts.length > 0) {
-                        content = `
-                            <div style="max-height: 300px; overflow-y: auto;">
-                                ${alerts.slice(0, 5).map(alert => {
-                                    let alertClass = '';
-                                    if (alert.severity === 'warning') alertClass = 'warning';
-                                    else if (alert.severity === 'error') alertClass = 'error';
-                                    else if (alert.severity === 'critical') alertClass = 'critical';
-                                    else if (alert.severity === 'info') alertClass = 'info';
-                                    
-                                    return `
-                                        <div class="alert-item ${alertClass}">
-                                            <div class="alert-title">${alert.title}</div>
-                                            <div>${alert.message}</div>
-                                            <div class="alert-time">${new Date(alert.timestamp).toLocaleString()}</div>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        `;
-                    } else {
-                        content = '<div>No recent alerts</div>';
-                    }
-                    
-                    alertsContent.innerHTML = content;
-                }
-            } catch (error) {
-                console.error('Error updating alerts:', error);
-            }
-        }
-        
-        // Update history data
-        async function updateHistory() {
-            if (currentPage !== 'history') return;
-            
-            try {
-                // Update connection history
-                await updateConnectionHistory();
-                
-                // Update data usage history
-                await updateDataUsageHistory();
-            } catch (error) {
-                console.error('Error updating history:', error);
-            }
-        }
-        
-        // Update connection history
-        async function updateConnectionHistory() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/dashboard/history/connections`);
-                if (response.ok) {
-                    const history = await response.json();
-                    
-                    let content = '';
-                    if (history && history.length > 0) {
-                        content = history.slice(0, 10).map(record => `
-                            <tr>
-                                <td>${record.server_name}</td>
-                                <td>${new Date(record.start_time).toLocaleString()}</td>
-                                <td>${Math.floor(record.duration / 60)}m ${record.duration % 60}s</td>
-                                <td>${formatBytes(record.data_sent)}</td>
-                                <td>${formatBytes(record.data_received)}</td>
-                            </tr>
-                        `).join('');
-                    } else {
-                        content = '<tr><td colspan="5">No connection history</td></tr>';
-                    }
-                    
-                    connectionHistoryTable.innerHTML = content;
-                }
-            } catch (error) {
-                console.error('Error updating connection history:', error);
-            }
-        }
-        
-        // Update data usage history
-        async function updateDataUsageHistory() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/dashboard/history/datausage`);
-                if (response.ok) {
-                    const history = await response.json();
-                    
-                    let content = '';
-                    if (history && history.length > 0) {
-                        content = history.slice(0, 10).map(record => `
-                            <tr>
-                                <td>${record.server_name}</td>
-                                <td>${new Date(record.timestamp).toLocaleTimeString()}</td>
-                                <td>${formatBytes(record.data_sent)}</td>
-                                <td>${formatBytes(record.data_received)}</td>
-                            </tr>
-                        `).join('');
-                    } else {
-                        content = '<tr><td colspan="4">No data usage history</td></tr>';
-                    }
-                    
-                    dataUsageHistoryTable.innerHTML = content;
-                }
-            } catch (error) {
-                console.error('Error updating data usage history:', error);
-            }
-        }
-        
-        // Update alerts page
-        async function updateAlertsPage() {
-            if (currentPage !== 'alerts') return;
-            
-            try {
-                // Update alert rules
-                await updateAlertRules();
-                
-                // Update active alerts
-                await updateActiveAlerts();
-            } catch (error) {
-                console.error('Error updating alerts page:', error);
-            }
-        }
-        
-        // Update alert rules
-        async function updateAlertRules() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/alerts/rules`);
-                if (response.ok) {
-                    const rules = await response.json();
-                    
-                    let content = '';
-                    if (rules && rules.length > 0) {
-                        content = rules.map(rule => `
-                            <tr>
-                                <td>${rule.name}</td>
-                                <td>${rule.type}</td>
-                                <td>${rule.threshold || rule.duration || 'N/A'}</td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" ${rule.enabled ? 'checked' : ''} 
-                                            onchange="toggleRule('${rule.id}', this.checked)">
-                                        <span class="slider"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <button class="action-button" onclick="editRule('${rule.id}')">Edit</button>
-                                    <button class="action-button" onclick="deleteRule('${rule.id}')">Delete</button>
-                                </td>
-                            </tr>
-                        `).join('');
-                    } else {
-                        content = '<tr><td colspan="5">No alert rules defined</td></tr>';
-                    }
-                    
-                    alertRulesTable.innerHTML = content;
-                }
-            } catch (error) {
-                console.error('Error updating alert rules:', error);
-            }
-        }
-        
-        // Update active alerts
-        async function updateActiveAlerts() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/alerts`);
-                if (response.ok) {
-                    const alerts = await response.json();
-                    
-                    // Filter for unresolved alerts
-                    const activeAlerts = alerts.filter(alert => !alert.resolved);
-                    
-                    let content = '';
-                    if (activeAlerts && activeAlerts.length > 0) {
-                        content = `
-                            <div style="max-height: 400px; overflow-y: auto;">
-                                ${activeAlerts.map(alert => {
-                                    let alertClass = '';
-                                    if (alert.severity === 'warning') alertClass = 'warning';
-                                    else if (alert.severity === 'error') alertClass = 'error';
-                                    else if (alert.severity === 'critical') alertClass = 'critical';
-                                    else if (alert.severity === 'info') alertClass = 'info';
-                                    
-                                    return `
-                                        <div class="alert-item ${alertClass}">
-                                            <div class="alert-title">${alert.title}</div>
-                                            <div>${alert.message}</div>
-                                            <div class="alert-time">${new Date(alert.timestamp).toLocaleString()}</div>
-                                            <div style="margin-top: 10px;">
-                                                <button class="action-button" onclick="markAlertAsRead('${alert.id}')">Mark as Read</button>
-                                                <button class="action-button" onclick="resolveAlert('${alert.id}')">Resolve</button>
-                                            </div>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        `;
-                    } else {
-                        content = '<div>No active alerts</div>';
-                    }
-                    
-                    activeAlertsContent.innerHTML = content;
-                }
-            } catch (error) {
-                console.error('Error updating active alerts:', error);
-            }
-        }
-        
-        // Toggle rule enabled status
-        async function toggleRule(ruleId, enabled) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/alerts/rules/${ruleId}`);
-                if (response.ok) {
-                    const rule = await response.json();
-                    rule.enabled = enabled;
-                    
-                    const updateResponse = await fetch(`${API_BASE_URL}/alerts/rules/${ruleId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(rule)
-                    });
-                    
-                    if (!updateResponse.ok) {
-                        throw new Error('Failed to update rule');
-                    }
-                    
-                    showNotification(`Rule ${enabled ? 'enabled' : 'disabled'}`, 'info');
-                }
-            } catch (error) {
-                showNotification('Failed to update rule: ' + error.message, 'error');
-            }
-        }
-        
-        // Edit rule (placeholder)
-        function editRule(ruleId) {
-            showNotification('Edit rule functionality would be implemented here', 'info');
-        }
-        
-        // Delete rule
-        async function deleteRule(ruleId) {
-            if (!confirm('Are you sure you want to delete this rule?')) {
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/alerts/rules/${ruleId}`, {
-                    method: 'DELETE'
-                });
-                
-                if (response.ok) {
-                    showNotification('Rule deleted successfully', 'info');
-                    updateAlertsPage();
-                } else {
-                    throw new Error('Failed to delete rule');
-                }
-            } catch (error) {
-                showNotification('Failed to delete rule: ' + error.message, 'error');
-            }
-        }
-        
-        // Mark alert as read
-        async function markAlertAsRead(alertId) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/alerts/${alertId}/read`, {
+                const response = await fetch(`${API_BASE_URL}/servers/test-all-ping`, {
                     method: 'POST'
                 });
                 
                 if (response.ok) {
-                    showNotification('Alert marked as read', 'info');
-                    updateAlertsPage();
+                    const results = await response.json();
+                    showNotification('Ping test completed', 'success');
+                    // Refresh server list to show updated ping values
+                    fetchServers();
                 } else {
-                    throw new Error('Failed to mark alert as read');
+                    showNotification('Ping test failed', 'error');
                 }
             } catch (error) {
-                showNotification('Failed to mark alert as read: ' + error.message, 'error');
+                console.error('Ping test error:', error);
+                showNotification('Ping test failed: ' + error.message, 'error');
             }
         }
         
-        // Resolve alert
-        async function resolveAlert(alertId) {
+        // Import subscription
+        async function importSubscription() {
+            const url = subscriptionUrl.value.trim();
+            if (!url) {
+                showNotification('Please enter a subscription URL', 'error');
+                return;
+            }
+            
             try {
-                const response = await fetch(`${API_BASE_URL}/alerts/${alertId}/resolve`, {
-                    method: 'POST'
+                const response = await fetch(`${API_BASE_URL}/subscriptions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: 'Imported Subscription',
+                        url: url,
+                        auto_update: true
+                    })
                 });
                 
                 if (response.ok) {
-                    showNotification('Alert resolved', 'info');
-                    updateAlertsPage();
+                    subscriptionUrl.value = '';
+                    showNotification('Subscription imported successfully', 'success');
+                    fetchServers(); // Refresh server list
                 } else {
-                    throw new Error('Failed to resolve alert');
+                    const error = await response.json();
+                    showNotification('Import failed: ' + error.error, 'error');
                 }
             } catch (error) {
-                showNotification('Failed to resolve alert: ' + error.message, 'error');
+                console.error('Import error:', error);
+                showNotification('Import failed: ' + error.message, 'error');
             }
         }
         
-        // Export rules
-        async function exportRules() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/alerts/rules/export`);
-                if (response.ok) {
-                    const rules = await response.json();
-                    const dataStr = JSON.stringify(rules, null, 2);
-                    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-                    
-                    const exportFileDefaultName = 'vpn-alert-rules.json';
-                    
-                    const linkElement = document.createElement('a');
-                    linkElement.setAttribute('href', dataUri);
-                    linkElement.setAttribute('download', exportFileDefaultName);
-                    linkElement.click();
-                    
-                    showNotification('Rules exported successfully', 'info');
-                } else {
-                    throw new Error('Failed to export rules');
-                }
-            } catch (error) {
-                showNotification('Failed to export rules: ' + error.message, 'error');
-            }
-        }
-        
-        // Import rules
-        function importRules() {
-            showNotification('Import rules functionality would be implemented here', 'info');
-        }
-        
-        // Update analytics page
-        async function updateAnalyticsPage() {
-            if (currentPage !== 'analytics') return;
+        // Initialize the app
+        function init() {
+            loadTheme();
+            fetchServers();
             
-            try {
-                // Update ping statistics
-                await updatePingStats();
-                
-                // Update data usage analytics
-                await updateDataUsageAnalytics();
-                
-                // Update usage patterns
-                await updateUsagePatterns();
-                
-                // Update daily data usage
-                await updateDailyDataUsage();
-            } catch (error) {
-                console.error('Error updating analytics page:', error);
-            }
-        }
-        
-        // Update ping statistics
-        async function updatePingStats() {
-            try {
-                const window = analyticsPeriod.value;
-                const response = await fetch(`${API_BASE_URL}/analytics/ping?window=${window}`);
-                if (response.ok) {
-                    const stats = await response.json();
-                    
-                    // Update chart
-                    pingStatsChart.data.datasets[0].data = [
-                        Math.round(stats.average),
-                        stats.max,
-                        stats.min,
-                        stats.p95
-                    ];
-                    pingStatsChart.update();
-                    
-                    // Update content
-                    pingStatsContent.innerHTML = `
-                        <div style="margin-top: 15px;">
-                            <div><strong>Average:</strong> ${Math.round(stats.average)}ms</div>
-                            <div><strong>Maximum:</strong> ${stats.max}ms</div>
-                            <div><strong>Minimum:</strong> ${stats.min}ms</div>
-                            <div><strong>95th Percentile:</strong> ${stats.p95}ms</div>
-                            <div><strong>Samples:</strong> ${stats.samples}</div>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Error updating ping stats:', error);
-            }
-        }
-        
-        // Update data usage analytics
-        async function updateDataUsageAnalytics() {
-            try {
-                const window = analyticsPeriod.value;
-                
-                // Get data usage stats
-                const statsResponse = await fetch(`${API_BASE_URL}/analytics/usage?window=${window}`);
-                if (!statsResponse.ok) return;
-                const stats = await statsResponse.json();
-                
-                // Get daily data usage
-                const dailyResponse = await fetch(`${API_BASE_URL}/analytics/usage/daily?window=${window}`);
-                if (!dailyResponse.ok) return;
-                const dailyData = await dailyResponse.json();
-                
-                // Prepare data for chart
-                const labels = [];
-                const sentData = [];
-                const receivedData = [];
-                
-                dailyData.forEach(record => {
-                    labels.push(new Date(record.date).toLocaleDateString());
-                    sentData.push(record.data_sent);
-                    receivedData.push(record.data_received);
-                });
-                
-                // Update chart
-                dataUsageAnalyticsChart.data.labels = labels;
-                dataUsageAnalyticsChart.data.datasets[0].data = sentData;
-                dataUsageAnalyticsChart.data.datasets[1].data = receivedData;
-                dataUsageAnalyticsChart.update();
-                
-                // Update content
-                dataUsageAnalyticsContent.innerHTML = `
-                    <div style="margin-top: 15px;">
-                        <div><strong>Total Sent:</strong> ${formatBytes(stats.total_sent)}</div>
-                        <div><strong>Total Received:</strong> ${formatBytes(stats.total_received)}</div>
-                        <div><strong>Average Per Day:</strong> ${formatBytes(stats.average_per_day)}</div>
-                        <div><strong>Maximum Per Day:</strong> ${formatBytes(stats.max_per_day)}</div>
-                    </div>
-                `;
-            } catch (error) {
-                console.error('Error updating data usage analytics:', error);
-            }
-        }
-        
-        // Update usage patterns
-        async function updateUsagePatterns() {
-            try {
-                const window = analyticsPeriod.value;
-                const response = await fetch(`${API_BASE_URL}/analytics/time-pattern?window=${window}`);
-                if (response.ok) {
-                    const patterns = await response.json();
-                    
-                    // Prepare data for chart
-                    const labels = [];
-                    const connections = [];
-                    const disconnects = [];
-                    
-                    patterns.forEach(pattern => {
-                        labels.push(`${pattern.hour}:00`);
-                        connections.push(pattern.usage_count);
-                        disconnects.push(pattern.disconnects);
-                    });
-                    
-                    // Update chart
-                    usagePatternsChart.data.labels = labels;
-                    usagePatternsChart.data.datasets[0].data = connections;
-                    usagePatternsChart.data.datasets[1].data = disconnects;
-                    usagePatternsChart.update();
-                    
-                    // Update content
-                    usagePatternsContent.innerHTML = `
-                        <div style="margin-top: 15px;">
-                            <div>Peak usage hour: ${findPeakUsageHour(patterns)}:00</div>
-                            <div>Total connections: ${calculateTotalConnections(patterns)}</div>
-                            <div>Total disconnects: ${calculateTotalDisconnects(patterns)}</div>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Error updating usage patterns:', error);
-            }
-        }
-        
-        // Find peak usage hour
-        function findPeakUsageHour(patterns) {
-            if (patterns.length === 0) return 'N/A';
-            
-            let peakHour = patterns[0].hour;
-            let maxConnections = patterns[0].usage_count;
-            
-            for (let i = 1; i < patterns.length; i++) {
-                if (patterns[i].usage_count > maxConnections) {
-                    maxConnections = patterns[i].usage_count;
-                    peakHour = patterns[i].hour;
-                }
-            }
-            
-            return peakHour;
-        }
-        
-        // Calculate total connections
-        function calculateTotalConnections(patterns) {
-            return patterns.reduce((total, pattern) => total + pattern.usage_count, 0);
-        }
-        
-        // Calculate total disconnects
-        function calculateTotalDisconnects(patterns) {
-            return patterns.reduce((total, pattern) => total + pattern.disconnects, 0);
-        }
-        
-        // Update daily data usage
-        async function updateDailyDataUsage() {
-            try {
-                const window = analyticsPeriod.value;
-                const response = await fetch(`${API_BASE_URL}/analytics/usage/daily?window=${window}`);
-                if (response.ok) {
-                    const dailyData = await response.json();
-                    
-                    let content = '';
-                    if (dailyData && dailyData.length > 0) {
-                        // Sort by date descending
-                        dailyData.sort((a, b) => new Date(b.date) - new Date(a.date));
-                        
-                        content = dailyData.slice(0, 10).map(record => `
-                            <tr>
-                                <td>${new Date(record.date).toLocaleDateString()}</td>
-                                <td>${formatBytes(record.data_sent)}</td>
-                                <td>${formatBytes(record.data_received)}</td>
-                                <td>${formatBytes(record.data_sent + record.data_received)}</td>
-                            </tr>
-                        `).join('');
-                    } else {
-                        content = '<tr><td colspan="4">No daily data usage records</td></tr>';
-                    }
-                    
-                    dailyDataUsageTable.innerHTML = content;
-                }
-            } catch (error) {
-                console.error('Error updating daily data usage:', error);
-            }
-        }
-        
-        // Generate weekly report
-        async function generateWeeklyReport() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/analytics/reports/weekly`);
-                if (response.ok) {
-                    const report = await response.json();
-                    
-                    weeklyReportContent.innerHTML = `
-                        <div>
-                            <h3>Weekly Report (${new Date(report.start_date).toLocaleDateString()} - ${new Date(report.end_date).toLocaleDateString()})</h3>
-                            <div style="margin-top: 15px;">
-                                <h4>Ping Statistics</h4>
-                                <div>Average: ${Math.round(report.ping_stats.average)}ms</div>
-                                <div>Maximum: ${report.ping_stats.max}ms</div>
-                                <div>Minimum: ${report.ping_stats.min}ms</div>
-                                <div>95th Percentile: ${report.ping_stats.p95}ms</div>
-                                
-                                <h4 style="margin-top: 15px;">Data Usage</h4>
-                                <div>Total Sent: ${formatBytes(report.data_usage.total_sent)}</div>
-                                <div>Total Received: ${formatBytes(report.data_usage.total_received)}</div>
-                                <div>Average Per Day: ${formatBytes(report.data_usage.average_per_day)}</div>
-                                <div>Maximum Per Day: ${formatBytes(report.data_usage.max_per_day)}</div>
-                            </div>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Error generating weekly report:', error);
-                showNotification('Failed to generate weekly report: ' + error.message, 'error');
-            }
-        }
-        
-        // Start dashboard updates
-        function startDashboardUpdates() {
-            // Update dashboard every 5 seconds when on dashboard page
-            setInterval(() => {
-                if (currentPage === 'dashboard') {
-                    updateDashboard();
-                }
-                
-                if (currentPage === 'history') {
-                    updateHistory();
-                }
-                
-                if (currentPage === 'alerts') {
-                    updateAlertsPage();
-                }
-                
-                if (currentPage === 'analytics') {
-                    updateAnalyticsPage();
-                }
-            }, 5000);
-        }
-        
-        // Connect to WebSocket
-        function connectWebSocket() {
-            try {
-                ws = new WebSocket(`ws://localhost:8080/api/ws/dashboard`);
-                
-                ws.onopen = function(event) {
-                    console.log('WebSocket connection established');
-                };
-                
-                ws.onmessage = function(event) {
-                    const message = JSON.parse(event.data);
-                    
-                    // Handle different message types
-                    switch (message.type) {
-                        case 'dashboard_update':
-                            // Update dashboard with real-time data
-                            if (currentPage === 'dashboard') {
-                                updateConnectionStatus();
-                                updateDataUsageChart();
-                            }
-                            break;
-                        case 'alert':
-                            // Show alert notification
-                            const notificationElement = showNotification(
-                                message.data.message, 
-                                message.data.type,
-                                10000 // Show for 10 seconds
-                            );
-                            
-                            // Add close button functionality for alerts
-                            const closeBtn = notificationElement.querySelector('.close-btn');
-                            if (closeBtn) {
-                                closeBtn.addEventListener('click', () => {
-                                    markAlertAsRead(message.data.id);
-                                });
-                            }
-                            
-                            // Show desktop notification if enabled
-                            showDesktopNotification(
-                                message.data.title,
-                                message.data.message,
-                                message.data.type
-                            );
-                            
-                            // Update alerts if on alerts page
-                            if (currentPage === 'alerts') {
-                                updateAlertsPage();
-                            }
-                            
-                            // Update recent alerts if on dashboard
-                            if (currentPage === 'dashboard') {
-                                updateRecentAlerts();
-                            }
-                            break;
-                    }
-                };
-                
-                ws.onclose = function(event) {
-                    console.log('WebSocket connection closed');
-                    // Try to reconnect after 5 seconds
-                    setTimeout(connectWebSocket, 5000);
-                };
-                
-                ws.onerror = function(error) {
-                    console.error('WebSocket error:', error);
-                };
-            } catch (error) {
-                console.error('Failed to connect to WebSocket:', error);
-            }
-        }
-        
-        // Setup event listeners
-        function setupEventListeners() {
+            // Event listeners
             connectButton.addEventListener('click', toggleConnection);
-            addServerButton.addEventListener('click', () => {
-                showNotification('Add server functionality would be implemented here', 'info');
-            });
-            importButton.addEventListener('click', () => {
-                showNotification('Import functionality would be implemented here', 'info');
-            });
-            fastestServerButton.addEventListener('click', connectToFastestServer);
-            pingServersButton.addEventListener('click', pingAllServers);
-            usagePeriodSelector.addEventListener('change', updateDataUsageChart);
-            addRuleButton.addEventListener('click', () => {
-                showNotification('Add rule functionality would be implemented here', 'info');
-            });
-            exportRulesButton.addEventListener('click', exportRules);
-            importRulesButton.addEventListener('click', importRules);
-            generateReportButton.addEventListener('click', updateAnalyticsPage);
-            generateWeeklyReportButton.addEventListener('click', generateWeeklyReport);
-            settingsButton.addEventListener('click', () => {
-                showSettingsDialog();
-            });
+            themeToggle.addEventListener('click', toggleTheme);
+            importSubscriptionBtn.addEventListener('click', importSubscription);
+            fastestServerBtn.addEventListener('click', connectToFastestServer);
+            testPingBtn.addEventListener('click', testAllServersPing);
+            bestServerBtn.addEventListener('click', connectToBestServer);
             
-            // Navigation
-            navButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    switchPage(button.dataset.page);
-                });
-            });
+            // Initial UI update
+            updateConnectionUI();
         }
         
-        // Show settings dialog
-        function showSettingsDialog() {
-            // Create settings dialog
-            const dialog = document.createElement('div');
-            dialog.style.position = 'fixed';
-            dialog.style.top = '50%';
-            dialog.style.left = '50%';
-            dialog.style.transform = 'translate(-50%, -50%)';
-            dialog.style.backgroundColor = 'rgba(30, 30, 40, 0.95)';
-            dialog.style.padding = '20px';
-            dialog.style.borderRadius = '10px';
-            dialog.style.zIndex = '1001';
-            dialog.style.minWidth = '300px';
-            dialog.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.5)';
-            dialog.style.color = '#fff';
-            
-            dialog.innerHTML = `
-                <h2 style="margin-top: 0; margin-bottom: 20px;">Dashboard Settings</h2>
-                
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px;">Theme</label>
-                    <select id="themeSelector" style="width: 100%; padding: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: white;">
-                        <option value="system" ${dashboardSettings.theme === 'system' ? 'selected' : ''}>System</option>
-                        <option value="light" ${dashboardSettings.theme === 'light' ? 'selected' : ''}>Light</option>
-                        <option value="dark" ${dashboardSettings.theme === 'dark' ? 'selected' : ''}>Dark</option>
-                    </select>
-                </div>
-                
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 5px;">Chart Time Window</label>
-                    <select id="chartWindowSelector" style="width: 100%; padding: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: white;">
-                        <option value="24h" ${dashboardSettings.chart_window === '24h' ? 'selected' : ''}>24 Hours</option>
-                        <option value="7d" ${dashboardSettings.chart_window === '7d' ? 'selected' : ''}>7 Days</option>
-                        <option value="30d" ${dashboardSettings.chart_window === '30d' ? 'selected' : ''}>30 Days</option>
-                    </select>
-                </div>
-                
-                <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                    <button class="action-button" id="cancelSettingsButton">Cancel</button>
-                    <button class="action-button" id="saveSettingsButton">Save</button>
-                </div>
-            `;
-            
-            // Add overlay
-            const overlay = document.createElement('div');
-            overlay.style.position = 'fixed';
-            overlay.style.top = '0';
-            overlay.style.left = '0';
-            overlay.style.width = '100%';
-            overlay.style.height = '100%';
-            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-            overlay.style.zIndex = '1000';
-            
-            // Add to document
-            document.body.appendChild(overlay);
-            document.body.appendChild(dialog);
-            
-            // Add event listeners
-            document.getElementById('cancelSettingsButton').addEventListener('click', () => {
-                document.body.removeChild(overlay);
-                document.body.removeChild(dialog);
-            });
-            
-            document.getElementById('saveSettingsButton').addEventListener('click', async () => {
-                // Update settings
-                dashboardSettings.theme = document.getElementById('themeSelector').value;
-                dashboardSettings.chart_window = document.getElementById('chartWindowSelector').value;
-                
-                // Save settings
-                await saveDashboardSettings();
-                
-                // Close dialog
-                document.body.removeChild(overlay);
-                document.body.removeChild(dialog);
-                
-                showNotification('Settings saved successfully', 'info');
-            });
-        }
-        
-        // Initialize the application when the page loads
-        document.addEventListener('DOMContentLoaded', init);
+        // Start the app
+        init();
     </script>
 </body>
 </html>

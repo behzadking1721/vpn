@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -20,6 +21,25 @@ func (s *Server) listServers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, http.StatusOK, servers)
+}
+
+// listEnabledServers returns only enabled servers
+func (s *Server) listEnabledServers(w http.ResponseWriter, r *http.Request) {
+	servers, err := s.serverManager.GetAllServers()
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Filter only enabled servers
+	enabledServers := make([]*core.Server, 0)
+	for _, server := range servers {
+		if server.Enabled {
+			enabledServers = append(enabledServers, server)
+		}
+	}
+
+	respondJSON(w, http.StatusOK, enabledServers)
 }
 
 // getServer returns a single server by ID
@@ -138,6 +158,62 @@ func (s *Server) updatePing(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]int{"ping": req.Ping})
 }
 
+// testServerPing tests the ping for a specific server
+func (s *Server) testServerPing(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	ping, err := s.serverManager.TestServerPing(id)
+	if err != nil {
+		respondError(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]int{"ping": ping})
+}
+
+// testAllServersPing tests the ping for all enabled servers
+func (s *Server) testAllServersPing(w http.ResponseWriter, r *http.Request) {
+	results, err := s.serverManager.TestAllServersPing()
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondJSON(w, http.StatusOK, results)
+}
+
+// getBestServer finds and returns the best server based on comprehensive testing
+func (s *Server) getBestServer(w http.ResponseWriter, r *http.Request) {
+	server, err := s.serverManager.GetBestServer()
+	if err != nil {
+		respondError(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	respondJSON(w, http.StatusOK, server)
+}
+
+// connectBest connects to the best server based on comprehensive testing
+func (s *Server) connectBest(w http.ResponseWriter, r *http.Request) {
+	server, err := s.serverManager.GetBestServer()
+	if err != nil {
+		respondError(w, http.StatusNotFound, "No servers available: "+err.Error())
+		return
+	}
+
+	if err := s.connectionManager.Connect(server); err != nil {
+		respondError(w, http.StatusInternalServerError, "Connection failed: "+err.Error())
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]string{
+		"status":    "connected",
+		"server_id": server.ID,
+		"server":    server.Name,
+	})
+}
+
 // connect connects to a server
 func (s *Server) connect(w http.ResponseWriter, r *http.Request) {
 	var req struct {
@@ -170,6 +246,48 @@ func (s *Server) connect(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, map[string]string{
 		"status":    "connected",
 		"server_id": req.ServerID,
+	})
+}
+
+// connectFastest connects to the server with the fastest ping
+func (s *Server) connectFastest(w http.ResponseWriter, r *http.Request) {
+	servers, err := s.serverManager.GetAllServers()
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to get servers: "+err.Error())
+		return
+	}
+
+	if len(servers) == 0 {
+		respondError(w, http.StatusNotFound, "No servers available")
+		return
+	}
+
+	// Find the server with the lowest ping
+	var fastestServer *core.Server
+	for _, server := range servers {
+		if !server.Enabled {
+			continue
+		}
+		
+		if fastestServer == nil || server.Ping < fastestServer.Ping {
+			fastestServer = server
+		}
+	}
+
+	if fastestServer == nil {
+		respondError(w, http.StatusNotFound, "No enabled servers available")
+		return
+	}
+
+	if err := s.connectionManager.Connect(fastestServer); err != nil {
+		respondError(w, http.StatusInternalServerError, "Connection failed: "+err.Error())
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]string{
+		"status":    "connected",
+		"server_id": fastestServer.ID,
+		"server":    fastestServer.Name,
 	})
 }
 
@@ -236,8 +354,30 @@ func (s *Server) addSubscription(w http.ResponseWriter, r *http.Request) {
 	}
 	subscription.UpdatedAt = now
 
-	// TODO: Parse subscription link and import servers
-	// For now, we'll just save the subscription
+	// Parse subscription link and import servers
+	if subscription.URL != "" {
+		parser := managers.NewSubscriptionParser()
+		servers, err := parser.Parse(subscription.URL)
+		if err != nil {
+			respondError(w, http.StatusBadRequest, "Failed to parse subscription: "+err.Error())
+			return
+		}
+
+		// Add all parsed servers
+		for _, server := range servers {
+			// Set server properties from subscription
+			server.CreatedAt = now
+			server.UpdatedAt = now
+			
+			if err := s.serverManager.AddServer(server); err != nil {
+				// Log error but continue with other servers
+				fmt.Printf("Error adding server: %v\n", err)
+			}
+		}
+		
+		// Update server count
+		subscription.ServerCount = len(servers)
+	}
 
 	if err := s.serverManager.AddSubscription(&subscription); err != nil {
 		respondError(w, http.StatusBadRequest, err.Error())
@@ -319,8 +459,32 @@ func (s *Server) updateSubscriptionServers(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// TODO: Parse subscription link and import servers
-	// For now, we'll just update the last update time
+	// Parse subscription link and import servers
+	if subscription.URL != "" {
+		parser := managers.NewSubscriptionParser()
+		servers, err := parser.Parse(subscription.URL)
+		if err != nil {
+			respondError(w, http.StatusBadRequest, "Failed to parse subscription: "+err.Error())
+			return
+		}
+
+		// Add all parsed servers
+		for _, server := range servers {
+			// Set server properties from subscription
+			server.CreatedAt = time.Now()
+			server.UpdatedAt = time.Now()
+			
+			if err := s.serverManager.AddServer(server); err != nil {
+				// Log error but continue with other servers
+				fmt.Printf("Error adding server: %v\n", err)
+			}
+		}
+		
+		// Update server count
+		subscription.ServerCount = len(servers)
+	}
+
+	// Update last update time
 	subscription.LastUpdate = time.Now()
 	subscription.UpdatedAt = time.Now()
 

@@ -45,6 +45,7 @@ func (s *Server) setupRoutes() {
 
 	// Server management endpoints
 	api.HandleFunc("/servers", s.listServers).Methods("GET")
+	api.HandleFunc("/servers/enabled", s.listEnabledServers).Methods("GET")
 	api.HandleFunc("/servers", s.addServer).Methods("POST")
 	api.HandleFunc("/servers/{id}", s.getServer).Methods("GET")
 	api.HandleFunc("/servers/{id}", s.updateServer).Methods("PUT")
@@ -52,6 +53,9 @@ func (s *Server) setupRoutes() {
 	api.HandleFunc("/servers/{id}/enable", s.enableServer).Methods("POST")
 	api.HandleFunc("/servers/{id}/disable", s.disableServer).Methods("POST")
 	api.HandleFunc("/servers/{id}/ping", s.updatePing).Methods("PUT")
+	api.HandleFunc("/servers/{id}/test-ping", s.testServerPing).Methods("POST")
+	api.HandleFunc("/servers/test-all-ping", s.testAllServersPing).Methods("POST")
+	api.HandleFunc("/servers/best", s.getBestServer).Methods("GET")
 
 	// Subscription management endpoints
 	api.HandleFunc("/subscriptions", s.getAllSubscriptions).Methods("GET")
@@ -63,6 +67,8 @@ func (s *Server) setupRoutes() {
 
 	// Connection management endpoints
 	api.HandleFunc("/connect", s.connect).Methods("POST")
+	api.HandleFunc("/connect/fastest", s.connectFastest).Methods("POST")
+	api.HandleFunc("/connect/best", s.connectBest).Methods("POST")
 	api.HandleFunc("/disconnect", s.disconnect).Methods("POST")
 	api.HandleFunc("/status", s.getStatus).Methods("GET")
 	api.HandleFunc("/stats", s.getStats).Methods("GET")

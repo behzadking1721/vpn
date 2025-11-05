@@ -2,20 +2,20 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
-	"time"
+	"runtime"
 
-	fyne "fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/data/binding"
-	"fyne.io/fyne/v2/theme"
-	"fyne.io/fyne/v2/widget"
-
-	"vpn-client/internal/database"
-	"vpn-client/internal/managers"
-	"vpn-client/src/core"
+	"github.com/gorilla/mux"
+	"github.com/skratchdot/open-golang/open"
+	
+	// Fix import paths
+	"vpnclient/internal/database"
+	"vpnclient/internal/managers"
+	"vpnclient/src/core"
 )
 
 func main() {

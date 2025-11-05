@@ -23,6 +23,24 @@ const (
 	Error
 )
 
+// String returns a string representation of the ConnectionStatus
+func (s ConnectionStatus) String() string {
+	switch s {
+	case Disconnected:
+		return "Disconnected"
+	case Connecting:
+		return "Connecting"
+	case Connected:
+		return "Connected"
+	case Disconnecting:
+		return "Disconnecting"
+	case Error:
+		return "Error"
+	default:
+		return "Unknown"
+	}
+}
+
 // ConnectionManager manages VPN connections
 type ConnectionManager struct {
 	status       ConnectionStatus
@@ -119,15 +137,24 @@ func (cm *ConnectionManager) Connect(server *core.Server) error {
 	cm.dataSent = 0
 	cm.dataReceived = 0
 
-	// Simulate connection process
-	// In a real implementation, this would involve:
-	// 1. Initializing the appropriate protocol handler
-	// 2. Establishing the connection
-	// 3. Setting up routing rules
-	// 4. Starting data transfer monitoring
+	// Check if this is a WireGuard server
+	if server != nil && server.Protocol == "wireguard" {
+		err := cm.connectWireGuard(server)
+		if err != nil {
+			cm.status = Error
+			return err
+		}
+	} else {
+		// Simulate connection process
+		// In a real implementation, this would involve:
+		// 1. Initializing the appropriate protocol handler
+		// 2. Establishing the connection
+		// 3. Setting up routing rules
+		// 4. Starting data transfer monitoring
 
-	// For demo purposes, we'll just simulate a successful connection
-	time.Sleep(100 * time.Millisecond)
+		// For demo purposes, we'll just simulate a successful connection
+		time.Sleep(100 * time.Millisecond)
+	}
 
 	cm.status = Connected
 
@@ -145,14 +172,24 @@ func (cm *ConnectionManager) Disconnect() error {
 
 	cm.status = Disconnecting
 
-	// Simulate disconnection process
-	// In a real implementation, this would involve:
-	// 1. Tearing down the connection
-	// 2. Cleaning up routing rules
-	// 3. Stopping data transfer monitoring
+	// Check if this is a WireGuard connection
+	if cm.currentServer != nil && cm.currentServer.Protocol == "wireguard" {
+		err := cm.disconnectWireGuard(cm.currentServer)
+		if err != nil {
+			cm.status = Error
+			return err
+		}
+	} else {
+		// Simulate disconnection process
+		// In a real implementation, this would involve:
+		// 1. Tearing down the connection
+		// 2. Cleaning up routing rules
+		// 3. Stopping data transfer monitoring
 
-	// For demo purposes, we'll just simulate a successful disconnection
-	time.Sleep(100 * time.Millisecond)
+		// For demo purposes, we'll just simulate a successful disconnection
+		time.Sleep(100 * time.Millisecond)
+	}
+	
 	cm.status = Disconnected
 	cm.currentServer = nil
 	cm.startTime = time.Time{}
@@ -160,3 +197,14 @@ func (cm *ConnectionManager) Disconnect() error {
 	return nil
 }
 
+// connectWireGuard connects to a WireGuard server
+func (cm *ConnectionManager) connectWireGuard(server *core.Server) error {
+	// This will be implemented in wireguard_wgctrl.go with build tag
+	return fmt.Errorf("wireguard support not compiled in this build")
+}
+
+// disconnectWireGuard disconnects from a WireGuard server
+func (cm *ConnectionManager) disconnectWireGuard(server *core.Server) error {
+	// This will be implemented in wireguard_wgctrl.go with build tag
+	return fmt.Errorf("wireguard support not compiled in this build")
+}
