@@ -236,9 +236,24 @@ class ServerService {
         final port = obj['port'] is int
             ? obj['port'] as int
             : int.tryParse((obj['port'] ?? '').toString()) ?? 0;
-        final id = (obj['id'] ?? obj['uuid'] ?? obj['aid'] ?? obj['ps'])?.toString() ?? '';
+        final id = (obj['id'] ?? obj['uuid'] ?? obj['ps'])?.toString() ?? '';
         final name = (obj['ps'] ?? obj['name'])?.toString() ?? id;
         final tls = ((obj['tls'] ?? obj['security'])?.toString() ?? '') == 'tls';
+        final network = (obj['net'] ?? obj['network'])?.toString();
+        final wsPath = (obj['path'] ?? obj['wsPath'])?.toString();
+        Map<String, String>? wsHeaders;
+        if (obj['wsHeaders'] is Map) {
+          wsHeaders = Map<String, String>.from(obj['wsHeaders']);
+        } else if (obj['headers'] is Map) {
+          wsHeaders = Map<String, String>.from(obj['headers']);
+        } else if (obj['host'] != null && network == 'ws') {
+          // sometimes 'host' is used as Host header
+          wsHeaders = {'Host': obj['host'].toString()};
+        }
+        final alterId = (obj['aid'] is int)
+            ? obj['aid'] as int
+            : int.tryParse((obj['aid'] ?? obj['alterId'] ?? '').toString());
+
         return Server.fromJson({
           'id': id,
           'name': name,
@@ -246,6 +261,11 @@ class ServerService {
           'port': port,
           'protocol': 'vmess',
           'tls': tls,
+          'network': network,
+          'wsPath': wsPath,
+          'wsHeaders': wsHeaders,
+          'alterId': alterId,
+          'sni': obj['sni'] ?? obj['servername'],
         });
       }
 

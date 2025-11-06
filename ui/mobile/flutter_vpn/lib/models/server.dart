@@ -9,6 +9,10 @@ class Server {
   final String? method;
   final bool tls;
   final String? sni;
+  final String? network;
+  final String? wsPath;
+  final Map<String, String>? wsHeaders;
+  final int? alterId;
   final String? fingerprint;
   final String? remark;
   final bool enabled;
@@ -26,6 +30,10 @@ class Server {
     this.method,
     this.tls = false,
     this.sni,
+  this.network,
+  this.wsPath,
+  this.wsHeaders,
+  this.alterId,
     this.fingerprint,
     this.remark,
     this.enabled = true,
@@ -76,6 +84,10 @@ class Server {
       'host': host,
       'port': port,
       'protocol': protocol,
+      'network': network,
+      'wsPath': wsPath,
+      'wsHeaders': wsHeaders,
+      'alterId': alterId,
       'encryption': encryption,
       'password': password,
       'method': method,
@@ -99,6 +111,17 @@ class Server {
         ? json['port'] as int
         : int.tryParse((json['port'] ?? '').toString()) ?? 0;
     final protocol = (json['protocol'] ?? json['type'] ?? 'unknown') as String;
+    final network = (json['network'] ?? json['net']) as String?;
+    final wsPath = (json['wsPath'] ?? json['path']) as String?;
+    Map<String, String>? wsHeaders;
+    if (json['wsHeaders'] is Map) {
+      wsHeaders = Map<String, String>.from(json['wsHeaders']);
+    } else if (json['headers'] is Map) {
+      wsHeaders = Map<String, String>.from(json['headers']);
+    }
+    final alterId = (json['alterId'] is int)
+        ? json['alterId'] as int
+        : int.tryParse((json['aid'] ?? json['alterId'] ?? '').toString());
 
     return Server(
       id: id,
@@ -111,6 +134,10 @@ class Server {
       method: json['method'] as String?,
       tls: json['tls'] as bool? ?? (json['security'] == 'tls'),
       sni: json['sni'] as String?,
+      network: network,
+      wsPath: wsPath,
+      wsHeaders: wsHeaders,
+      alterId: alterId,
       fingerprint: json['fingerprint'] as String?,
       remark: json['remark'] as String?,
       enabled: json['enabled'] as bool? ?? true,

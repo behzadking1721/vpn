@@ -73,5 +73,58 @@ void main() {
     expect(parsed.length, 3);
     expect(parsed.map((s) => s.protocol), containsAll(['vmess', 'vless', 'ss']));
   });
+
+  test('vmess: websocket full fields (path, headers, sni, aid)', () async {
+    final vmessObj = {
+      'v': '2',
+      'ps': 'ws-full',
+      'add': 'ws.example.com',
+      'port': '443',
+      'id': 'uuid-ws-1',
+      'aid': 0,
+      'net': 'ws',
+      'path': '/websocket',
+      'host': 'host.example.com',
+      'tls': 'tls',
+      'sni': 'sni.example.com',
+      'headers': {
+        'Host': 'host.example.com',
+        'X-Custom': 'value'
+      }
+    };
+    final vmess = 'vmess://' + base64Encode(utf8.encode(jsonEncode(vmessObj)));
+    final parsed = await ServerService.parseSubscriptionLinkStatic(vmess);
+    expect(parsed.length, 1);
+    final s = parsed.first;
+    expect(s.protocol, 'vmess');
+    expect(s.network, 'ws');
+    expect(s.wsPath, '/websocket');
+    expect(s.wsHeaders, isNotNull);
+    expect(s.wsHeaders!['Host'], 'host.example.com');
+    expect(s.alterId, 0);
+    expect(s.sni, 'sni.example.com');
+    expect(s.tls, isTrue);
+  });
+
+  test('vmess: tcp network and kcp', () async {
+    final tcp = {'add': 'tcp.example', 'port': 1194, 'id': 'tcp-id', 'net': 'tcp', 'ps': 'tcp-node'};
+    final kcp = {'add': 'kcp.example', 'port': 29900, 'id': 'kcp-id', 'net': 'kcp', 'ps': 'kcp-node'};
+    final p = 'vmess://' + base64Encode(utf8.encode(jsonEncode(tcp))) + '\n' + 'vmess://' + base64Encode(utf8.encode(jsonEncode(kcp)));
+    final parsed = await ServerService.parseSubscriptionLinkStatic(base64Encode(utf8.encode(p)));
+    expect(parsed.length, 2);
+    expect(parsed[0].network, 'tcp');
+    expect(parsed[1].network, 'kcp');
+  });
+
+  test('vless: ws path and sni in query params', () async {
+    final vless = 'vless://abcd-ef01@vless-ws.example.org:443?security=tls&path=%2Fws&sni=vless-sni.example#vless-ws';
+    final parsed = await ServerService.parseSubscriptionLinkStatic(vless);
+    expect(parsed.length, 1);
+    final s = parsed.first;
+    expect(s.protocol, 'vless');
+    expect(s.wsPath, '/ws');
+    expect(s.sni, 'vless-sni.example');
+    expect(s.port, 443);
+  });
 }
 
