@@ -9,20 +9,21 @@ class ServerService {
   final String _apiBaseUrl; // base URL can be injected for tests
 
   ServerService({String? baseUrl}) : _apiBaseUrl = baseUrl ?? apiBaseUrl {
-    // load servers on init
+    // load servers on init (fire-and-forget)
     loadServers();
   }
-  List<Server> _servers = [];
-  
-  final StreamController<List<Server>> _serversController = 
-      StreamController<List<Server>>.broadcast();
-  
-  Stream<List<Server>> get serversStream => _serversController.stream;
 
-  // If someone constructs without named param, allow default constructor
+  // legacy default ctor kept for compatibility
   ServerService.defaultCtor() : _apiBaseUrl = apiBaseUrl {
     loadServers();
-        if (link.startsWith('vmess://')) {
+  }
+
+  List<Server> _servers = [];
+
+  final StreamController<List<Server>> _serversController =
+      StreamController<List<Server>>.broadcast();
+
+  Stream<List<Server>> get serversStream => _serversController.stream;
 
   /// بارگذاری سرورها از API
   Future<void> loadServers() async {
@@ -215,7 +216,9 @@ class ServerService {
       String s = input.replaceAll('-', '+').replaceAll('_', '/').trim();
       final pad = s.length % 4;
       if (pad > 0) s = s + ('=' * (4 - pad));
-      final decoded = utf8.decode(base64.decode(s));
+      final bytes = base64.decode(s);
+      // Heuristic: if decoded bytes contain non-utf8, fallback to null
+      final decoded = utf8.decode(bytes);
       return decoded;
     } catch (_) {
       return null;
@@ -226,57 +229,79 @@ class ServerService {
     try {
       if (line.startsWith('vmess://')) {
         final payload = line.substring('vmess://'.length);
-          final decoded = _tryBase64Decode(payload);
+        final decoded = _tryBase64Decode(payload) ?? payload;
+        // vmess payload is usually a JSON object
         final Map<String, dynamic> obj = jsonDecode(decoded);
+        final host = (obj['add'] ?? obj['host'] ?? obj['address'])?.toString() ?? '';
+        final port = obj['port'] is int
+            ? obj['port'] as int
+            : int.tryParse((obj['port'] ?? '').toString()) ?? 0;
+        final id = (obj['id'] ?? obj['uuid'] ?? obj['aid'] ?? obj['ps'])?.toString() ?? '';
+        final name = (obj['ps'] ?? obj['name'])?.toString() ?? id;
+        final tls = ((obj['tls'] ?? obj['security'])?.toString() ?? '') == 'tls';
         return Server.fromJson({
-          'id': obj['id'] ?? obj['ps'],
-          'name': obj['ps'] ?? obj['name'],
-          'host': obj['add'],
-          'port': obj['port'] is String ? int.tryParse(obj['port']) ?? 0 : obj['port'],
+          'id': id,
+          'name': name,
+          'host': host,
+          'port': port,
           'protocol': 'vmess',
-          'tls': (obj['tls'] == 'tls'),
+          'tls': tls,
         });
       }
+
       if (line.startsWith('vless://')) {
-        // vless://uuid@host:port?params#name
-        final withoutScheme = line.substring('vless://'.length);
-        final at = withoutScheme.split('@');
-        if (at.length == 2) {
-          final id = at[0];
-          final rest = at[1];
-          final hostPort = rest.split('/')[0].split('?')[0];
+        // Use Uri to parse complex vless URIs: vless://<id>@host:port?params#name
+        final uri = Uri.parse(line);
+        final id = uri.userInfo;
+        final host = uri.host;
+        int port = uri.hasPort ? uri.port : 0;
+        final query = uri.queryParameters;
+        final tls = (query['security'] == 'tls' || query['tls'] == 'tls');
+        if (port == 0 && tls) port = 443;
+        final name = uri.fragment.isNotEmpty ? uri.fragment : id;
+        return Server.fromJson({
+          'id': id,
+          'name': name,
+          'host': host,
+          'port': port,
+          'protocol': 'vless',
+          'tls': tls,
+        });
+      }
+
+      if (line.startsWith('ss://')) {
+        // support ss://base64#name and ss://method:pass@host:port
+        final after = line.substring('ss://'.length);
+        // if it contains '@' before a possible '#' it's likely the raw form
+        final beforeHash = after.split('#')[0];
+        if (beforeHash.contains('@')) {
+          // raw method:pass@host:port
+          final parts = beforeHash.split('@');
+          final methodPass = parts[0];
+          final hostPort = parts[1];
           final hp = hostPort.split(':');
           final host = hp[0];
           final port = hp.length > 1 ? int.tryParse(hp[1]) ?? 0 : 0;
-          return Server.fromJson({'id': id, 'host': host, 'port': port, 'protocol': 'vless'});
-        }
-      }
-      if (line.startsWith('ss://')) {
-        // ss://base64#name or ss://method:password@host:port
-        final after = line.substring('ss://'.length);
-        if (after.contains('@')) {
-          final beforeAt = after.split('@')[0];
-          final remainder = after.split('@')[1];
-          final methodPass = beforeAt;
-          final hp = remainder.split('#')[0];
-          final host = hp.split(':')[0];
-          final port = int.tryParse(hp.split(':')[1]) ?? 0;
           return Server.fromJson({'host': host, 'port': port, 'protocol': 'ss'});
-        } else {
-          try {
-              final decoded = _tryBase64Decode(after.split('#')[0]);
-            // format method:password@host:port
-            final parts = decoded.split('@');
-            if (parts.length == 2) {
-              final hp = parts[1];
-              final host = hp.split(':')[0];
-              final port = int.tryParse(hp.split(':')[1]) ?? 0;
-              return Server.fromJson({'host': host, 'port': port, 'protocol': 'ss'});
-            }
-          } catch (_) {}
+        }
+
+        // otherwise try base64 decode of the beforeHash part
+        final decoded = _tryBase64Decode(beforeHash);
+        if (decoded != null) {
+          // expected format method:pass@host:port
+          final parts = decoded.split('@');
+          if (parts.length == 2) {
+            final hostPort = parts[1];
+            final hp = hostPort.split(':');
+            final host = hp[0];
+            final port = hp.length > 1 ? int.tryParse(hp[1]) ?? 0 : 0;
+            return Server.fromJson({'host': host, 'port': port, 'protocol': 'ss'});
+          }
         }
       }
-    } catch (_) {}
+    } catch (_) {
+      // swallow parse errors per design - return null when unknown format
+    }
     return null;
   }
 
