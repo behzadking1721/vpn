@@ -279,6 +279,15 @@ class ServerService {
         final tls = (query['security'] == 'tls' || query['tls'] == 'tls');
         if (port == 0 && tls) port = 443;
         final name = uri.fragment.isNotEmpty ? uri.fragment : id;
+        // try extract websocket related fields from query params
+        String? network;
+        final maybeType = query['type'] ?? query['net'] ?? query['transport'];
+        if (maybeType != null) network = maybeType;
+        // common param names: path, p, wsPath
+        String? wsPath = query['path'] ?? query['p'] ?? query['wsPath'];
+        // sni can be in 'sni' or 'host' or 'servername'
+        final sni = query['sni'] ?? query['host'] ?? query['servername'];
+
         return Server.fromJson({
           'id': id,
           'name': name,
@@ -286,6 +295,9 @@ class ServerService {
           'port': port,
           'protocol': 'vless',
           'tls': tls,
+          'network': network,
+          'wsPath': wsPath,
+          'sni': sni,
         });
       }
 
