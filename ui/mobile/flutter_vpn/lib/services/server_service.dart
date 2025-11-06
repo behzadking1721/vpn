@@ -146,9 +146,117 @@ class ServerService {
 
   /// پارس کردن لینک اشتراک
   Future<List<Server>> parseSubscriptionLink(String link) async {
-    // در یک اپلیکیشن واقعی، اینجا لینک اشتراک پارس می‌شود
-    // برای حالا یک لیست خالی برمی‌گردانیم
-    return [];
+    // Basic parser for common subscription formats.
+    // - If link is an http(s) URL, fetch its contents and parse each line.
+    // - If link is base64 or contains vmess:// or vless:// entries, parse them.
+    final List<Server> parsed = [];
+    try {
+      if (link.startsWith('http://') || link.startsWith('https://')) {
+        final resp = await http.get(Uri.parse(link));
+        if (resp.statusCode == 200) {
+          final body = resp.body.trim();
+          // many subscription links are base64-encoded lists
+          try {
+            final decoded = utf8.decode(base64.decode(body));
+            for (final line in decoded.split('\n')) {
+              final l = line.trim();
+              if (l.isEmpty) continue;
+              final s = _parseSingleSubscriptionLine(l);
+              if (s != null) parsed.add(s);
+            }
+          } catch (_) {
+            // not base64, treat as newline-separated links
+            for (final line in body.split('\n')) {
+              final l = line.trim();
+              if (l.isEmpty) continue;
+              final s = _parseSingleSubscriptionLine(l);
+              if (s != null) parsed.add(s);
+            }
+          }
+        }
+      } else {
+        // direct link string (vmess://, vless://, ss://) or base64
+        if (link.startsWith('vmess://') || link.startsWith('vless://') || link.startsWith('ss://')) {
+          final s = _parseSingleSubscriptionLine(link);
+          if (s != null) parsed.add(s);
+        } else {
+          // try base64 decode
+          try {
+            final decoded = utf8.decode(base64.decode(link.trim()));
+            for (final line in decoded.split('\n')) {
+              final l = line.trim();
+              if (l.isEmpty) continue;
+              final s = _parseSingleSubscriptionLine(l);
+              if (s != null) parsed.add(s);
+            }
+          } catch (_) {
+            // couldn't parse
+          }
+        }
+      }
+    } catch (e) {
+      rethrow;
+    }
+
+    return parsed;
+  }
+
+  Server? _parseSingleSubscriptionLine(String line) {
+    try {
+      if (line.startsWith('vmess://')) {
+        final payload = line.substring('vmess://'.length);
+        final decoded = utf8.decode(base64.decode(payload));
+        final Map<String, dynamic> obj = jsonDecode(decoded);
+        return Server.fromJson({
+          'id': obj['id'] ?? obj['ps'],
+          'name': obj['ps'] ?? obj['name'],
+          'host': obj['add'],
+          'port': obj['port'] is String ? int.tryParse(obj['port']) ?? 0 : obj['port'],
+          'protocol': 'vmess',
+          'tls': (obj['tls'] == 'tls'),
+        });
+      }
+      if (line.startsWith('vless://')) {
+        // vless://uuid@host:port?params#name
+        final withoutScheme = line.substring('vless://'.length);
+        final at = withoutScheme.split('@');
+        if (at.length == 2) {
+          final id = at[0];
+          final rest = at[1];
+          final hostPort = rest.split('/')[0].split('?')[0];
+          final hp = hostPort.split(':');
+          final host = hp[0];
+          final port = hp.length > 1 ? int.tryParse(hp[1]) ?? 0 : 0;
+          return Server.fromJson({'id': id, 'host': host, 'port': port, 'protocol': 'vless'});
+        }
+      }
+      if (line.startsWith('ss://')) {
+        // ss://base64#name or ss://method:password@host:port
+        final after = line.substring('ss://'.length);
+        if (after.contains('@')) {
+          final beforeAt = after.split('@')[0];
+          final remainder = after.split('@')[1];
+          final methodPass = beforeAt;
+          final hp = remainder.split('#')[0];
+          final host = hp.split(':')[0];
+          final port = int.tryParse(hp.split(':')[1]) ?? 0;
+          return Server.fromJson({'host': host, 'port': port, 'protocol': 'ss'});
+        } else {
+          try {
+            final decoded = utf8.decode(base64.decode(after.split('#')[0]));
+            // format method:password@host:port
+            final parts = decoded.split('@');
+            if (parts.length == 2) {
+              final hp = parts[1];
+              final host = hp.split(':')[0];
+              final port = int.tryParse(hp.split(':')[1]) ?? 0;
+              return Server.fromJson({'host': host, 'port': port, 'protocol': 'ss'});
+            }
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+    return null;
   }
 
   /// بستن سرویس و آزاد کردن منابع

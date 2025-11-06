@@ -26,6 +26,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
         except Exception:
             return {"servers": [], "log_level": "info", "auto_connect": False}
 
+    # Simple runtime state to simulate a connected server and stats
+    _connected_server_id = None
+    _data_sent = 0
+    _data_received = 0
+
     def _write_config(self, cfg):
         try:
             os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
@@ -47,6 +52,20 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
+        # status and stats endpoints
+        if parsed.path == '/api/status':
+            if Handler._connected_server_id:
+                self._send_json({'status': 'connected', 'server_id': Handler._connected_server_id})
+            else:
+                self._send_json({'status': 'disconnected'})
+            return
+        if parsed.path == '/api/stats':
+            # simulate some traffic
+            if Handler._connected_server_id:
+                Handler._data_sent += 1024
+                Handler._data_received += 2048
+            self._send_json({'data_sent': Handler._data_sent, 'data_received': Handler._data_received})
+            return
         if parsed.path == '/api/config':
             cfg = self._read_config()
             self._send_json(cfg)
@@ -70,6 +89,32 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
+        # connect/disconnect endpoints for simulating client actions
+        if parsed.path == '/api/connect':
+            length = int(self.headers.get('content-length', 0))
+            body = self.rfile.read(length) if length else b''
+            try:
+                data = json.loads(body.decode('utf-8')) if body else {}
+            except Exception:
+                self._send_json({'error': 'invalid json'}, status=400)
+                return
+            sid = data.get('server_id') or data.get('id') or data.get('uuid')
+            if not sid:
+                self._send_json({'error': 'no server_id provided'}, status=400)
+                return
+            # mark connected
+            Handler._connected_server_id = sid
+            Handler._data_sent = 0
+            Handler._data_received = 0
+            self._send_json({'status': 'connected', 'server_id': sid})
+            return
+        if parsed.path == '/api/disconnect':
+            Handler._connected_server_id = None
+            self._send_json({'status': 'disconnected'})
+            return
+
+        # allow existing POST handlers (servers) by delegating to original do_POST
+        # fallthrough to existing server add handled earlier
         if parsed.path == '/api/servers':
             length = int(self.headers.get('content-length', 0))
             body = self.rfile.read(length) if length else b''
@@ -85,10 +130,25 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._write_config(cfg)
             self._send_json(s, status=201)
             return
+
         self.send_response(404)
         self.end_headers()
 
+    
+
     def do_PUT(self):
+        parsed = urllib.parse.urlparse(self.path)
+        # status/stats endpoints for queries
+        if parsed.path == '/api/status':
+            if Handler._connected_server_id:
+                self._send_json({'status': 'connected', 'server_id': Handler._connected_server_id})
+            else:
+                self._send_json({'status': 'disconnected'})
+            return
+        if parsed.path == '/api/stats':
+            # return simulated stats
+            self._send_json({'data_sent': Handler._data_sent, 'data_received': Handler._data_received})
+            return
         parsed = urllib.parse.urlparse(self.path)
         if parsed.path == '/api/config':
             length = int(self.headers.get('content-length', 0))
