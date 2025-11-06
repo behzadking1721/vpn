@@ -90,16 +90,26 @@ class Server {
   }
 
   factory Server.fromJson(Map<String, dynamic> json) {
+    // Accept multiple possible JSON shapes coming from different backends
+    final id = (json['id'] ?? json['uuid'] ?? json['name'] ??
+            '${json['host'] ?? json['address'] ?? ''}:${json['port'] ?? 0}')
+        .toString();
+    final host = (json['host'] ?? json['address'] ?? json['host']) as String? ?? '';
+    final port = (json['port'] is int)
+        ? json['port'] as int
+        : int.tryParse((json['port'] ?? '').toString()) ?? 0;
+    final protocol = (json['protocol'] ?? json['type'] ?? 'unknown') as String;
+
     return Server(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      host: json['host'] as String,
-      port: json['port'] as int,
-      protocol: json['protocol'] as String,
+      id: id,
+      name: (json['name'] as String?) ?? id,
+      host: host,
+      port: port,
+      protocol: protocol,
       encryption: json['encryption'] as String?,
       password: json['password'] as String?,
       method: json['method'] as String?,
-      tls: json['tls'] as bool? ?? false,
+      tls: json['tls'] as bool? ?? (json['security'] == 'tls'),
       sni: json['sni'] as String?,
       fingerprint: json['fingerprint'] as String?,
       remark: json['remark'] as String?,
