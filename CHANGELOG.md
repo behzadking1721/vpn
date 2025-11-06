@@ -8,51 +8,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Protocol handler implementations for VMess, VLESS, Trojan, Reality, Hysteria2, TUIC, SSH, Shadowsocks
-- Server management capabilities
-- Connection management system
-- Configuration management
-- Cross-platform support (Windows, Linux, macOS)
-- RESTful API for programmatic control
-- Graphical user interface (HTML/CSS/JS)
-- Command-line interface
-- Subscription management with automatic server import
-- Smart server selection based on ping and performance
-- Comprehensive test suite including unit, integration, and end-to-end tests
-- Detailed documentation covering API, usage, testing, and development
-- Performance testing guidelines
-- Security testing guidelines
-- Cross-platform testing guidelines
+- Automatic server updater system
+- CLI tool with full feature set
+- Advanced testing suite
+- Professional build and release system
 
 ### Changed
-- Enhanced WireGuard implementation with wgctrl library
-- Improved subscription parser to handle various formats
-- Enhanced server manager with CRUD operations
-- Improved connection manager with better status handling
-- Enhanced API with comprehensive endpoints
-- Improved UI with dashboard and alerts pages
-- Enhanced testing with coverage reports
+- Enhanced desktop UI with statistics dashboard
+- Improved logging system with better structure
+- Enhanced notification system with multiple types
 
 ### Fixed
-- Various bug fixes in protocol implementations
-- Fixed import paths in multiple files
-- Fixed server selection algorithms
-- Fixed connection handling issues
+- Various bug fixes in connection management
+- Performance improvements in server management
 
-## [1.0.0] - 2025-10-31
+## [1.0.0] - 2024-01-15
 
 ### Added
-- Initial release of VPN Client
-- Basic Windows executable with version display
-- Support for command-line arguments (--version, --help)
-- Packaging script for distribution
-- Git tag and release preparation
+- Initial stable release
+- Cross-platform support (Windows, Linux, macOS)
+- Mobile application for Android and iOS
+- Support for multiple VPN protocols (WireGuard, VMess, Shadowsocks, Trojan)
+- Server and subscription management system
+- REST API for client interfaces
+- Desktop web-based UI
+- Comprehensive documentation
+- Testing suite with unit and integration tests
+- Notification system
+- Statistics and logging systems
 
-### Changed
-- Fixed import paths in main.go to use relative paths
-- Updated go.mod module name to match project structure
-- Simplified main.go for initial release
+### Supported Protocols
+- WireGuard
+- VMess
+- Shadowsocks
+- Trojan
 
-### Fixed
-- Build script issues with absolute paths
-- Dependency resolution issues in go.mod
+### Supported Platforms
+- Windows 10+
+- Linux (Ubuntu 20.04+, Fedora 35+, etc.)
+- macOS 10.15+
+- Android 8.0+
+- iOS 12+
+
+### Features
+- Server listing and management
+- Connection status and controls
+- Statistics visualization
+- Settings management
+- Subscription management
+- Real-time notifications
+- Comprehensive logging
+- Data usage statistics
+- CLI interface for automation

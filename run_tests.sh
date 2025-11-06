@@ -5,8 +5,7 @@ echo "======================="
 
 echo
 echo "1. Running unit tests..."
-cd src
-go test -v ./protocols
+go test ./internal/managers/... -v
 if [ $? -ne 0 ]; then
     echo "Unit tests failed!"
     exit 1
@@ -14,8 +13,7 @@ fi
 
 echo
 echo "2. Running protocol integration test..."
-cd ..
-go run test_protocols.go
+go test ./internal/... -v
 if [ $? -ne 0 ]; then
     echo "Protocol integration test failed!"
     exit 1

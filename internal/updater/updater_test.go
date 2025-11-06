@@ -4,13 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/assert"
 
 	"vpnclient/internal/database"
 	"vpnclient/internal/logging"
 	"vpnclient/internal/managers"
-	"vpnclient/mocks"
 	"vpnclient/src/core"
 )
 

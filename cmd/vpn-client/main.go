@@ -18,7 +18,22 @@ import (
 	"vpnclient/internal/updater"
 )
 
+// Version information set at build time
+var (
+	version   = "dev"
+	buildTime = "unknown"
+	gitCommit = "unknown"
+)
+
 func main() {
+	// Handle version flag
+	for _, arg := range os.Args[1:] {
+		if arg == "--version" || arg == "-v" {
+			fmt.Printf("VPN Client %s\nBuild: %s\nCommit: %s\n", version, buildTime, gitCommit)
+			return
+		}
+	}
+
 	// Create data directory if it doesn't exist
 	dataDir := "data"
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
@@ -37,7 +52,7 @@ func main() {
 	}
 	defer logger.Close()
 
-	logger.Info("Starting VPN Client")
+	logger.Info("Starting VPN Client version %s (build: %s, commit: %s)", version, buildTime, gitCommit)
 
 	// Initialize database
 	dbPath := filepath.Join(dataDir, "vpn.db")
@@ -113,6 +128,7 @@ func main() {
 	time.Sleep(100 * time.Millisecond)
 	logger.Info("VPN Client started successfully!")
 	fmt.Println("VPN Client started successfully!")
+	fmt.Printf("VPN Client %s started\n", version)
 	fmt.Println("API Server running on http://localhost:8080")
 
 	// Log server startup

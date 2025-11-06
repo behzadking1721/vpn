@@ -76,6 +76,24 @@ The command-line interface provides powerful automation capabilities:
    npx react-native run-android # or run-ios
    ```
 
+### Using Makefile
+
+The project includes a Makefile for easier building:
+
+```bash
+# Build for all platforms
+make build-all
+
+# Build CLI for all platforms
+make build-cli-all
+
+# Run tests
+make test
+
+# Clean build artifacts
+make clean
+```
+
 ## Usage
 
 ### Running the Service
@@ -131,6 +149,21 @@ The project includes extensive tests covering:
 
 See [Testing Documentation](testing.md) for more details.
 
+## Release Process
+
+The project follows a professional release process with automated builds and cross-platform support:
+
+### Platforms Supported
+- Windows (`.exe` installer and portable)
+- Linux (binary, `.deb`, `.rpm`)
+- macOS (binary and `.dmg`)
+- Mobile (Android and iOS)
+
+### Versioning
+We follow [Semantic Versioning](https://semver.org/) with automated GitHub releases.
+
+See [Release Documentation](RELEASE.md) for detailed information about the release process.
+
 ## Development
 
 ### Project Structure
@@ -160,6 +193,11 @@ vpnclient/
 Run tests with:
 ```bash
 go test ./...
+```
+
+Or using the Makefile:
+```bash
+make test
 ```
 
 See [Testing Documentation](testing.md) for more details.

@@ -48,7 +48,7 @@ func (sm *SubscriptionManager) AddSubscription(url string) (*core.Subscription, 
 	}
 	
 	// Parse the subscription
-	servers, err := sm.parser.Parse(url)
+	servers, err := sm.parser.ParseSubscription(url)
 	if err != nil {
 		// Log error
 		if sm.logger != nil {
@@ -245,7 +245,7 @@ func (sm *SubscriptionManager) UpdateSubscriptionServers(id string) error {
 	}
 
 	// Parse the subscription
-	servers, err := sm.parser.Parse(sub.URL)
+	servers, err := sm.parser.ParseSubscription(sub.URL)
 	if err != nil {
 		// Log error
 		if sm.logger != nil {
