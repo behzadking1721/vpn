@@ -288,6 +288,28 @@ class ServerService {
         // sni can be in 'sni' or 'host' or 'servername'
         final sni = query['sni'] ?? query['host'] ?? query['servername'];
 
+        // parse header=... or headers=... query parameters into wsHeaders
+        Map<String, String>? wsHeaders;
+        final headerValues = uri.queryParametersAll['header'] ?? uri.queryParametersAll['headers'] ?? <String>[];
+        if (headerValues.isNotEmpty) {
+          wsHeaders = <String, String>{};
+          for (final hv in headerValues) {
+            // hv is expected like 'Host=example.com' or 'X-Custom=val'
+            if (hv.contains('=')) {
+              final idx = hv.indexOf('=');
+              final k = hv.substring(0, idx).trim();
+              final v = hv.substring(idx + 1).trim();
+              if (k.isNotEmpty) wsHeaders[k] = v;
+            } else if (hv.contains(':')) {
+              // some formats use Host: example.com
+              final parts = hv.split(':');
+              final k = parts[0].trim();
+              final v = parts.sublist(1).join(':').trim();
+              if (k.isNotEmpty) wsHeaders[k] = v;
+            }
+          }
+        }
+
         return Server.fromJson({
           'id': id,
           'name': name,
@@ -297,6 +319,7 @@ class ServerService {
           'tls': tls,
           'network': network,
           'wsPath': wsPath,
+          'wsHeaders': wsHeaders,
           'sni': sni,
         });
       }

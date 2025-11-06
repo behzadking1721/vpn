@@ -126,5 +126,18 @@ void main() {
     expect(s.sni, 'vless-sni.example');
     expect(s.port, 443);
   });
+
+  test('vless: header query params mapped to wsHeaders', () async {
+    final vless = 'vless://abcd-ef01@vless-headers.example.org:443?security=tls&path=%2Fws&header=Host%3Dvless-headers.example&header=X-Custom%3Dvalue#vless-headers';
+    final parsed = await ServerService.parseSubscriptionLinkStatic(vless);
+    expect(parsed.length, 1);
+    final s = parsed.first;
+    expect(s.protocol, 'vless');
+    expect(s.wsPath, '/ws');
+    expect(s.port, 443);
+    expect(s.wsHeaders, isNotNull);
+    expect(s.wsHeaders!['Host'], 'vless-headers.example');
+    expect(s.wsHeaders!['X-Custom'], 'value');
+  });
 }
 
