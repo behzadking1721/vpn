@@ -4,75 +4,58 @@ import (
 	"fmt"
 	"sync"
 	"time"
-
-	"vpnclient/internal/logging"
-	"vpnclient/internal/notifications"
-	"vpnclient/internal/stats"
 	"vpnclient/src/core"
 )
 
-// ConnectionStatus represents the status of a VPN connection
+// ConnectionStatus represents the connection status
 type ConnectionStatus int
 
 const (
-	// Disconnected means no connection is active
+	// Disconnected represents a disconnected state
 	Disconnected ConnectionStatus = iota
-	// Connecting means a connection is being established
+	// Connecting represents a connecting state
 	Connecting
-	// Connected means a connection is active
+	// Connected represents a connected state
 	Connected
-	// Disconnecting means a connection is being terminated
+	// Disconnecting represents a disconnecting state
 	Disconnecting
-	// Error means there was an error with the connection
+	// Error represents an error state
 	Error
 )
 
-// ConnectionInfo holds information about the current connection
-type ConnectionInfo struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	StartedAt time.Time `json:"started_at"`
-	DataSent  int64     `json:"data_sent"`
-	DataRecv  int64     `json:"data_recv"`
+// String returns a string representation of the ConnectionStatus
+func (s ConnectionStatus) String() string {
+	switch s {
+	case Disconnected:
+		return "Disconnected"
+	case Connecting:
+		return "Connecting"
+	case Connected:
+		return "Connected"
+	case Disconnecting:
+		return "Disconnecting"
+	case Error:
+		return "Error"
+	default:
+		return "Unknown"
+	}
 }
 
-// ConnectionManager handles VPN connections
+// ConnectionManager manages VPN connections
 type ConnectionManager struct {
-	status             ConnectionStatus
-	currentServer      *core.Server
-	connectionInfo     *ConnectionInfo
-	mutex              sync.RWMutex
-	statsManager       *stats.StatsManager
-	notificationManager *notifications.NotificationManager
-	logger             *logging.Logger
+	status       ConnectionStatus
+	currentServer *core.Server
+	startTime    time.Time
+	dataSent     int64
+	dataReceived int64
+	mutex        sync.RWMutex
 }
-
+	
 // NewConnectionManager creates a new connection manager
 func NewConnectionManager() *ConnectionManager {
 	return &ConnectionManager{
 		status: Disconnected,
 	}
-}
-
-// SetStatsManager sets the stats manager
-func (cm *ConnectionManager) SetStatsManager(statsManager *stats.StatsManager) {
-	cm.mutex.Lock()
-	defer cm.mutex.Unlock()
-	cm.statsManager = statsManager
-}
-
-// SetNotificationManager sets the notification manager
-func (cm *ConnectionManager) SetNotificationManager(notificationManager *notifications.NotificationManager) {
-	cm.mutex.Lock()
-	defer cm.mutex.Unlock()
-	cm.notificationManager = notificationManager
-}
-
-// SetLogger sets the logger
-func (cm *ConnectionManager) SetLogger(logger *logging.Logger) {
-	cm.mutex.Lock()
-	defer cm.mutex.Unlock()
-	cm.logger = logger
 }
 
 // GetStatus returns the current connection status
@@ -82,6 +65,25 @@ func (cm *ConnectionManager) GetStatus() ConnectionStatus {
 	return cm.status
 }
 
+// GetStatusString returns the current connection status as a string
+func (cm *ConnectionManager) GetStatusString() string {
+	status := cm.GetStatus()
+	switch status {
+	case Disconnected:
+		return "Disconnected"
+	case Connecting:
+		return "Connecting"
+	case Connected:
+		return "Connected"
+	case Disconnecting:
+		return "Disconnecting"
+	case Error:
+		return "Error"
+	default:
+		return "Unknown"
+	}
+}
+
 // GetCurrentServer returns the currently connected server
 func (cm *ConnectionManager) GetCurrentServer() *core.Server {
 	cm.mutex.RLock()
@@ -89,271 +91,120 @@ func (cm *ConnectionManager) GetCurrentServer() *core.Server {
 	return cm.currentServer
 }
 
-// GetConnectionInfo returns information about the current connection
-func (cm *ConnectionManager) GetConnectionInfo() *ConnectionInfo {
+// GetDataUsage returns current data usage
+func (cm *ConnectionManager) GetDataUsage() (int64, int64) {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
 	
-	if cm.connectionInfo == nil {
-		return nil
+	// Simulate data usage increase for demo purposes
+	if cm.status == Connected {
+		// In a real implementation, this would come from the actual connection
+		// For demo, we'll just simulate increasing data usage
+		duration := time.Since(cm.startTime).Seconds()
+		sent := int64(duration * 1024 * 1024) // 1MB/s
+		received := int64(duration * 2 * 1024 * 1024) // 2MB/s
+		
+		return sent, received
 	}
 	
-	// Return a copy to prevent external modification
-	info := *cm.connectionInfo
-	return &info
+	return cm.dataSent, cm.dataReceived
 }
 
-// Connect establishes a VPN connection to the specified server
+// GetUptime returns connection uptime in seconds
+func (cm *ConnectionManager) GetUptime() time.Duration {
+	cm.mutex.RLock()
+	defer cm.mutex.RUnlock()
+	
+	if cm.status == Connected {
+		return time.Since(cm.startTime)
+	}
+	
+	return 0
+}
+
+// Connect connects to a VPN server
 func (cm *ConnectionManager) Connect(server *core.Server) error {
 	cm.mutex.Lock()
-	
-	// Check if already connected or connecting
-	if cm.status == Connected || cm.status == Connecting {
-		cm.mutex.Unlock()
-		return fmt.Errorf("already connected or connecting to a server")
+	defer cm.mutex.Unlock()
+
+	if cm.status == Connected {
+		return fmt.Errorf("already connected to a server")
 	}
-	
-	// Set status to connecting
+
 	cm.status = Connecting
 	cm.currentServer = server
-	
-	// Initialize connection info
-	cm.connectionInfo = &ConnectionInfo{
-		ID:        server.ID,
-		Name:      server.Name,
-		StartedAt: time.Now(),
-		DataSent:  0,
-		DataRecv:  0,
-	}
-	
-	cm.mutex.Unlock()
-	
-	// Log connection attempt
-	if cm.logger != nil {
-		cm.logger.Info("Attempting to connect to server: %s (%s:%d)", server.Name, server.Host, server.Port)
-	}
-	
-	// Send connecting notification
-	if cm.notificationManager != nil {
-		cm.notificationManager.AddNotification("Connecting", fmt.Sprintf("Connecting to %s", server.Name), notifications.Info)
-	}
-	
-	var err error
-	
-	// Connect based on protocol
-	switch server.Protocol {
-	case "wireguard":
-		err = cm.connectWireGuard(server)
-	case "vmess":
-		err = cm.connectVMess(server)
-	case "shadowsocks":
-		err = cm.connectShadowsocks(server)
-	case "trojan":
-		err = cm.connectTrojan(server)
-	default:
-		err = fmt.Errorf("unsupported protocol: %s", server.Protocol)
-	}
-	
-	cm.mutex.Lock()
-	defer cm.mutex.Unlock()
-	
-	if err != nil {
-		// Set status to error
-		cm.status = Error
-		cm.currentServer = nil
-		cm.connectionInfo = nil
-		
-		// Log error
-		if cm.logger != nil {
-			cm.logger.Error("Failed to connect to server %s: %v", server.Name, err)
+	cm.startTime = time.Now()
+	cm.dataSent = 0
+	cm.dataReceived = 0
+
+	// Check if this is a WireGuard server
+	if server != nil && server.Protocol == "wireguard" {
+		err := cm.connectWireGuard(server)
+		if err != nil {
+			cm.status = Error
+			return err
 		}
-		
-		// Send error notification
-		if cm.notificationManager != nil {
-			cm.notificationManager.AddNotification("Connection Failed", fmt.Sprintf("Failed to connect to %s: %v", server.Name, err), notifications.Error)
-		}
-		
-		return err
+	} else {
+		// Simulate connection process
+		// In a real implementation, this would involve:
+		// 1. Initializing the appropriate protocol handler
+		// 2. Establishing the connection
+		// 3. Setting up routing rules
+		// 4. Starting data transfer monitoring
+
+		// For demo purposes, we'll just simulate a successful connection
+		time.Sleep(100 * time.Millisecond)
 	}
-	
-	// Set status to connected
+
 	cm.status = Connected
-	
-	// Log successful connection
-	if cm.logger != nil {
-		cm.logger.Info("Successfully connected to server: %s", server.Name)
-	}
-	
-	// Send success notification
-	if cm.notificationManager != nil {
-		cm.notificationManager.AddNotification("Connected", fmt.Sprintf("Successfully connected to %s", server.Name), notifications.Success)
-	}
-	
-	// Start stats collection if stats manager is available
-	if cm.statsManager != nil {
-		cm.statsManager.StartConnection(cm.connectionInfo.ID, cm.connectionInfo.Name)
-	}
-	
+
 	return nil
 }
 
-// Disconnect terminates the current VPN connection
+// Disconnect disconnects from the current VPN server
 func (cm *ConnectionManager) Disconnect() error {
 	cm.mutex.Lock()
-	
-	// Check if connected or connecting
-	if cm.status != Connected && cm.status != Connecting && cm.status != Error {
-		cm.mutex.Unlock()
+	defer cm.mutex.Unlock()
+
+	if cm.status != Connected {
 		return fmt.Errorf("not connected to any server")
 	}
-	
-	// Save server info for notification
-	serverName := cm.currentServer.Name
-	
-	// Set status to disconnecting
+
 	cm.status = Disconnecting
-	
-	cm.mutex.Unlock()
-	
-	// Log disconnection attempt
-	if cm.logger != nil {
-		cm.logger.Info("Attempting to disconnect from server: %s", serverName)
-	}
-	
-	// Send disconnecting notification
-	if cm.notificationManager != nil {
-		cm.notificationManager.AddNotification("Disconnecting", fmt.Sprintf("Disconnecting from %s", serverName), notifications.Info)
-	}
-	
-	var err error
-	
-	// Disconnect based on current protocol
-	if cm.currentServer != nil {
-		switch cm.currentServer.Protocol {
-		case "wireguard":
-			err = cm.disconnectWireGuard()
-		case "vmess":
-			err = cm.disconnectVMess()
-		case "shadowsocks":
-			err = cm.disconnectShadowsocks()
-		case "trojan":
-			err = cm.disconnectTrojan()
-		default:
-			err = fmt.Errorf("unsupported protocol: %s", cm.currentServer.Protocol)
+
+	// Check if this is a WireGuard connection
+	if cm.currentServer != nil && cm.currentServer.Protocol == "wireguard" {
+		err := cm.disconnectWireGuard(cm.currentServer)
+		if err != nil {
+			cm.status = Error
+			return err
 		}
+	} else {
+		// Simulate disconnection process
+		// In a real implementation, this would involve:
+		// 1. Tearing down the connection
+		// 2. Cleaning up routing rules
+		// 3. Stopping data transfer monitoring
+
+		// For demo purposes, we'll just simulate a successful disconnection
+		time.Sleep(100 * time.Millisecond)
 	}
 	
-	cm.mutex.Lock()
-	defer cm.mutex.Unlock()
-	
-	// Stop stats collection if stats manager is available
-	if cm.statsManager != nil {
-		cm.statsManager.EndConnection()
-	}
-	
-	if err != nil {
-		// Set status to error
-		cm.status = Error
-		
-		// Log error
-		if cm.logger != nil {
-			cm.logger.Error("Failed to disconnect from server %s: %v", serverName, err)
-		}
-		
-		// Send error notification
-		if cm.notificationManager != nil {
-			cm.notificationManager.AddNotification("Disconnection Failed", fmt.Sprintf("Failed to disconnect from %s: %v", serverName, err), notifications.Error)
-		}
-		
-		return err
-	}
-	
-	// Set status to disconnected
 	cm.status = Disconnected
 	cm.currentServer = nil
-	cm.connectionInfo = nil
-	
-	// Log successful disconnection
-	if cm.logger != nil {
-		cm.logger.Info("Successfully disconnected from server: %s", serverName)
-	}
-	
-	// Send success notification
-	if cm.notificationManager != nil {
-		cm.notificationManager.AddNotification("Disconnected", fmt.Sprintf("Successfully disconnected from %s", serverName), notifications.Success)
-	}
-	
+	cm.startTime = time.Time{}
+
 	return nil
 }
 
-// UpdateStats updates the connection statistics
-func (cm *ConnectionManager) UpdateStats(sent, recv int64) {
-	cm.mutex.Lock()
-	defer cm.mutex.Unlock()
-	
-	if cm.connectionInfo != nil {
-		cm.connectionInfo.DataSent = sent
-		cm.connectionInfo.DataRecv = recv
-		
-		// Update stats manager if available
-		if cm.statsManager != nil {
-			cm.statsManager.UpdateConnection(sent, recv)
-		}
-	}
-}
-
-// connectWireGuard establishes a WireGuard connection
+// connectWireGuard connects to a WireGuard server
 func (cm *ConnectionManager) connectWireGuard(server *core.Server) error {
-	// This is a placeholder implementation
-	// In a real implementation, this would use the wireguard-go library or wgctrl
-	return nil
+	// This will be implemented in wireguard_wgctrl.go with build tag
+	return fmt.Errorf("wireguard support not compiled in this build")
 }
 
-// disconnectWireGuard terminates a WireGuard connection
-func (cm *ConnectionManager) disconnectWireGuard() error {
-	// This is a placeholder implementation
-	// In a real implementation, this would use the wireguard-go library or wgctrl
-	return nil
-}
-
-// connectVMess establishes a VMess connection
-func (cm *ConnectionManager) connectVMess(server *core.Server) error {
-	// This is a placeholder implementation
-	// In a real implementation, this would use the v2ray-core library
-	return nil
-}
-
-// disconnectVMess terminates a VMess connection
-func (cm *ConnectionManager) disconnectVMess() error {
-	// This is a placeholder implementation
-	// In a real implementation, this would use the v2ray-core library
-	return nil
-}
-
-// connectShadowsocks establishes a Shadowsocks connection
-func (cm *ConnectionManager) connectShadowsocks(server *core.Server) error {
-	// This is a placeholder implementation
-	// In a real implementation, this would use the shadowsocks-go library
-	return nil
-}
-
-// disconnectShadowsocks terminates a Shadowsocks connection
-func (cm *ConnectionManager) disconnectShadowsocks() error {
-	// This is a placeholder implementation
-	// In a real implementation, this would use the shadowsocks-go library
-	return nil
-}
-
-// connectTrojan establishes a Trojan connection
-func (cm *ConnectionManager) connectTrojan(server *core.Server) error {
-	// This is a placeholder implementation
-	// In a real implementation, this would use the trojan-go library
-	return nil
-}
-
-// disconnectTrojan terminates a Trojan connection
-func (cm *ConnectionManager) disconnectTrojan() error {
-	// This is a placeholder implementation
-	// In a real implementation, this would use the trojan-go library
-	return nil
+// disconnectWireGuard disconnects from a WireGuard server
+func (cm *ConnectionManager) disconnectWireGuard(server *core.Server) error {
+	// This will be implemented in wireguard_wgctrl.go with build tag
+	return fmt.Errorf("wireguard support not compiled in this build")
 }
