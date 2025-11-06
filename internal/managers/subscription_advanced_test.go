@@ -2,13 +2,6 @@ package managers
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-
-	"vpnclient/internal/database"
-	"vpnclient/internal/logging"
-	"vpnclient/internal/notifications"
-	"vpnclient/src/core"
 )
 
 // TestSubscriptionManagerWithNotifications tests subscription manager with notifications integration

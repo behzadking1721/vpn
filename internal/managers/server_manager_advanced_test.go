@@ -2,7 +2,6 @@ package managers
 
 import (
 	"testing"
-	"github.com/stretchr/testify/assert"
 )
 
 // TestServerManagerWithNotifications tests server manager with notifications integration
