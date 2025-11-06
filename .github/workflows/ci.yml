@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install jq
+      run: sudo apt-get update && sudo apt-get install -y jq
+
+    - name: Start mock server
+      run: |
+        nohup python3 mock_server/server.py > mock_server/ci.log 2>&1 &
+        # wait for server to be ready
+        for i in {1..10}; do
+          if curl -sS http://127.0.0.1:8080/api/status >/dev/null 2>&1; then
+            break
+          fi
+          sleep 1
+        done
+
+    - name: Run API smoke tests
+      # call the script with explicit shell to avoid relying on executable bit
+      run: bash scripts/test_api.sh
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        # Pin a specific stable Flutter version to avoid installer ambiguity
+        flutter-version: '3.13.9'
+
+    - name: Flutter pub get
+      working-directory: ui/mobile/flutter_vpn
+      run: flutter pub get
+
+    - name: Run Flutter tests
+      working-directory: ui/mobile/flutter_vpn
+      run: flutter test --coverage
