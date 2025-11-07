@@ -2,6 +2,10 @@
 
 A multi-platform VPN application with a simple and user-friendly interface similar to Hiddify, supporting various protocols and subscription links.
 
+## CI
+
+![CI](https://github.com/behzadking1721/vpn/actions/workflows/ci.yml/badge.svg)
+
 ## Features
 
 - Cross-platform support (Android, iOS, Windows, macOS, Linux)
