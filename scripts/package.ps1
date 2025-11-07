@@ -3,8 +3,20 @@
 # Packaging script for VPN client - creates installers for various platforms
 
 param(
-    [string]$Version = $(git describe --tags --always --dirty 2>$null || "dev")
+    [string]$Version = "dev"
 )
+
+# Try to get version from git if not provided
+if ($Version -eq "dev") {
+    try {
+        $gitVersion = git describe --tags --always --dirty 2>$null
+        if ($gitVersion) {
+            $Version = $gitVersion
+        }
+    } catch {
+        # Continue with "dev" version if git fails
+    }
+}
 
 # Base directories
 $DIST_DIR = "dist"
