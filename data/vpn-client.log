@@ -1,0 +1,5 @@
+[2025-11-07 10:14:24] [INFO] [main.go:55] Starting VPN Client version dev (build: unknown, commit: unknown)
+[2025-11-07 10:14:24] [INFO] [main.go:63] Database initialized successfully
+[2025-11-07 10:14:24] [INFO] [updater.go:57] Starting automatic updater with interval: 24h0m0s
+[2025-11-07 10:14:24] [INFO] [main.go:129] VPN Client started successfully!
+[2025-11-07 10:14:24] [INFO] [main.go:135] API Server running on http://localhost:8080

@@ -1,12 +1,8 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
-	"time"
-
-	"vpnclient/internal/stats"
 )
 
 // getConnectionStats returns current connection statistics

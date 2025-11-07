@@ -1,13 +1,11 @@
 package api
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"time"
 
 	"github.com/gorilla/mux"

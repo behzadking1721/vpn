@@ -56,7 +56,7 @@ func main() {
 
 	// Initialize database
 	dbPath := filepath.Join(dataDir, "vpn.db")
-	db, err := database.NewJSONDatabase(dbPath)
+	db, err := database.NewDB(dbPath)
 	if err != nil {
 		logger.Fatal("Failed to initialize database: %v", err)
 	}
@@ -86,8 +86,8 @@ func main() {
 	// Set stats manager for connection manager
 	connectionManager.SetStatsManager(statsManager)
 
-	// Initialize subscription parser
-	subscriptionParser := managers.NewSubscriptionParser()
+	// Initialize subscription parser (not used directly here)
+	_ = managers.NewSubscriptionParser()
 
 	// Initialize updater
 	updaterConfig := updater.Config{

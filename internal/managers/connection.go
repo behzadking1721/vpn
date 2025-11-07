@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"vpnclient/internal/logging"
+	"vpnclient/internal/notifications"
+	"vpnclient/internal/stats"
 	"vpnclient/src/core"
 )
 
@@ -49,6 +53,10 @@ type ConnectionManager struct {
 	dataSent      int64
 	dataReceived  int64
 	mutex         sync.RWMutex
+	// optional integrations
+	notificationManager *notifications.NotificationManager
+	logger              *logging.Logger
+	statsManager        *stats.StatsManager
 }
 
 // NewConnectionManager creates a new connection manager
@@ -159,6 +167,58 @@ func (cm *ConnectionManager) Connect(server *core.Server) error {
 	cm.status = Connected
 
 	return nil
+}
+
+// SetNotificationManager sets the notification manager
+func (cm *ConnectionManager) SetNotificationManager(nm *notifications.NotificationManager) {
+	cm.mutex.Lock()
+	defer cm.mutex.Unlock()
+	cm.notificationManager = nm
+}
+
+// SetLogger sets a logger for the connection manager
+func (cm *ConnectionManager) SetLogger(logger *logging.Logger) {
+	cm.mutex.Lock()
+	defer cm.mutex.Unlock()
+	cm.logger = logger
+}
+
+// SetStatsManager sets the stats manager
+func (cm *ConnectionManager) SetStatsManager(sm *stats.StatsManager) {
+	cm.mutex.Lock()
+	defer cm.mutex.Unlock()
+	cm.statsManager = sm
+}
+
+// ConnectionInfo is a snapshot of connection state used by tests
+type ConnectionInfo struct {
+	ID        string
+	StartedAt time.Time
+	DataSent  int64
+	DataRecv  int64
+}
+
+// GetConnectionInfo returns current connection info or nil if disconnected
+func (cm *ConnectionManager) GetConnectionInfo() *ConnectionInfo {
+	cm.mutex.RLock()
+	defer cm.mutex.RUnlock()
+	if cm.status != Connected || cm.currentServer == nil {
+		return nil
+	}
+	return &ConnectionInfo{
+		ID:        cm.currentServer.ID,
+		StartedAt: cm.startTime,
+		DataSent:  cm.dataSent,
+		DataRecv:  cm.dataReceived,
+	}
+}
+
+// UpdateStats updates the current data counters
+func (cm *ConnectionManager) UpdateStats(sent, recv int64) {
+	cm.mutex.Lock()
+	defer cm.mutex.Unlock()
+	cm.dataSent = sent
+	cm.dataReceived = recv
 }
 
 // Disconnect disconnects from the current VPN server

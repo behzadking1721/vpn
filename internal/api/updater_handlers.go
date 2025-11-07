@@ -3,8 +3,6 @@ package api
 import (
 	"net/http"
 	"time"
-
-	"vpnclient/internal/updater"
 )
 
 // getUpdaterStatus returns the status of the automatic updater
