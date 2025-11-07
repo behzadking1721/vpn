@@ -76,6 +76,21 @@ The application is built using a modular approach with shared core logic and pla
 
 ## Installation
 
+Pre-built packages are available for Windows, macOS, and Linux in the [Releases](https://github.com/your-username/vpn-client/releases) section.
+
+For detailed installation instructions, see [INSTALL.md](INSTALL.md).
+
+### Android
+
+VPN Client is also available for Android devices:
+
+- [Google Play Store](https://play.google.com/store/apps/details?id=com.yourapp.vpnclient)
+- APK files available in [Releases](https://github.com/your-username/vpn-client/releases)
+
+System requirements:
+- Android 8.0 (Oreo) or higher
+- Minimum 50MB free storage space
+
 ### Windows
 
 Download the latest Windows installer from the [releases page](https://github.com/your-org/vpn-client/releases) and run it.
