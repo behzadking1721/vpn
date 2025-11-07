@@ -8,72 +8,117 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  unit-tests:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
+      - name: Cache Flutter SDK
+        uses: actions/cache@v4
+        with:
+          path: /opt/hostedtoolcache/flutter
+          key: ${{ runner.os }}-flutter-3.13.9
+          restore-keys: |
+            ${{ runner.os }}-flutter-
 
-    - name: Install jq
-      run: sudo apt-get update && sudo apt-get install -y jq
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+          key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/ui/mobile/flutter_vpn/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-cache-
 
-    - name: Start mock server
-      run: |
-        nohup python3 mock_server/server.py > mock_server/ci.log 2>&1 &
-        # wait for server to be ready
-        for i in {1..10}; do
-          if curl -sS http://127.0.0.1:8080/api/status >/dev/null 2>&1; then
-            break
-          fi
-          sleep 1
-        done
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.13.9'
 
-    - name: Run API smoke tests
-      # call the script with explicit shell to avoid relying on executable bit
-      run: bash scripts/test_api.sh
+      - name: Cache Flutter engine artifacts
+        uses: actions/cache@v4
+        env:
+          FLUTTER_ROOT: ${{ env.FLUTTER_ROOT }}
+        with:
+          path: ${{ env.FLUTTER_ROOT }}/bin/cache/artifacts/engine
+          key: ${{ runner.os }}-flutter-engine-3.13.9
+          restore-keys: |
+            ${{ runner.os }}-flutter-engine-
 
-    - name: Cache Flutter SDK
-      uses: actions/cache@v4
-      with:
-        path: /opt/hostedtoolcache/flutter
-        key: ${{ runner.os }}-flutter-3.13.9
-        restore-keys: |
-          ${{ runner.os }}-flutter-
+      - name: Flutter pub get
+        working-directory: ui/mobile/flutter_vpn
+        run: flutter pub get
 
-    - name: Cache pub packages
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.pub-cache
-        key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/ui/mobile/flutter_vpn/pubspec.yaml') }}
-        restore-keys: |
-          ${{ runner.os }}-pub-cache-
+      - name: Run unit tests
+        working-directory: ui/mobile/flutter_vpn
+        # run only fast unit tests that don't require the mock server
+        run: flutter test test/subscription_parser_test.dart test/server_model_test.dart --coverage
 
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        # Pin a specific stable Flutter version to avoid installer ambiguity
-        flutter-version: '3.13.9'
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
+    steps:
+      - uses: actions/checkout@v4
 
-    - name: Cache Flutter engine artifacts
-      uses: actions/cache@v4
-      env:
-        FLUTTER_ROOT: ${{ env.FLUTTER_ROOT }}
-      with:
-        path: ${{ env.FLUTTER_ROOT }}/bin/cache/artifacts/engine
-        key: ${{ runner.os }}-flutter-engine-3.13.9
-        restore-keys: |
-          ${{ runner.os }}-flutter-engine-
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
-    - name: Flutter pub get
-      working-directory: ui/mobile/flutter_vpn
-      run: flutter pub get
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
 
-    - name: Run Flutter tests
-      working-directory: ui/mobile/flutter_vpn
-      run: flutter test --coverage
+      - name: Start mock server
+        run: |
+          nohup python3 mock_server/server.py > mock_server/ci.log 2>&1 &
+          # wait for server to be ready
+          for i in {1..10}; do
+            if curl -sS http://127.0.0.1:8080/api/status >/dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Run API smoke tests
+        run: bash scripts/test_api.sh
+
+      - name: Cache Flutter SDK
+        uses: actions/cache@v4
+        with:
+          path: /opt/hostedtoolcache/flutter
+          key: ${{ runner.os }}-flutter-3.13.9
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+          key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/ui/mobile/flutter_vpn/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-cache-
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.13.9'
+
+      - name: Cache Flutter engine artifacts
+        uses: actions/cache@v4
+        env:
+          FLUTTER_ROOT: ${{ env.FLUTTER_ROOT }}
+        with:
+          path: ${{ env.FLUTTER_ROOT }}/bin/cache/artifacts/engine
+          key: ${{ runner.os }}-flutter-engine-3.13.9
+          restore-keys: |
+            ${{ runner.os }}-flutter-engine-
+
+      - name: Flutter pub get
+        working-directory: ui/mobile/flutter_vpn
+        run: flutter pub get
+
+      - name: Run integration tests
+        working-directory: ui/mobile/flutter_vpn
+        # run integration tests that need the mock server
+        run: flutter test test/connection_service_test.dart test/integration_test.dart --coverage
