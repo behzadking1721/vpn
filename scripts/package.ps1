@@ -6,15 +6,11 @@ param(
     [string]$Version = "dev"
 )
 
-# Try to get version from git if not provided
+# If version is still default, try to get from git
 if ($Version -eq "dev") {
-    try {
-        $gitVersion = git describe --tags --always --dirty 2>$null
-        if ($gitVersion) {
-            $Version = $gitVersion
-        }
-    } catch {
-        # Continue with "dev" version if git fails
+    $gitVersion = git describe --tags --always --dirty 2>$null
+    if ($gitVersion) {
+        $Version = $gitVersion
     }
 }
 
