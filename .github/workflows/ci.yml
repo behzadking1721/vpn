@@ -55,6 +55,7 @@ jobs:
         run: flutter test test/subscription_parser_test.dart test/server_model_test.dart --coverage
 
   integration-tests:
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     needs: [unit-tests]
     steps:
