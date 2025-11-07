@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"vpnclient/internal/database"
 	"vpnclient/internal/logging"
 	"vpnclient/internal/managers"
 	"vpnclient/src/core"
@@ -13,6 +14,7 @@ import (
 // Updater handles automatic server updates
 type Updater struct {
 	serverManager      *managers.ServerManager
+	subscriptionManager *managers.SubscriptionManager
 	interval           time.Duration
 	enabled            bool
 	logger             *logging.Logger
@@ -30,8 +32,8 @@ type Config struct {
 func NewUpdater(
 	serverManager *managers.ServerManager,
 	subscriptionManager *managers.SubscriptionManager,
+	config Config,
 	logger *logging.Logger,
-	config *Config,
 ) *Updater {
 	return &Updater{
 		serverManager:      serverManager,
@@ -39,24 +41,36 @@ func NewUpdater(
 		interval:           config.Interval,
 		enabled:            config.Enabled,
 		logger:             logger,
-		mutex:              sync.RWMutex{},
 		stopChan:           make(chan struct{}),
 	}
 }
 
-// Start begins the updater process
-func (u *Updater) Start() error {
+// Start begins the automatic update process
+func (u *Updater) Start() {
 	u.mutex.Lock()
 	defer u.mutex.Unlock()
 
-	if u.enabled {
-		go u.run()
-		u.logger.Info("Updater started with interval: %v", u.interval)
-	} else {
-		u.logger.Info("Updater is disabled")
+	if !u.enabled {
+		u.logger.Info("Automatic updates are disabled")
+		return
 	}
 
-	return nil
+	u.logger.Info("Starting automatic updater with interval: %v", u.interval)
+
+	go func() {
+		ticker := time.NewTicker(u.interval)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				u.updateSubscriptions()
+			case <-u.stopChan:
+				u.logger.Info("Stopping automatic updater")
+				return
+			}
+		}
+	}()
 }
 
 // Stop stops the automatic update process
@@ -98,49 +112,42 @@ func (u *Updater) UpdateSubscriptions() error {
 	return u.updateSubscriptions()
 }
 
-// run executes the update process periodically
-func (u *Updater) run() {
-	ticker := time.NewTicker(u.interval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ticker.C:
-			if err := u.updateServers(); err != nil {
-				u.logger.Error("Failed to update servers: %v", err)
-			}
-		case <-u.stopChan:
-			u.logger.Debug("Updater received stop signal")
-			return
-		}
-	}
-}
-
-// updateServers fetches updates from all subscriptions and updates the server list
-func (u *Updater) updateServers() error {
-	u.logger.Debug("Starting server update process")
+// updateSubscriptions performs the actual subscription update process
+func (u *Updater) updateSubscriptions() error {
+	u.logger.Info("Starting subscription update process")
 
 	// Get all subscriptions
-	subscriptions, err := u.subscriptionManager.GetAll()
+	subscriptions, err := u.subscriptionManager.GetAllSubscriptions()
 	if err != nil {
-		return fmt.Errorf("failed to get subscriptions: %v", err)
+		u.logger.Error("Failed to get subscriptions: %v", err)
+		return err
 	}
 
-	u.logger.Debug("Found %d subscriptions", len(subscriptions))
+	u.logger.Info("Found %d subscriptions to update", len(subscriptions))
 
-	// Process each subscription
+	// Update each subscription
+	successCount := 0
+	failCount := 0
+
 	for _, sub := range subscriptions {
-		if err := u.processSubscription(sub); err != nil {
-			u.logger.Error("Failed to process subscription %s: %v", sub.URL, err)
+		u.logger.Debug("Updating subscription: %s", sub.URL)
+		
+		if err := u.subscriptionManager.UpdateSubscriptionServers(sub.ID); err != nil {
+			u.logger.Error("Failed to update subscription %s: %v", sub.URL, err)
+			failCount++
+		} else {
+			u.logger.Info("Successfully updated subscription: %s", sub.URL)
+			successCount++
 		}
 	}
 
+	u.logger.Info("Subscription update completed. Success: %d, Failed: %d", successCount, failCount)
+	
 	// Clean up old servers that are no longer in any subscription
 	if err := u.cleanupOldServers(subscriptions); err != nil {
 		u.logger.Error("Failed to cleanup old servers: %v", err)
 	}
 
-	u.logger.Debug("Server update process completed")
 	return nil
 }
 
@@ -154,6 +161,8 @@ func (u *Updater) cleanupOldServers(subscriptions []*core.Subscription) error {
 		return fmt.Errorf("failed to get all servers: %v", err)
 	}
 
+	// Create a map of subscription server IDs for quick lookup
+	
 	// For a real implementation, we would need to track which servers belong to which subscriptions
 	// For now, we'll just log that we're doing cleanup
 	u.logger.Debug("Would clean up servers not in any subscription. Total servers: %d", len(allServers))
