@@ -61,19 +61,19 @@ func (sp *SubscriptionParser) parseHTTPSubscription(subscriptionURL string) ([]*
 func (sp *SubscriptionParser) parseVMessLink(link string) (*core.Server, error) {
 	// Remove the scheme
 	data := strings.TrimPrefix(link, "vmess://")
-	
+
 	// Decode base64
 	decoded, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode vmess link: %w", err)
 	}
-	
+
 	// Parse JSON
 	var config map[string]interface{}
 	if err := json.Unmarshal(decoded, &config); err != nil {
 		return nil, fmt.Errorf("failed to parse vmess config: %w", err)
 	}
-	
+
 	// Create server
 	server := &core.Server{
 		ID:        generateID(),
@@ -85,7 +85,7 @@ func (sp *SubscriptionParser) parseVMessLink(link string) (*core.Server, error) 
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	
+
 	return server, nil
 }
 
@@ -93,7 +93,7 @@ func (sp *SubscriptionParser) parseVMessLink(link string) (*core.Server, error) 
 func (sp *SubscriptionParser) parseShadowsocksLink(link string) (*core.Server, error) {
 	// Remove the scheme
 	data := strings.TrimPrefix(link, "ss://")
-	
+
 	// Split by # to get the name
 	parts := strings.Split(data, "#")
 	configPart := parts[0]
@@ -101,32 +101,32 @@ func (sp *SubscriptionParser) parseShadowsocksLink(link string) (*core.Server, e
 	if len(parts) > 1 {
 		name = parts[1]
 	}
-	
+
 	// Decode base64
 	decoded, err := base64.StdEncoding.DecodeString(configPart)
 	if err != nil {
 		// Try without base64 decoding
 		decoded = []byte(configPart)
 	}
-	
+
 	// Parse the config part (method:password@host:port)
 	configStr := string(decoded)
 	atIndex := strings.LastIndex(configStr, "@")
 	if atIndex == -1 {
 		return nil, fmt.Errorf("invalid shadowsocks link format")
 	}
-	
+
 	hostPort := configStr[atIndex+1:]
 	hostPortParts := strings.Split(hostPort, ":")
 	if len(hostPortParts) != 2 {
 		return nil, fmt.Errorf("invalid host:port format")
 	}
-	
+
 	port, err := strconv.Atoi(hostPortParts[1])
 	if err != nil {
 		return nil, fmt.Errorf("invalid port: %w", err)
 	}
-	
+
 	server := &core.Server{
 		ID:        generateID(),
 		Name:      name,
@@ -137,7 +137,7 @@ func (sp *SubscriptionParser) parseShadowsocksLink(link string) (*core.Server, e
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	
+
 	return server, nil
 }
 

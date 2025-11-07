@@ -13,12 +13,12 @@ import (
 
 // SubscriptionManager manages subscriptions
 type SubscriptionManager struct {
-	serverManager      *ServerManager
-	store              *database.SubscriptionStoreWrapper
-	parser             *SubscriptionParser
-	mutex              sync.RWMutex
+	serverManager       *ServerManager
+	store               *database.SubscriptionStoreWrapper
+	parser              *SubscriptionParser
+	mutex               sync.RWMutex
 	notificationManager *notifications.NotificationManager
-	logger             *logging.Logger
+	logger              *logging.Logger
 }
 
 // NewSubscriptionManager creates a new subscription manager
@@ -46,7 +46,7 @@ func (sm *SubscriptionManager) AddSubscription(url string) (*core.Subscription, 
 	if sm.logger != nil {
 		sm.logger.Info("Adding subscription from URL: %s", url)
 	}
-	
+
 	// Parse the subscription
 	servers, err := sm.parser.ParseSubscription(url)
 	if err != nil {
@@ -54,7 +54,7 @@ func (sm *SubscriptionManager) AddSubscription(url string) (*core.Subscription, 
 		if sm.logger != nil {
 			sm.logger.Error("Failed to parse subscription from URL %s: %v", url, err)
 		}
-		
+
 		// Send error notification
 		if sm.notificationManager != nil {
 			sm.notificationManager.AddNotification(
@@ -81,7 +81,7 @@ func (sm *SubscriptionManager) AddSubscription(url string) (*core.Subscription, 
 		if sm.logger != nil {
 			sm.logger.Error("Failed to save subscription from URL %s: %v", url, err)
 		}
-		
+
 		// Send error notification
 		if sm.notificationManager != nil {
 			sm.notificationManager.AddNotification(
@@ -107,13 +107,13 @@ func (sm *SubscriptionManager) AddSubscription(url string) (*core.Subscription, 
 			successCount++
 		}
 	}
-	
+
 	// Log subscription addition result
 	if sm.logger != nil {
-		sm.logger.Info("Subscription added successfully: %s (Servers: %d successful, %d failed)", 
+		sm.logger.Info("Subscription added successfully: %s (Servers: %d successful, %d failed)",
 			url, successCount, failCount)
 	}
-	
+
 	// Send success notification
 	if sm.notificationManager != nil {
 		sm.notificationManager.AddNotification(
@@ -136,12 +136,12 @@ func (sm *SubscriptionManager) GetAllSubscriptions() ([]*core.Subscription, erro
 		}
 		return nil, err
 	}
-	
+
 	// Log successful retrieval
 	if sm.logger != nil {
 		sm.logger.Debug("Retrieved %d subscriptions", len(subs))
 	}
-	
+
 	return subs, nil
 }
 
@@ -155,24 +155,24 @@ func (sm *SubscriptionManager) GetSubscription(id string) (*core.Subscription, e
 		}
 		return nil, err
 	}
-	
+
 	// Log successful retrieval
 	if sm.logger != nil {
 		sm.logger.Debug("Retrieved subscription: %s", sub.URL)
 	}
-	
+
 	return sub, nil
 }
 
 // UpdateSubscription updates a subscription
 func (sm *SubscriptionManager) UpdateSubscription(sub *core.Subscription) error {
 	sub.UpdatedAt = time.Now()
-	
+
 	// Log subscription update
 	if sm.logger != nil {
 		sm.logger.Info("Updating subscription: %s", sub.URL)
 	}
-	
+
 	err := sm.store.UpdateSubscription(sub)
 	if err != nil {
 		// Log error
@@ -181,7 +181,7 @@ func (sm *SubscriptionManager) UpdateSubscription(sub *core.Subscription) error 
 		}
 		return err
 	}
-	
+
 	return nil
 }
 
@@ -196,13 +196,13 @@ func (sm *SubscriptionManager) DeleteSubscription(id string) error {
 		}
 		return err
 	}
-	
+
 	if err := sm.store.DeleteSubscription(id); err != nil {
 		// Log error
 		if sm.logger != nil {
 			sm.logger.Error("Failed to delete subscription %s: %v", id, err)
 		}
-		
+
 		// Send error notification
 		if sm.notificationManager != nil {
 			sm.notificationManager.AddNotification(
@@ -213,12 +213,12 @@ func (sm *SubscriptionManager) DeleteSubscription(id string) error {
 		}
 		return err
 	}
-	
+
 	// Log successful deletion
 	if sm.logger != nil {
 		sm.logger.Info("Subscription deleted successfully: %s", sub.URL)
 	}
-	
+
 	// Send success notification
 	if sm.notificationManager != nil {
 		sm.notificationManager.AddNotification(
@@ -227,7 +227,7 @@ func (sm *SubscriptionManager) DeleteSubscription(id string) error {
 			notifications.Success,
 		)
 	}
-	
+
 	return nil
 }
 
@@ -238,7 +238,7 @@ func (sm *SubscriptionManager) UpdateSubscriptionServers(id string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	// Log subscription update attempt
 	if sm.logger != nil {
 		sm.logger.Info("Updating servers from subscription: %s", sub.URL)
@@ -251,7 +251,7 @@ func (sm *SubscriptionManager) UpdateSubscriptionServers(id string) error {
 		if sm.logger != nil {
 			sm.logger.Error("Failed to parse subscription %s: %v", sub.URL, err)
 		}
-		
+
 		// Send error notification
 		if sm.notificationManager != nil {
 			sm.notificationManager.AddNotification(
@@ -267,13 +267,13 @@ func (sm *SubscriptionManager) UpdateSubscriptionServers(id string) error {
 	sub.ServerCount = len(servers)
 	sub.LastUpdate = time.Now()
 	sub.UpdatedAt = time.Now()
-	
+
 	if err := sm.UpdateSubscription(sub); err != nil {
 		// Log error
 		if sm.logger != nil {
 			sm.logger.Error("Failed to update subscription %s: %v", sub.URL, err)
 		}
-		
+
 		// Send error notification
 		if sm.notificationManager != nil {
 			sm.notificationManager.AddNotification(
@@ -289,7 +289,7 @@ func (sm *SubscriptionManager) UpdateSubscriptionServers(id string) error {
 	updatedCount := 0
 	addedCount := 0
 	errorCount := 0
-	
+
 	for _, server := range servers {
 		// Try to get existing server
 		existingServer, err := sm.serverManager.GetServer(server.ID)
@@ -310,7 +310,7 @@ func (sm *SubscriptionManager) UpdateSubscriptionServers(id string) error {
 			existingServer.Port = server.Port
 			existingServer.Protocol = server.Protocol
 			existingServer.Config = server.Config
-			
+
 			if err := sm.serverManager.UpdateServer(existingServer); err != nil {
 				errorCount++
 				if sm.logger != nil {
@@ -321,13 +321,13 @@ func (sm *SubscriptionManager) UpdateSubscriptionServers(id string) error {
 			}
 		}
 	}
-	
+
 	// Log subscription update result
 	if sm.logger != nil {
-		sm.logger.Info("Subscription update completed: %s (Added: %d, Updated: %d, Errors: %d)", 
+		sm.logger.Info("Subscription update completed: %s (Added: %d, Updated: %d, Errors: %d)",
 			sub.URL, addedCount, updatedCount, errorCount)
 	}
-	
+
 	// Send success notification
 	if sm.notificationManager != nil {
 		sm.notificationManager.AddNotification(

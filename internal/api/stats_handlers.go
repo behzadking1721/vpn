@@ -39,17 +39,17 @@ func (s *Server) getSessionStats(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getStatsSummary(w http.ResponseWriter, r *http.Request) {
 	// Get total data usage
 	totalSent, totalRecv := s.statsManager.GetTotalDataUsage()
-	
+
 	// Get current connection
 	current := s.statsManager.GetCurrentConnection()
-	
+
 	// Get recent sessions (last 10)
 	allSessions := s.statsManager.GetSessions()
 	recentSessions := allSessions
 	if len(allSessions) > 10 {
 		recentSessions = allSessions[len(allSessions)-10:]
 	}
-	
+
 	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"total_data_sent":    totalSent,
 		"total_data_recv":    totalRecv,
@@ -68,7 +68,7 @@ func (s *Server) getDailyStats(w http.ResponseWriter, r *http.Request) {
 			days = d
 		}
 	}
-	
+
 	dailyStats := s.statsManager.GetDailyDataUsage(days)
 	respondJSON(w, http.StatusOK, dailyStats)
 }
@@ -77,7 +77,7 @@ func (s *Server) getDailyStats(w http.ResponseWriter, r *http.Request) {
 func (s *Server) clearStats(w http.ResponseWriter, r *http.Request) {
 	s.statsManager.ClearStats()
 	respondJSON(w, http.StatusOK, map[string]string{
-		"status": "success",
+		"status":  "success",
 		"message": "Statistics cleared successfully",
 	})
 }
@@ -85,7 +85,7 @@ func (s *Server) clearStats(w http.ResponseWriter, r *http.Request) {
 // getChartData returns data formatted for charting
 func (s *Server) getChartData(w http.ResponseWriter, r *http.Request) {
 	chartType := r.URL.Query().Get("type")
-	
+
 	switch chartType {
 	case "daily_usage":
 		s.handleDailyUsageChart(w, r)
@@ -108,37 +108,37 @@ func (s *Server) handleDailyUsageChart(w http.ResponseWriter, r *http.Request) {
 			days = d
 		}
 	}
-	
+
 	dailyStats := s.statsManager.GetDailyDataUsage(days)
-	
+
 	// Format data for charting
 	labels := make([]string, len(dailyStats))
 	sentData := make([]int64, len(dailyStats))
 	recvData := make([]int64, len(dailyStats))
-	
+
 	for i, stat := range dailyStats {
 		labels[i] = stat.Timestamp.Format("2006-01-02")
 		sentData[i] = stat.DataSent
 		recvData[i] = stat.DataRecv
 	}
-	
+
 	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"type": "daily_usage",
+		"type":   "daily_usage",
 		"labels": labels,
 		"datasets": []map[string]interface{}{
 			{
-				"label": "Data Sent",
-				"data": sentData,
+				"label":           "Data Sent",
+				"data":            sentData,
 				"backgroundColor": "rgba(54, 162, 235, 0.2)",
-				"borderColor": "rgba(54, 162, 235, 1)",
-				"borderWidth": 1,
+				"borderColor":     "rgba(54, 162, 235, 1)",
+				"borderWidth":     1,
 			},
 			{
-				"label": "Data Received",
-				"data": recvData,
+				"label":           "Data Received",
+				"data":            recvData,
 				"backgroundColor": "rgba(255, 99, 132, 0.2)",
-				"borderColor": "rgba(255, 99, 132, 1)",
-				"borderWidth": 1,
+				"borderColor":     "rgba(255, 99, 132, 1)",
+				"borderWidth":     1,
 			},
 		},
 	})
@@ -147,31 +147,31 @@ func (s *Server) handleDailyUsageChart(w http.ResponseWriter, r *http.Request) {
 // handleSessionDurationChart handles session duration chart data
 func (s *Server) handleSessionDurationChart(w http.ResponseWriter, r *http.Request) {
 	sessions := s.statsManager.GetSessions()
-	
+
 	// Take last 10 sessions for the chart
 	if len(sessions) > 10 {
 		sessions = sessions[len(sessions)-10:]
 	}
-	
+
 	labels := make([]string, len(sessions))
 	durations := make([]float64, len(sessions))
-	
+
 	for i, session := range sessions {
 		labels[i] = session.ServerName
 		duration := session.EndedAt.Sub(session.StartedAt)
 		durations[i] = duration.Seconds()
 	}
-	
+
 	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"type": "session_duration",
+		"type":   "session_duration",
 		"labels": labels,
 		"datasets": []map[string]interface{}{
 			{
-				"label": "Session Duration (seconds)",
-				"data": durations,
+				"label":           "Session Duration (seconds)",
+				"data":            durations,
 				"backgroundColor": "rgba(75, 192, 192, 0.2)",
-				"borderColor": "rgba(75, 192, 192, 1)",
-				"borderWidth": 1,
+				"borderColor":     "rgba(75, 192, 192, 1)",
+				"borderWidth":     1,
 			},
 		},
 	})
@@ -180,14 +180,14 @@ func (s *Server) handleSessionDurationChart(w http.ResponseWriter, r *http.Reque
 // handleDataComparisonChart handles data comparison chart data
 func (s *Server) handleDataComparisonChart(w http.ResponseWriter, r *http.Request) {
 	totalSent, totalRecv := s.statsManager.GetTotalDataUsage()
-	
+
 	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"type": "data_comparison",
+		"type":   "data_comparison",
 		"labels": []string{"Data Sent", "Data Received"},
 		"datasets": []map[string]interface{}{
 			{
 				"label": "Total Data Usage",
-				"data": []int64{totalSent, totalRecv},
+				"data":  []int64{totalSent, totalRecv},
 				"backgroundColor": []string{
 					"rgba(255, 99, 132, 0.2)",
 					"rgba(54, 162, 235, 0.2)",

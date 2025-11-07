@@ -13,12 +13,12 @@ import (
 
 // ServerManager handles server management operations
 type ServerManager struct {
-	store              database.Store
-	mutex              sync.RWMutex
+	store               database.Store
+	mutex               sync.RWMutex
 	notificationManager *notifications.NotificationManager
-	logger             *logging.Logger
-	serverCache        map[string]*core.Server
-	cacheMutex         sync.RWMutex
+	logger              *logging.Logger
+	serverCache         map[string]*core.Server
+	cacheMutex          sync.RWMutex
 }
 
 // NewServerManager creates a new server manager
@@ -261,7 +261,7 @@ func (sm *ServerManager) TestAllServersPing() error {
 		// For now, we'll just simulate a ping test
 		ping := 50 + int(time.Now().UnixNano()%100) // Simulate ping between 50-150ms
 		server.Ping = ping
-		
+
 		if err := sm.UpdateServer(server); err != nil {
 			// Log error but continue with other servers
 			if sm.logger != nil {

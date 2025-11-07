@@ -18,4 +18,3 @@ func TestConnectionManager_GetUptime(t *testing.T) {
 	// Skip this test due to dependency on undefined methods
 	t.Skip("Skipping test due to dependency on undefined methods")
 }
-

@@ -11,7 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/skratchdot/open-golang/open"
-	
+
 	// Fix import paths
 	"vpnclient/internal/database"
 	"vpnclient/internal/managers"
@@ -83,7 +83,7 @@ func main() {
 			// If none selected, try fastest enabled
 			server, _ = serverMgr.GetFastestServer()
 		}
-		
+
 		if server != nil {
 			_ = doConnect(connMgr, server, statusStr)
 		}
@@ -98,7 +98,7 @@ func main() {
 	// Subscription section
 	subscriptionEntry := widget.NewEntry()
 	subscriptionEntry.SetPlaceHolder("Enter subscription URL (Clash, Surfboard, etc.)")
-	
+
 	importBtn := widget.NewButton("Import", func() {
 		url := subscriptionEntry.Text
 		if url != "" {
@@ -108,14 +108,14 @@ func main() {
 				URL:        url,
 				AutoUpdate: true,
 			}
-			
+
 			// Save subscription
 			if err := serverMgr.AddSubscription(sub); err != nil {
 				// In a real app, show an error dialog
 				fmt.Printf("Error adding subscription: %v\n", err)
 				return
 			}
-			
+
 			// Update server list
 			servers, _ = serverMgr.GetAllServers()
 			serverNames = []string{}
@@ -123,7 +123,7 @@ func main() {
 				serverNames = append(serverNames, fmt.Sprintf("%s [%s]", s.Name, s.Protocol))
 			}
 			_ = listData.Set(serverNames)
-			
+
 			// Clear entry
 			subscriptionEntry.SetText("")
 		}
@@ -132,21 +132,21 @@ func main() {
 	// Status indicators
 	statusLabel := widget.NewLabelWithData(statusStr)
 	statusLabel.TextStyle = fyne.TextStyle{Bold: true}
-	
+
 	uploadLabel := widget.NewLabelWithData(uploadStr)
 	downloadLabel := widget.NewLabelWithData(downloadStr)
-	
+
 	uploadIcon := widget.NewIcon(theme.UploadIcon())
 	downloadIcon := widget.NewIcon(theme.DownloadIcon())
 
 	// Layout
 	controls := container.NewHBox(connectBtn, disconnectBtn)
-	
+
 	stats := container.NewGridWithColumns(2,
 		container.NewBorder(nil, nil, uploadIcon, nil, uploadLabel),
 		container.NewBorder(nil, nil, downloadIcon, nil, downloadLabel),
 	)
-	
+
 	statusContainer := container.NewVBox(
 		widget.NewLabel("Connection Status:"),
 		statusLabel,
@@ -154,7 +154,7 @@ func main() {
 		widget.NewLabel("Traffic Stats:"),
 		stats,
 	)
-	
+
 	subscriptionContainer := container.NewVBox(
 		widget.NewLabel("Import Subscription:"),
 		subscriptionEntry,
@@ -163,10 +163,10 @@ func main() {
 	)
 
 	content := container.NewBorder(
-		container.NewVBox(controls, subscriptionContainer), 
-		statusContainer, 
-		nil, 
-		nil, 
+		container.NewVBox(controls, subscriptionContainer),
+		statusContainer,
+		nil,
+		nil,
 		list)
 	w.SetContent(content)
 

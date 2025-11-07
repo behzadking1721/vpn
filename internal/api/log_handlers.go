@@ -41,20 +41,20 @@ func (s *Server) getLogs(w http.ResponseWriter, r *http.Request) {
 	// Read and filter logs
 	var logs []string
 	scanner := bufio.NewScanner(file)
-	
+
 	// For performance, we'll read the file in reverse if we have a limit
 	// But for simplicity in this implementation, we'll read from the beginning
 	for scanner.Scan() {
 		line := scanner.Text()
-		
+
 		// Filter by level if specified
 		if level != "" && !strings.Contains(line, fmt.Sprintf("[%s]", strings.ToUpper(level))) {
 			continue
 		}
-		
+
 		logs = append(logs, line)
 	}
-	
+
 	// Apply limit if specified
 	if limit != "" {
 		// In a real implementation, we would implement proper tail functionality
@@ -62,9 +62,9 @@ func (s *Server) getLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"logs": logs,
+		"logs":  logs,
 		"count": len(logs),
-		"file": s.logFilePath,
+		"file":  s.logFilePath,
 	})
 }
 
@@ -105,7 +105,7 @@ func (s *Server) clearLogs(w http.ResponseWriter, r *http.Request) {
 	s.logger.Info("Logs cleared by user request")
 
 	respondJSON(w, http.StatusOK, map[string]string{
-		"status": "success",
+		"status":  "success",
 		"message": "Logs cleared successfully",
 	})
 }
@@ -167,8 +167,8 @@ func (s *Server) getLogStats(w http.ResponseWriter, r *http.Request) {
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"file": map[string]interface{}{
-			"path": s.logFilePath,
-			"size": fileInfo.Size(),
+			"path":     s.logFilePath,
+			"size":     fileInfo.Size(),
 			"modified": fileInfo.ModTime().Format(time.RFC3339),
 		},
 		"stats": stats,

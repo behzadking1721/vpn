@@ -25,17 +25,17 @@ func newStatsCommand() *cobra.Command {
 					"total_data_sent":     "256.4 MB",
 					"total_data_received": "1.2 GB",
 					"current_session": map[string]string{
-						"duration":   "2:34:15",
-						"data_sent":  "45.2 MB",
-						"data_recv":  "128.7 MB",
-						"server":     "USA-NY",
+						"duration":  "2:34:15",
+						"data_sent": "45.2 MB",
+						"data_recv": "128.7 MB",
+						"server":    "USA-NY",
 					},
 					"last_24_hours": map[string]string{
 						"data_sent":     "128.1 MB",
 						"data_received": "756.3 MB",
 					},
 				}
-				
+
 				jsonData, err := json.MarshalIndent(stats, "", "  ")
 				if err != nil {
 					ExitWithError(1, fmt.Sprintf("Failed to marshal stats to JSON: %v", err))

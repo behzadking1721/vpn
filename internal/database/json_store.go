@@ -14,10 +14,10 @@ import (
 // JSONStore is a simple JSON-based file storage (temporary solution until SQLite is available)
 // It implements Store interface and provides all CRUD operations
 type JSONStore struct {
-	dataDir  string
-	servers  []*core.Server
-	subs     []*core.Subscription
-	mutex    sync.RWMutex
+	dataDir string
+	servers []*core.Server
+	subs    []*core.Subscription
+	mutex   sync.RWMutex
 }
 
 // Ensure JSONStore implements Store interface
@@ -176,7 +176,7 @@ func (s *JSONStore) UpdateServer(server interface{}) error {
 	if !ok {
 		return fmt.Errorf("invalid server type")
 	}
-	
+
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -290,7 +290,7 @@ func (s *JSONStore) UpdateSubscription(sub interface{}) error {
 	if !ok {
 		return fmt.Errorf("invalid subscription type")
 	}
-	
+
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -328,4 +328,3 @@ func (s *JSONStore) DeleteSubscription(id string) error {
 func (s *JSONStore) Close() error {
 	return nil
 }
-

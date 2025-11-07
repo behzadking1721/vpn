@@ -18,7 +18,6 @@ import (
 	"vpnclient/internal/updater"
 )
 
-
 // TestGetUpdaterStatus tests the getUpdaterStatus handler
 func TestGetUpdaterStatus(t *testing.T) {
 	// Skip this test since it requires a mock store
@@ -36,14 +35,14 @@ func TestGetUpdaterStatus(t *testing.T) {
 
 	// Assertions
 	assert.Equal(t, http.StatusOK, rr.Code)
-	
+
 	var response map[string]interface{}
 	err = json.Unmarshal(rr.Body.Bytes(), &response)
 	assert.NoError(t, err)
-	
+
 	assert.Equal(t, true, response["enabled"])
 	assert.Equal(t, "24h0m0s", response["interval"])
-	
+
 	mockUpdater.AssertExpectations(t)
 }
 
@@ -56,7 +55,7 @@ func TestSetUpdaterConfigEnabled(t *testing.T) {
 	config := map[string]interface{}{
 		"enabled": true,
 	}
-	
+
 	body, err := json.Marshal(config)
 	assert.NoError(t, err)
 
@@ -73,14 +72,14 @@ func TestSetUpdaterConfigEnabled(t *testing.T) {
 
 	// Assertions
 	assert.Equal(t, http.StatusOK, rr.Code)
-	
+
 	var response map[string]interface{}
 	err = json.Unmarshal(rr.Body.Bytes(), &response)
 	assert.NoError(t, err)
-	
+
 	assert.Equal(t, "success", response["status"])
 	assert.Equal(t, "Updater configuration updated successfully", response["message"])
-	
+
 	mockUpdater.AssertExpectations(t)
 }
 
@@ -93,7 +92,7 @@ func TestSetUpdaterConfigInterval(t *testing.T) {
 	config := map[string]interface{}{
 		"interval": "6h",
 	}
-	
+
 	body, err := json.Marshal(config)
 	assert.NoError(t, err)
 
@@ -110,14 +109,14 @@ func TestSetUpdaterConfigInterval(t *testing.T) {
 
 	// Assertions
 	assert.Equal(t, http.StatusOK, rr.Code)
-	
+
 	var response map[string]interface{}
 	err = json.Unmarshal(rr.Body.Bytes(), &response)
 	assert.NoError(t, err)
-	
+
 	assert.Equal(t, "success", response["status"])
 	assert.Equal(t, "Updater configuration updated successfully", response["message"])
-	
+
 	mockUpdater.AssertExpectations(t)
 }
 
@@ -130,7 +129,7 @@ func TestSetUpdaterConfigInvalidInterval(t *testing.T) {
 	config := map[string]interface{}{
 		"interval": "invalid",
 	}
-	
+
 	body, err := json.Marshal(config)
 	assert.NoError(t, err)
 
@@ -147,11 +146,11 @@ func TestSetUpdaterConfigInvalidInterval(t *testing.T) {
 
 	// Assertions
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
-	
+
 	var response map[string]interface{}
 	err = json.Unmarshal(rr.Body.Bytes(), &response)
 	assert.NoError(t, err)
-	
+
 	assert.Equal(t, "Invalid interval format: time: invalid duration \"invalid\"", response["error"])
 }
 
@@ -176,11 +175,11 @@ func TestSetUpdaterConfigInvalidJSON(t *testing.T) {
 
 	// Assertions
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
-	
+
 	var response map[string]interface{}
 	err = json.Unmarshal(rr.Body.Bytes(), &response)
 	assert.NoError(t, err)
-	
+
 	assert.Contains(t, response["error"], "Invalid JSON")
 }
 
@@ -201,14 +200,14 @@ func TestTriggerUpdate(t *testing.T) {
 
 	// Assertions
 	assert.Equal(t, http.StatusOK, rr.Code)
-	
+
 	var response map[string]interface{}
 	err = json.Unmarshal(rr.Body.Bytes(), &response)
 	assert.NoError(t, err)
-	
+
 	assert.Equal(t, "success", response["status"])
 	assert.Equal(t, "Subscription update triggered successfully", response["message"])
-	
+
 	mockUpdater.AssertExpectations(t)
 }
 
@@ -229,13 +228,13 @@ func TestTriggerUpdateError(t *testing.T) {
 
 	// Assertions
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
-	
+
 	var response map[string]interface{}
 	err = json.Unmarshal(rr.Body.Bytes(), &response)
 	assert.NoError(t, err)
-	
+
 	assert.Equal(t, "Failed to update subscriptions: assert.AnError general error for testing", response["error"])
-	
+
 	mockUpdater.AssertExpectations(t)
 }
 
@@ -256,10 +255,10 @@ func TestTriggerUpdateWrongMethod(t *testing.T) {
 
 	// Assertions
 	assert.Equal(t, http.StatusMethodNotAllowed, rr.Code)
-	
+
 	var response map[string]interface{}
 	err = json.Unmarshal(rr.Body.Bytes(), &response)
 	assert.NoError(t, err)
-	
+
 	assert.Equal(t, "Method not allowed", response["error"])
 }

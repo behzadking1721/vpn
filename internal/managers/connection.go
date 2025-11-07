@@ -43,14 +43,14 @@ func (s ConnectionStatus) String() string {
 
 // ConnectionManager manages VPN connections
 type ConnectionManager struct {
-	status       ConnectionStatus
+	status        ConnectionStatus
 	currentServer *core.Server
-	startTime    time.Time
-	dataSent     int64
-	dataReceived int64
-	mutex        sync.RWMutex
+	startTime     time.Time
+	dataSent      int64
+	dataReceived  int64
+	mutex         sync.RWMutex
 }
-	
+
 // NewConnectionManager creates a new connection manager
 func NewConnectionManager() *ConnectionManager {
 	return &ConnectionManager{
@@ -95,18 +95,18 @@ func (cm *ConnectionManager) GetCurrentServer() *core.Server {
 func (cm *ConnectionManager) GetDataUsage() (int64, int64) {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
-	
+
 	// Simulate data usage increase for demo purposes
 	if cm.status == Connected {
 		// In a real implementation, this would come from the actual connection
 		// For demo, we'll just simulate increasing data usage
 		duration := time.Since(cm.startTime).Seconds()
-		sent := int64(duration * 1024 * 1024) // 1MB/s
+		sent := int64(duration * 1024 * 1024)         // 1MB/s
 		received := int64(duration * 2 * 1024 * 1024) // 2MB/s
-		
+
 		return sent, received
 	}
-	
+
 	return cm.dataSent, cm.dataReceived
 }
 
@@ -114,11 +114,11 @@ func (cm *ConnectionManager) GetDataUsage() (int64, int64) {
 func (cm *ConnectionManager) GetUptime() time.Duration {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
-	
+
 	if cm.status == Connected {
 		return time.Since(cm.startTime)
 	}
-	
+
 	return 0
 }
 
@@ -189,7 +189,7 @@ func (cm *ConnectionManager) Disconnect() error {
 		// For demo purposes, we'll just simulate a successful disconnection
 		time.Sleep(100 * time.Millisecond)
 	}
-	
+
 	cm.status = Disconnected
 	cm.currentServer = nil
 	cm.startTime = time.Time{}

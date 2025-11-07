@@ -268,7 +268,7 @@ func (s *Server) connectFastest(w http.ResponseWriter, r *http.Request) {
 		if !server.Enabled {
 			continue
 		}
-		
+
 		if fastestServer == nil || server.Ping < fastestServer.Ping {
 			fastestServer = server
 		}
@@ -318,18 +318,18 @@ func (s *Server) getStats(w http.ResponseWriter, r *http.Request) {
 	sent, received := s.connectionManager.GetDataUsage()
 	uptime := s.connectionManager.GetUptime()
 	currentServer := s.connectionManager.GetCurrentServer()
-	
+
 	var serverID string
 	if currentServer != nil {
 		serverID = currentServer.ID
 	}
-	
+
 	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"connected":  status == managers.Connected,
-		"uptime":     uptime,
-		"data_sent":  sent,
-		"data_recv":  received,
-		"server_id":  serverID,
+		"connected": status == managers.Connected,
+		"uptime":    uptime,
+		"data_sent": sent,
+		"data_recv": received,
+		"server_id": serverID,
 	})
 }
 
@@ -368,13 +368,13 @@ func (s *Server) addSubscription(w http.ResponseWriter, r *http.Request) {
 			// Set server properties from subscription
 			server.CreatedAt = now
 			server.UpdatedAt = now
-			
+
 			if err := s.serverManager.AddServer(server); err != nil {
 				// Log error but continue with other servers
 				fmt.Printf("Error adding server: %v\n", err)
 			}
 		}
-		
+
 		// Update server count
 		subscription.ServerCount = len(servers)
 	}
@@ -473,13 +473,13 @@ func (s *Server) updateSubscriptionServers(w http.ResponseWriter, r *http.Reques
 			// Set server properties from subscription
 			server.CreatedAt = time.Now()
 			server.UpdatedAt = time.Now()
-			
+
 			if err := s.serverManager.AddServer(server); err != nil {
 				// Log error but continue with other servers
 				fmt.Printf("Error adding server: %v\n", err)
 			}
 		}
-		
+
 		// Update server count
 		subscription.ServerCount = len(servers)
 	}

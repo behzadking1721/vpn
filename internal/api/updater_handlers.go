@@ -46,7 +46,7 @@ func (s *Server) setUpdaterConfig(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, http.StatusOK, map[string]string{
-		"status": "success",
+		"status":  "success",
 		"message": "Updater configuration updated successfully",
 	})
 }
@@ -64,7 +64,7 @@ func (s *Server) triggerUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, http.StatusOK, map[string]string{
-		"status": "success",
+		"status":  "success",
 		"message": "Subscription update triggered successfully",
 	})
 }

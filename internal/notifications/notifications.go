@@ -27,7 +27,7 @@ type Notification struct {
 
 // NotificationManager manages system notifications
 type NotificationManager struct {
-	notifications []Notification
+	notifications    []Notification
 	maxNotifications int
 }
 
@@ -49,15 +49,15 @@ func (nm *NotificationManager) AddNotification(title, message string, notifType 
 		Timestamp: time.Now(),
 		Read:      false,
 	}
-	
+
 	// Add to the beginning of the slice
 	nm.notifications = append([]Notification{notification}, nm.notifications...)
-	
+
 	// Limit the number of notifications
 	if len(nm.notifications) > nm.maxNotifications {
 		nm.notifications = nm.notifications[:nm.maxNotifications]
 	}
-	
+
 	return &notification
 }
 

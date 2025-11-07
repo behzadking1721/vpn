@@ -1,9 +1,9 @@
 package alert
 
 import (
-	"vpnclient/src/core"
 	"errors"
 	"time"
+	"vpnclient/src/core"
 )
 
 // AlertRuleType represents the type of alert rule

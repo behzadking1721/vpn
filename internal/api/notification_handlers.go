@@ -24,17 +24,17 @@ func (s *Server) markNotificationAsRead(w http.ResponseWriter, r *http.Request) 
 	var req struct {
 		ID string `json:"id"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
-	
+
 	if err := s.notificationManager.MarkAsRead(req.ID); err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 		return
 	}
-	
+
 	respondJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 

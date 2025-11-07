@@ -66,10 +66,10 @@ func main() {
 	serverManager := managers.NewServerManager(db)
 	connectionManager := managers.NewConnectionManager()
 	subscriptionManager := managers.NewSubscriptionManager(serverManager, db)
-	
+
 	// Initialize notification manager
 	notificationManager := notifications.NewNotificationManager(100) // Keep max 100 notifications
-	
+
 	// Initialize stats manager
 	statsManager := stats.NewStatsManager()
 
@@ -94,9 +94,9 @@ func main() {
 		Interval: 24 * time.Hour, // Update once per day by default
 		Enabled:  true,
 	}
-	
+
 	updater := updater.NewUpdater(serverManager, subscriptionManager, updaterConfig, logger)
-	
+
 	// Start the updater
 	updater.Start()
 	defer updater.Stop()

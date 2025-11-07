@@ -28,18 +28,18 @@ type ConnectionInfo struct {
 
 // Server represents a VPN server
 type Server struct {
-	ID          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Host        string                 `json:"host"`
-	Port        int                    `json:"port"`
-	Protocol    string                 `json:"protocol"`
-	Country     string                 `json:"country,omitempty"`
-	Enabled     bool                   `json:"enabled"`
-	Ping        int                    `json:"ping"`        // in milliseconds
-	Config      map[string]interface{} `json:"config"`      // protocol-specific configuration
-	Remark      string                 `json:"remark,omitempty"`
-	CreatedAt   time.Time              `json:"created_at"`
-	UpdatedAt   time.Time              `json:"updated_at"`
+	ID        string                 `json:"id"`
+	Name      string                 `json:"name"`
+	Host      string                 `json:"host"`
+	Port      int                    `json:"port"`
+	Protocol  string                 `json:"protocol"`
+	Country   string                 `json:"country,omitempty"`
+	Enabled   bool                   `json:"enabled"`
+	Ping      int                    `json:"ping"`   // in milliseconds
+	Config    map[string]interface{} `json:"config"` // protocol-specific configuration
+	Remark    string                 `json:"remark,omitempty"`
+	CreatedAt time.Time              `json:"created_at"`
+	UpdatedAt time.Time              `json:"updated_at"`
 }
 
 // Subscription represents a subscription link

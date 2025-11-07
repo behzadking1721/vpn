@@ -43,7 +43,7 @@ func TestNewUpdater(t *testing.T) {
 	serverManager := &MockServerManager{}
 	subscriptionManager := &MockSubscriptionManager{}
 	logger := &logging.Logger{}
-	
+
 	config := Config{
 		Interval: time.Hour,
 		Enabled:  true,
@@ -64,7 +64,7 @@ func TestUpdaterStartStop(t *testing.T) {
 	serverManager := &MockServerManager{}
 	subscriptionManager := &MockSubscriptionManager{}
 	logger := &logging.Logger{}
-	
+
 	config := Config{
 		Interval: 10 * time.Millisecond, // Very short interval for testing
 		Enabled:  true,
@@ -88,7 +88,7 @@ func TestUpdaterDisabled(t *testing.T) {
 	serverManager := &MockServerManager{}
 	subscriptionManager := &MockSubscriptionManager{}
 	logger := &logging.Logger{}
-	
+
 	config := Config{
 		Interval: 10 * time.Millisecond,
 		Enabled:  false,
@@ -110,7 +110,7 @@ func TestUpdateSubscriptions(t *testing.T) {
 	serverManager := &MockServerManager{}
 	subscriptionManager := &MockSubscriptionManager{}
 	logger := &logging.Logger{}
-	
+
 	config := Config{
 		Interval: time.Hour,
 		Enabled:  true,
@@ -123,7 +123,7 @@ func TestUpdateSubscriptions(t *testing.T) {
 		{ID: "sub1", URL: "http://example.com/sub1"},
 		{ID: "sub2", URL: "http://example.com/sub2"},
 	}
-	
+
 	subscriptionManager.On("GetAllSubscriptions").Return(subscriptions, nil)
 	subscriptionManager.On("UpdateSubscriptionServers", "sub1").Return(nil)
 	subscriptionManager.On("UpdateSubscriptionServers", "sub2").Return(nil)
@@ -142,7 +142,7 @@ func TestUpdateSubscriptionsWithErrors(t *testing.T) {
 	serverManager := &MockServerManager{}
 	subscriptionManager := &MockSubscriptionManager{}
 	logger := &logging.Logger{}
-	
+
 	config := Config{
 		Interval: time.Hour,
 		Enabled:  true,
@@ -155,7 +155,7 @@ func TestUpdateSubscriptionsWithErrors(t *testing.T) {
 		{ID: "sub1", URL: "http://example.com/sub1"},
 		{ID: "sub2", URL: "http://example.com/sub2"},
 	}
-	
+
 	subscriptionManager.On("GetAllSubscriptions").Return(subscriptions, nil)
 	subscriptionManager.On("UpdateSubscriptionServers", "sub1").Return(nil)
 	subscriptionManager.On("UpdateSubscriptionServers", "sub2").Return(
@@ -176,7 +176,7 @@ func TestSetEnabled(t *testing.T) {
 	serverManager := &MockServerManager{}
 	subscriptionManager := &MockSubscriptionManager{}
 	logger := &logging.Logger{}
-	
+
 	config := Config{
 		Interval: time.Hour,
 		Enabled:  false,
@@ -189,14 +189,14 @@ func TestSetEnabled(t *testing.T) {
 
 	// Since we can't directly access the enabled field, we test by trying to update
 	updater.SetEnabled(true)
-	
+
 	// Mock expectations
 	subscriptions := []*core.Subscription{}
 	subscriptionManager.On("GetAllSubscriptions").Return(subscriptions, nil)
-	
+
 	// Test update - should work now
 	err := updater.UpdateSubscriptions()
-	
+
 	// Assertions
 	assert.NoError(t, err)
 }
@@ -207,7 +207,7 @@ func TestSetInterval(t *testing.T) {
 	serverManager := &MockServerManager{}
 	subscriptionManager := &MockSubscriptionManager{}
 	logger := &logging.Logger{}
-	
+
 	config := Config{
 		Interval: time.Hour,
 		Enabled:  true,
@@ -232,7 +232,7 @@ func TestGetStatus(t *testing.T) {
 	serverManager := &MockServerManager{}
 	subscriptionManager := &MockSubscriptionManager{}
 	logger := &logging.Logger{}
-	
+
 	config := Config{
 		Interval: 30 * time.Minute,
 		Enabled:  true,

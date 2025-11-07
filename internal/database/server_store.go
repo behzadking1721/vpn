@@ -73,4 +73,3 @@ func (s *ServerStoreWrapper) DeleteServer(id string) error {
 func (s *ServerStoreWrapper) UpdatePing(id string, ping int) error {
 	return s.store.UpdatePing(id, ping)
 }
-

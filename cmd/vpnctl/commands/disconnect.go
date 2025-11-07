@@ -9,9 +9,9 @@ import (
 
 func newDisconnectCommand() *cobra.Command {
 	return &cobra.Command{
-		Use:   "disconnect",
-		Short: "Disconnect from the VPN",
-		Long:  `Disconnect from the currently connected VPN server.`,
+		Use:     "disconnect",
+		Short:   "Disconnect from the VPN",
+		Long:    `Disconnect from the currently connected VPN server.`,
 		Example: `  vpnctl disconnect    # Disconnect from current VPN server`,
 		Run: func(cmd *cobra.Command, args []string) {
 			// Show progress

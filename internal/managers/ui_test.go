@@ -20,7 +20,7 @@ func getUIPath() string {
 func TestUIElements(t *testing.T) {
 	// Get the correct UI path
 	uiPath := getUIPath()
-	
+
 	// Test index.html
 	testUIFile(t, filepath.Join(uiPath, "index.html"), []string{
 		"VPN Client",
@@ -77,7 +77,7 @@ func TestUIFunctionality(t *testing.T) {
 // TestUINavigation tests that navigation between UI pages works correctly
 func TestUINavigation(t *testing.T) {
 	uiPath := getUIPath()
-	
+
 	pages := []string{
 		filepath.Join(uiPath, "index.html"),
 		filepath.Join(uiPath, "dashboard.html"),
@@ -116,7 +116,7 @@ func testNavigationInPage(t *testing.T, filePath string, expectedLinks []string)
 // TestUITheme tests that UI theme functionality is present
 func TestUITheme(t *testing.T) {
 	uiPath := getUIPath()
-	
+
 	// Check that theme-related elements exist in the UI files
 	testUIFile(t, filepath.Join(uiPath, "index.html"), []string{
 		"themeToggle",

@@ -88,7 +88,7 @@ func (sm *StatsManager) endCurrentConnection() {
 			ServerID:   sm.currentConnection.ServerID,
 			ServerName: sm.currentConnection.ServerName,
 		}
-		
+
 		sm.sessions = append(sm.sessions, session)
 		sm.currentConnection = nil
 	}
@@ -102,7 +102,7 @@ func (sm *StatsManager) GetCurrentConnection() *ConnectionStat {
 	if sm.currentConnection == nil {
 		return nil
 	}
-	
+
 	// Return a copy to prevent external modification
 	stat := *sm.currentConnection
 	return &stat
@@ -130,7 +130,7 @@ func (sm *StatsManager) GetSessionsByTimeRange(start, end time.Time) []SessionSt
 			result = append(result, session)
 		}
 	}
-	
+
 	return result
 }
 
@@ -140,19 +140,19 @@ func (sm *StatsManager) GetTotalDataUsage() (int64, int64) {
 	defer sm.mutex.RUnlock()
 
 	var totalSent, totalRecv int64
-	
+
 	// Add current connection if exists
 	if sm.currentConnection != nil {
 		totalSent += sm.currentConnection.DataSent
 		totalRecv += sm.currentConnection.DataRecv
 	}
-	
+
 	// Add all sessions
 	for _, session := range sm.sessions {
 		totalSent += session.DataSent
 		totalRecv += session.DataRecv
 	}
-	
+
 	return totalSent, totalRecv
 }
 
@@ -162,10 +162,10 @@ func (sm *StatsManager) GetDailyDataUsage(days int) []ConnectionStat {
 	defer sm.mutex.RUnlock()
 
 	dailyStats := make([]ConnectionStat, 0)
-	
+
 	// Create a map to store daily data
 	dailyData := make(map[string]*ConnectionStat)
-	
+
 	// Process current connection
 	if sm.currentConnection != nil {
 		dateKey := sm.currentConnection.Timestamp.Format("2006-01-02")
@@ -179,7 +179,7 @@ func (sm *StatsManager) GetDailyDataUsage(days int) []ConnectionStat {
 		dailyData[dateKey].DataSent += sm.currentConnection.DataSent
 		dailyData[dateKey].DataRecv += sm.currentConnection.DataRecv
 	}
-	
+
 	// Process all sessions
 	for _, session := range sm.sessions {
 		dateKey := session.StartedAt.Format("2006-01-02")
@@ -193,12 +193,12 @@ func (sm *StatsManager) GetDailyDataUsage(days int) []ConnectionStat {
 		dailyData[dateKey].DataSent += session.DataSent
 		dailyData[dateKey].DataRecv += session.DataRecv
 	}
-	
+
 	// Convert map to slice
 	for _, stat := range dailyData {
 		dailyStats = append(dailyStats, *stat)
 	}
-	
+
 	return dailyStats
 }
 
@@ -206,7 +206,7 @@ func (sm *StatsManager) GetDailyDataUsage(days int) []ConnectionStat {
 func (sm *StatsManager) ClearStats() {
 	sm.mutex.Lock()
 	defer sm.mutex.Unlock()
-	
+
 	sm.currentConnection = nil
 	sm.sessions = make([]SessionStat, 0)
 }

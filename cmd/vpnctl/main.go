@@ -24,10 +24,10 @@ func main() {
 	}
 
 	rootCmd := commands.NewRootCommand()
-	
+
 	// Add version to the root command
 	rootCmd.Version = fmt.Sprintf("%s (build: %s, commit: %s)", version, buildTime, gitCommit)
-	
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

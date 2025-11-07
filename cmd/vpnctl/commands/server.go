@@ -46,7 +46,7 @@ func newServerListCommand() *cobra.Command {
 			table.SetHeader([]string{"Flag", "Name", "Ping", "Speed", "Protocol", "Status"})
 			table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 			table.SetCenterSeparator("|")
-			
+
 			// Add data to table
 			for _, server := range servers {
 				table.Append([]string{
@@ -58,7 +58,7 @@ func newServerListCommand() *cobra.Command {
 					server.Status,
 				})
 			}
-			
+
 			table.Render()
 		},
 	}
@@ -100,7 +100,7 @@ func newServerTestCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("🚀 Testing all servers...")
 			fmt.Println("✅ Server testing completed")
-			
+
 			// Sample results
 			fmt.Println("\nTop 3 fastest servers:")
 			fmt.Println("1. USA-NY (45ms, 85.5 Mbps)")

@@ -19,16 +19,16 @@ import (
 
 // Server represents the API server
 type Server struct {
-	router             *mux.Router
-	serverManager      *managers.ServerManager
-	connectionManager  *managers.ConnectionManager
+	router              *mux.Router
+	serverManager       *managers.ServerManager
+	connectionManager   *managers.ConnectionManager
 	notificationManager *notifications.NotificationManager
-	statsManager       *stats.StatsManager
-	updater            *updater.Updater
-	logger             *logging.Logger
-	logFilePath        string
-	addr               string
-	httpServer         *http.Server
+	statsManager        *stats.StatsManager
+	updater             *updater.Updater
+	logger              *logging.Logger
+	logFilePath         string
+	addr                string
+	httpServer          *http.Server
 }
 
 // NewServer creates a new API server
@@ -43,15 +43,15 @@ func NewServer(
 	logFilePath string,
 ) *Server {
 	s := &Server{
-		router:             mux.NewRouter(),
-		serverManager:      serverManager,
-		connectionManager:  connectionManager,
+		router:              mux.NewRouter(),
+		serverManager:       serverManager,
+		connectionManager:   connectionManager,
 		notificationManager: notificationManager,
-		statsManager:       statsManager,
-		updater:            updater,
-		logger:             logger,
-		logFilePath:        logFilePath,
-		addr:               addr,
+		statsManager:        statsManager,
+		updater:             updater,
+		logger:              logger,
+		logFilePath:         logFilePath,
+		addr:                addr,
 	}
 
 	s.setupRoutes()
@@ -228,7 +228,7 @@ func (s *Server) getLogStats(w http.ResponseWriter, r *http.Request) {
 func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	
+
 	if err := json.NewEncoder(w).Encode(payload); err != nil {
 		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
 	}

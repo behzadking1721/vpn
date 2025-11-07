@@ -16,7 +16,7 @@ func newSpeedTestCommand() *cobra.Command {
 		Long:  `Perform a network speed test to measure download and upload speeds.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("🚀 Performing speed test...")
-			
+
 			// Download test
 			fmt.Println("\n⬇️  Testing download speed...")
 			downloadBar := pb.StartNew(100)
@@ -25,10 +25,10 @@ func newSpeedTestCommand() *cobra.Command {
 				time.Sleep(time.Duration(rand.Intn(50)+10) * time.Millisecond)
 			}
 			downloadBar.Finish()
-			
+
 			downloadSpeed := fmt.Sprintf("%.2f Mbps", rand.Float64()*90+10)
 			fmt.Printf("Download speed: %s\n", downloadSpeed)
-			
+
 			// Upload test
 			fmt.Println("\n⬆️  Testing upload speed...")
 			uploadBar := pb.StartNew(100)
@@ -37,10 +37,10 @@ func newSpeedTestCommand() *cobra.Command {
 				time.Sleep(time.Duration(rand.Intn(100)+50) * time.Millisecond)
 			}
 			uploadBar.Finish()
-			
+
 			uploadSpeed := fmt.Sprintf("%.2f Mbps", rand.Float64()*45+5)
 			fmt.Printf("Upload speed: %s\n", uploadSpeed)
-			
+
 			// Latency test
 			fmt.Println("\n⏱️  Testing latency...")
 			latencyBar := pb.StartNew(100)
@@ -49,10 +49,10 @@ func newSpeedTestCommand() *cobra.Command {
 				time.Sleep(5 * time.Millisecond)
 			}
 			latencyBar.Finish()
-			
+
 			latency := fmt.Sprintf("%d ms", rand.Intn(100)+10)
 			fmt.Printf("Latency: %s\n", latency)
-			
+
 			// Summary
 			fmt.Println("\n📈 Speed Test Results")
 			fmt.Println("=====================")

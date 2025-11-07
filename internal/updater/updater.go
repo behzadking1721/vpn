@@ -13,13 +13,13 @@ import (
 
 // Updater handles automatic server updates
 type Updater struct {
-	serverManager      *managers.ServerManager
+	serverManager       *managers.ServerManager
 	subscriptionManager *managers.SubscriptionManager
-	interval           time.Duration
-	enabled            bool
-	logger             *logging.Logger
-	mutex              sync.RWMutex
-	stopChan           chan struct{}
+	interval            time.Duration
+	enabled             bool
+	logger              *logging.Logger
+	mutex               sync.RWMutex
+	stopChan            chan struct{}
 }
 
 // Config holds updater configuration
@@ -36,12 +36,12 @@ func NewUpdater(
 	logger *logging.Logger,
 ) *Updater {
 	return &Updater{
-		serverManager:      serverManager,
+		serverManager:       serverManager,
 		subscriptionManager: subscriptionManager,
-		interval:           config.Interval,
-		enabled:            config.Enabled,
-		logger:             logger,
-		stopChan:           make(chan struct{}),
+		interval:            config.Interval,
+		enabled:             config.Enabled,
+		logger:              logger,
+		stopChan:            make(chan struct{}),
 	}
 }
 
@@ -131,7 +131,7 @@ func (u *Updater) updateSubscriptions() error {
 
 	for _, sub := range subscriptions {
 		u.logger.Debug("Updating subscription: %s", sub.URL)
-		
+
 		if err := u.subscriptionManager.UpdateSubscriptionServers(sub.ID); err != nil {
 			u.logger.Error("Failed to update subscription %s: %v", sub.URL, err)
 			failCount++
@@ -142,7 +142,7 @@ func (u *Updater) updateSubscriptions() error {
 	}
 
 	u.logger.Info("Subscription update completed. Success: %d, Failed: %d", successCount, failCount)
-	
+
 	// Clean up old servers that are no longer in any subscription
 	if err := u.cleanupOldServers(subscriptions); err != nil {
 		u.logger.Error("Failed to cleanup old servers: %v", err)
@@ -163,11 +163,11 @@ func (u *Updater) cleanupOldServers(subscriptions []*core.Subscription) error {
 
 	// Create a map of subscription server IDs for quick lookup
 	subServerIDs := make(map[string]bool)
-	
+
 	// For a real implementation, we would need to track which servers belong to which subscriptions
 	// For now, we'll just log that we're doing cleanup
 	u.logger.Debug("Would clean up servers not in any subscription. Total servers: %d", len(allServers))
-	
+
 	return nil
 }
 

@@ -51,9 +51,9 @@ func statusRun(cmd *cobra.Command, args []string) {
 
 	fmt.Println(green("🟢 Connected to:"), status.Server)
 	fmt.Println(yellow("⏱️  Duration:"), status.Duration)
-	fmt.Printf("%s Download: %s ↑ | Upload: %s ↓\n", 
-		blue("📊"), 
-		status.Upload, 
+	fmt.Printf("%s Download: %s ↑ | Upload: %s ↓\n",
+		blue("📊"),
+		status.Upload,
 		status.Download)
 	fmt.Println(green("🌐 IP:"), status.IP)
 	fmt.Println(time.Now().Format("2006-01-02 15:04:05"))
