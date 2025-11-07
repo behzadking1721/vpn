@@ -174,13 +174,17 @@ func (s *Server) testServerPing(w http.ResponseWriter, r *http.Request) {
 
 // testAllServersPing tests the ping for all enabled servers
 func (s *Server) testAllServersPing(w http.ResponseWriter, r *http.Request) {
-	results, err := s.serverManager.TestAllServersPing()
+	// Run ping update, then return the current server list (with updated ping values)
+	if err := s.serverManager.TestAllServersPing(); err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	servers, err := s.serverManager.GetAllServers()
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	respondJSON(w, http.StatusOK, results)
+	respondJSON(w, http.StatusOK, servers)
 }
 
 // getBestServer finds and returns the best server based on comprehensive testing
@@ -357,7 +361,7 @@ func (s *Server) addSubscription(w http.ResponseWriter, r *http.Request) {
 	// Parse subscription link and import servers
 	if subscription.URL != "" {
 		parser := managers.NewSubscriptionParser()
-		servers, err := parser.Parse(subscription.URL)
+		servers, err := parser.ParseSubscription(subscription.URL)
 		if err != nil {
 			respondError(w, http.StatusBadRequest, "Failed to parse subscription: "+err.Error())
 			return
@@ -396,6 +400,91 @@ func (s *Server) getAllSubscriptions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, http.StatusOK, subscriptions)
+}
+
+// importSubscription accepts a raw subscription URL/text and imports servers
+func (s *Server) importSubscription(w http.ResponseWriter, r *http.Request) {
+	var payload struct {
+		Payload string `json:"payload"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
+		return
+	}
+
+	if payload.Payload == "" {
+		respondError(w, http.StatusBadRequest, "payload is required")
+		return
+	}
+
+	parser := managers.NewSubscriptionParser()
+	servers, err := parser.ParseSubscription(payload.Payload)
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "Failed to parse subscription: "+err.Error())
+		return
+	}
+
+	imported := 0
+	now := time.Now()
+	for _, srv := range servers {
+		if srv.ID == "" {
+			srv.ID = generateID()
+		}
+		if srv.CreatedAt.IsZero() {
+			srv.CreatedAt = now
+		}
+		srv.UpdatedAt = now
+		if err := s.serverManager.AddServer(srv); err != nil {
+			// log and continue
+			fmt.Printf("failed to add server from subscription: %v\n", err)
+			continue
+		}
+		imported++
+	}
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{"imported": imported})
+}
+
+// importQR accepts a QR/text (ss:// or vmess://) and imports as a server
+func (s *Server) importQR(w http.ResponseWriter, r *http.Request) {
+	var payload struct {
+		Text string `json:"text"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
+		return
+	}
+	if payload.Text == "" {
+		respondError(w, http.StatusBadRequest, "text is required")
+		return
+	}
+
+	// Reuse subscription parser which understands ss:// and vmess:// schemes
+	parser := managers.NewSubscriptionParser()
+	servers, err := parser.ParseSubscription(payload.Text)
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "Failed to parse QR/text: "+err.Error())
+		return
+	}
+
+	imported := 0
+	now := time.Now()
+	for _, srv := range servers {
+		if srv.ID == "" {
+			srv.ID = generateID()
+		}
+		if srv.CreatedAt.IsZero() {
+			srv.CreatedAt = now
+		}
+		srv.UpdatedAt = now
+		if err := s.serverManager.AddServer(srv); err != nil {
+			fmt.Printf("failed to add server from qr: %v\n", err)
+			continue
+		}
+		imported++
+	}
+
+	respondJSON(w, http.StatusCreated, map[string]interface{}{"imported": imported})
 }
 
 // getSubscription returns a single subscription by ID
@@ -462,7 +551,7 @@ func (s *Server) updateSubscriptionServers(w http.ResponseWriter, r *http.Reques
 	// Parse subscription link and import servers
 	if subscription.URL != "" {
 		parser := managers.NewSubscriptionParser()
-		servers, err := parser.Parse(subscription.URL)
+		servers, err := parser.ParseSubscription(subscription.URL)
 		if err != nil {
 			respondError(w, http.StatusBadRequest, "Failed to parse subscription: "+err.Error())
 			return

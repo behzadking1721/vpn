@@ -15,6 +15,8 @@ import (
 	"vpnclient/internal/logging"
 	"vpnclient/internal/managers"
 	"vpnclient/internal/notifications"
+	"vpnclient/internal/stats"
+	"vpnclient/internal/updater"
 )
 
 // Server represents the API server
@@ -83,6 +85,10 @@ func (s *Server) setupRoutes() {
 	api.HandleFunc("/subscriptions/{id}", s.updateSubscription).Methods("PUT")
 	api.HandleFunc("/subscriptions/{id}", s.deleteSubscription).Methods("DELETE")
 	api.HandleFunc("/subscriptions/{id}/update", s.updateSubscriptionServers).Methods("POST")
+
+	// Import endpoints (raw subscription text or QR payload)
+	api.HandleFunc("/import/subscription", s.importSubscription).Methods("POST")
+	api.HandleFunc("/import/qr", s.importQR).Methods("POST")
 
 	// Connection management endpoints
 	api.HandleFunc("/connect", s.connect).Methods("POST")
@@ -176,63 +182,10 @@ func corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// getLogs returns the contents of the log file
-func (s *Server) getLogs(w http.ResponseWriter, r *http.Request) {
-	if s.logger == nil {
-		http.Error(w, "Logger not initialized", http.StatusInternalServerError)
-		return
-	}
-
-	logs, err := s.logger.GetLogs()
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error reading logs: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"logs":  logs,
-		"total": len(logs),
-	})
-}
-
-// clearLogs clears all log entries
-func (s *Server) clearLogs(w http.ResponseWriter, r *http.Request) {
-	if s.logger == nil {
-		http.Error(w, "Logger not initialized", http.StatusInternalServerError)
-		return
-	}
-
-	if err := s.logger.Clear(); err != nil {
-		http.Error(w, fmt.Sprintf("Error clearing logs: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	respondJSON(w, http.StatusOK, map[string]string{
-		"status": "success",
-		"msg":    "Logs cleared successfully",
-	})
-}
-
-// getLogStats returns statistics about the logs
-func (s *Server) getLogStats(w http.ResponseWriter, r *http.Request) {
-	if s.logger == nil {
-		http.Error(w, "Logger not initialized", http.StatusInternalServerError)
-		return
-	}
-
-	stats := s.logger.GetStats()
-	respondJSON(w, http.StatusOK, stats)
-}
+// log handlers are implemented in log_handlers.go
 
 // respondJSON sends a JSON response
-func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-
-	if err := json.NewEncoder(w).Encode(payload); err != nil {
-		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
-	}
-}
+// Note: respondJSON is implemented in handlers.go and shared across handlers
 
 // Shutdown gracefully shuts down the server
 func (s *Server) Shutdown() error {

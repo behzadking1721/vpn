@@ -5,7 +5,6 @@ import (
 	"sync"
 	"time"
 
-	"vpnclient/internal/database"
 	"vpnclient/internal/logging"
 	"vpnclient/internal/managers"
 	"vpnclient/src/core"
@@ -161,10 +160,7 @@ func (u *Updater) cleanupOldServers(subscriptions []*core.Subscription) error {
 		return fmt.Errorf("failed to get all servers: %v", err)
 	}
 
-	// Create a map of subscription server IDs for quick lookup
-	subServerIDs := make(map[string]bool)
-
-	// For a real implementation, we would need to track which servers belong to which subscriptions
+	// For a real implementation, we would need to track which servers belong to which subscriptions.
 	// For now, we'll just log that we're doing cleanup
 	u.logger.Debug("Would clean up servers not in any subscription. Total servers: %d", len(allServers))
 

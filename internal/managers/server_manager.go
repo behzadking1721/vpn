@@ -19,6 +19,8 @@ type ServerManager struct {
 	logger              *logging.Logger
 	serverCache         map[string]*core.Server
 	cacheMutex          sync.RWMutex
+	// optional subscription manager (can be set by caller)
+	subscriptionManager *SubscriptionManager
 }
 
 // NewServerManager creates a new server manager
@@ -27,6 +29,98 @@ func NewServerManager(store database.Store) *ServerManager {
 		store:       store,
 		serverCache: make(map[string]*core.Server),
 	}
+}
+
+// SetSubscriptionManager attaches a SubscriptionManager so ServerManager can delegate subscription ops
+func (sm *ServerManager) SetSubscriptionManager(sub *SubscriptionManager) {
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+	sm.subscriptionManager = sub
+}
+
+// AddSubscription stores a subscription record. If a SubscriptionManager is present, delegate to it.
+func (sm *ServerManager) AddSubscription(sub *core.Subscription) error {
+	if sm.subscriptionManager != nil {
+		// delegate by URL if provided
+		if sub != nil && sub.URL != "" {
+			_, err := sm.subscriptionManager.AddSubscription(sub.URL)
+			return err
+		}
+	}
+	return sm.store.AddSubscription(sub)
+}
+
+// GetAllSubscriptions returns subscriptions from the underlying store
+func (sm *ServerManager) GetAllSubscriptions() ([]*core.Subscription, error) {
+	// try subscription manager first
+	if sm.subscriptionManager != nil {
+		return sm.subscriptionManager.GetAllSubscriptions()
+	}
+	items, err := sm.store.GetAllSubscriptions()
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*core.Subscription, 0, len(items))
+	for _, it := range items {
+		if s, ok := it.(*core.Subscription); ok {
+			out = append(out, s)
+		}
+	}
+	return out, nil
+}
+
+// GetSubscription fetches a subscription by id
+func (sm *ServerManager) GetSubscription(id string) (*core.Subscription, error) {
+	if sm.subscriptionManager != nil {
+		return sm.subscriptionManager.GetSubscription(id)
+	}
+	it, err := sm.store.GetSubscription(id)
+	if err != nil {
+		return nil, err
+	}
+	if s, ok := it.(*core.Subscription); ok {
+		return s, nil
+	}
+	return nil, fmt.Errorf("invalid subscription type in store")
+}
+
+// UpdateSubscription updates a subscription record
+func (sm *ServerManager) UpdateSubscription(sub *core.Subscription) error {
+	if sm.subscriptionManager != nil {
+		return sm.subscriptionManager.UpdateSubscription(sub)
+	}
+	return sm.store.UpdateSubscription(sub)
+}
+
+// DeleteSubscription deletes a subscription
+func (sm *ServerManager) DeleteSubscription(id string) error {
+	if sm.subscriptionManager != nil {
+		return sm.subscriptionManager.DeleteSubscription(id)
+	}
+	return sm.store.DeleteSubscription(id)
+}
+
+// UpdateSubscriptionServers delegates to subscription manager when available
+func (sm *ServerManager) UpdateSubscriptionServers(id string) error {
+	if sm.subscriptionManager != nil {
+		return sm.subscriptionManager.UpdateSubscriptionServers(id)
+	}
+	return fmt.Errorf("subscription manager not configured")
+}
+
+// TestServerPing performs a simple simulated ping for a single server and returns ping in ms
+func (sm *ServerManager) TestServerPing(id string) (int, error) {
+	s, err := sm.GetServer(id)
+	if err != nil {
+		return 0, err
+	}
+	// simulate ping
+	ping := 50 + int(time.Now().UnixNano()%100)
+	s.Ping = ping
+	if err := sm.UpdateServer(s); err != nil {
+		return 0, err
+	}
+	return ping, nil
 }
 
 // SetNotificationManager sets the notification manager
